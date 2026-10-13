@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<link href="https://fonts.googleapis.com/css?family=Rock+Salt" rel="stylesheet">
+	<style>
+		body { background: red; }
+	</style>
+	<link rel="stylesheet" type="text/css" href="wsl.css" />
+	<link rel="stylesheet" type="text/css" href="dialog.css" />
+	<title>Word Search Library</title>
+</head>
+<body>
+	<div id="deviceready" class="blink">
+		<p class="event listening">Connecting to Device</p>
+		<p class="event received">Device is Ready</p>
+	</div>
+
+	<span id="fontSize">W</span>
+	<span id="boardFontSize">W</span>
+
+	<div class="loading">
+		<div class="loader"></div>
+	</div>
+
+	<nav>
+		<div class="sizes">
+			<header>Select Size</header>
+			<ul></ul>
+			<p>
+				The puzzle size is the number of letters across the grid.  A lower number of letters makes the puzzle easier. A large number makes the letter size smaller and may be harder to solve on smaller devices.
+			</p>
+			<p>
+				This number can be changed by tapping the number that will appear in the upper right on the next screen.
+			</p>
+		</div>
+		<div class="books">
+			<span class="size back"></span>
+			<header>Select Book</header>
+			<ul></ul>
+		</div>
+		<div class="pages flex-column">
+            <header class="flex-row back toBooks">
+				<div class="title">Puzzle Name</div>
+            </header>
+			<div class="flex-row space-between">
+				<em>Table of Contents</em>
+				<small class="clear-progress">(select puzzle)</small>
+				<span class="helpIcon">?</span>
+			</div>
+			<ul></ul>
+            <!-- div class="flex-row justify-end">
+                <button type="button" class="toSettings material-button">Settings</button>
+            </div -->
+		</div>
+	</nav>
+
+	<main class="game flex">
+
+		<div class="flex-column flex-grow">
+
+			<header class="flex-row">
+				<h1 class="text-center flex-row">
+					<i class="menuIcon pull-left"></i>
+					<div class="title">Puzzle Name</div>
+					<div class="score no-wrap">
+						<span class="words-found">0</span> / <span class="total-words">0</span>
+					</div>
+				</h1>
+			</header>
+
+			<ul class="word-list"></ul>
+		</div>
+
+		<article class="board">
+		</article>
+
+	</main>
+
+
+	<dialog class="menuDialog">
+		<form>
+			<header>Done!</header>
+            <main>
+                <ul class="nav-list">
+                    <li class="toContents">Table of Contents</li>
+                    <li class="toBooks">Select Book</li>
+                    <li class="toSizes">Select Size</li>
+                    <!-- li class="colorPickerButton">Select Background</li -->
+                    <li class="soundSetting" style="display: flex;">
+                        <span style="white-space: nowrap;">Sounds ON</span>
+                        <small style="text-align: right; display: block; font-size: .5em">
+        			        Sound effects from <a href="https://www.zapsplat.com" target="_blank">https://www.zapsplat.com</a>
+        				</small>
+                    </li>
+                    <!-- li class="toSettings">Settings</li -->
+                </ul>
+            </main>
+            <footer class="flex-row space-evenly">
+			    <button type="button" class="closeButton">close</button>
+			    <button type="button" class="restartButton">restart puzzle</button>
+                &nbsp;
+	    	    <button type="button" class="nextButton" tabIndex="1">next puzzle</button>
+            </footer>
+		</form>
+	</dialog>
+
+
+	<dialog class="colorPickerDialog">
+		<form>
+            <header>Select Background</header>
+			<main></main>
+            <footer class="flex-row space-evenly">
+			    <button type="button" class="closeButton">close</button>
+            </footer>
+		</form>
+	</dialog>
+
+
+    <dialog class="howToDialog">
+		<form>
+			<header>How To Play</header>
+			<main>
+                <p>The objective of a word search is to find all the listed words in the word grid. Words may be placed in any direction but must be in a straight line.  When a word is found, mark the word by sliding over all the letters in the word.  The word in the list will be automaticaly marked out.</p>
+        		<p>If you need a hint for a word, tap the word in the list and the first letter in the grid will be highlighted.</p>
+        		<label class="hideHelp">
+		        	<input type="checkbox" checked />
+		        	Show at Puzzle Start
+        		</label>
+			</main>
+			<footer>
+				<button type="button" tabindex="1" class="skip">close</button>
+			</footer>
+		</form>
+	</dialog>
+
+	<dialog class="settingsDialog">
+		<form>
+			<header>Settings</header>
+			<main>
+                <div>
+    				<label>Coloring</label>
+                    <div>
+                        <label><input type="radio" name="coloring" value="black" class="coloringRadio" checked /> Black on White </label>
+                    </div>
+                    <div>
+                        <label><input type="radio" name="coloring" value="white" class="coloringRadio" /> White on Black </label>
+                    </div>
+                </div>
+                <div>
+    				<label>Background</label>
+                    <div>
+                        <label><input type="radio" name="background" value="none" class="backgroundRadio" /> none </label>
+                    </div>
+                    <div>
+                        <label><input type="radio" name="background" value="image" class="backgroundRadio" /> nature </label>
+                    </div>
+                </div>
+			</main>
+			<footer>
+				<button type="button" tabindex="1" class="skip">close</button>
+			</footer>
+		</form>
+	</dialog>
+
+	<dialog class="clearNotice">
+		<form>
+			<header>Clear All Progress?</header>
+			<main>
+				<p>Due to improvements in the method for creating word searches, all of the puzzles have been updated.</p>
+				<p>It is recommended that you clear your progress so far.<p>
+				<p>Would you like to do this now?</p>
+				<small>(Otherwise the progress in each book can be cleared independently)</small>
+			</main>
+			<footer>
+				<button type="button" class="skip">Skip</button>
+				<button type="button" tabindex="1" class="clearAllProgress">Clear All</button>
+			</footer>
+		</form>
+	</dialog>
+
+	<dialog class="clearConfirm">
+		<form>
+			<header>Clear Progress?</header>
+			<main>
+				<p>Are you sure you want to clear out your progress on this book?</p>
+				<small>This cannot be undone</small>
+			</main>
+			<footer>
+				<button type="button" class="skip">Cancel</button>
+				<button type="button" tabindex="1" class="clearBookProgress">Clear Progress</button>
+			</footer>
+		</form>
+	</dialog>
+
+	<dialog class="askRate">
+		<form>
+			<header></header>
+			<main>
+				<p>If you are enjoying the Word Search Library, would you mind taking a moment to rate it?</p>
+				<p>Thanks for your support!</p>
+			</main>
+			<footer>
+				<button type="button" class="skip">No, thanks</button>
+				<button type="button" tabindex="1" class="rateItNow"><a href="https://play.google.com/store/apps/details?id=com.digitalfunmedia.wordsearchlibrary" target="_blank">Rate it Now</a></button>
+			</footer>
+		</form>
+	</dialog>
+
+	<dialog class="nextVolumeDialog">
+		<form>
+			<header></header>
+			<main>
+				You have completed this book! Would you like to move on to the next volume?
+			</main>
+			<footer>
+				<button type="button" class="skip">No, thanks</button>
+				<button type="button" tabindex="1" class="nextVolume">Next Volume</button>
+			</footer>
+		</form>
+	</dialog>
+
+	<script type="text/javascript">
+
+		/*
+		window.onerror = function(message, source, lineno, colno, error) {
+			alert('Error in "' + source + '" at ' + lineno + '-' + colno + '.  Please contact support at digitalfunmedia@gmail.com about this error: "' + message + '"')
+			//alert("Error on line " + line + "\n" + msg);
+			console.log(message, source, lineno, colno, error, arguments)
+			// return true to prevent browser from displaying error
+			return true
+			return false
+		}
+		/* */
+
+		var books = []
+
+		var words = []
+
+	</script>
+
+	<script type="text/javascript" src="cordova.js"></script>
+	<script type="text/javascript" src="common.js"></script>
+	<script type="text/javascript" src="js/index.js"></script>
+
+	<script type="text/javascript" src="adMobPlus.js"></script>
+
+	<script src="easy.js"></script>
+	<script src="deluxe.js"></script>
+	<script src="challenge.js"></script>
+	<script src="spanish.js"></script>
+	<script src="holiday.js"></script>
+	<script src="valentines.js"></script>
+	<script src="halloween.js"></script>
+	<script src="christmas.js"></script>
+	<script src="biblical.js"></script>
+	<script src="america.js"></script>
+	<script src="random.js"></script>
+	<script src="winterSports.js"></script>
+	<script src="hidden.js"></script>
+	<script src="alphabet.js"></script>
+
+	<script src="jquery-3.4.1.slim.min.js"></script>
+	<script src="wsl.js"></script>
+
+    </body>
+</html>

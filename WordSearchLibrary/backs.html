@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<style>
+/* https://freebiesupply.com/blog/css-background-patterns/ */
+
+	html, body {
+		height: 100%;
+		padding: 0;
+		margin: 0;
+		width: 100%;
+		overflow: auto;
+	}
+
+	label {
+		display: inline-block;
+		padding: 10px;
+		outline: 1px solid red;
+		white-space: nowrap;
+	}
+
+	img {
+		max-width: 100px;
+		max-height: 100px;
+		overflow: hidden;
+	}
+
+	span {
+		width: 100px;
+		height: 100px;
+		display: block;
+		background-size: cover;
+		background-repeat: no-repeat;
+		background-position: center center
+	}
+
+</style>
+<body>
+
+	<div class="backs"></div>
+
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E=" crossorigin="anonymous"></script>
+
+	<script>
+
+		var backs = {
+			none: [],
+
+            landscape: [
+                'https://thumbs2.imgbox.com/a0/a3/K1XbRXpC_b.jpg',
+                'https://thumbs2.imgbox.com/75/11/NVyuLS79_b.jpg',
+                'https://thumbs2.imgbox.com/2b/72/GHEhzoRw_b.jpg',
+                'https://thumbs2.imgbox.com/88/9c/bYXjJZ1G_b.jpg',
+                'https://thumbs2.imgbox.com/97/c0/jvHIL9Og_b.jpg'
+            ],
+
+            gradients: [
+                function() {
+            		colors = [
+	    	        	{ red: Math.floor(Math.random()*256), green: Math.floor(Math.random()*256), blue: Math.floor(Math.random()*256), percent: Math.floor(Math.random()*30) },
+            			{ red: Math.floor(Math.random()*256), green: Math.floor(Math.random()*256), blue: Math.floor(Math.random()*256), percent: Math.floor(Math.random()*30)+33 },
+            			{ red: Math.floor(Math.random()*256), green: Math.floor(Math.random()*256), blue: Math.floor(Math.random()*256), percent: Math.floor(Math.random()*30)+66 }
+            		];
+	    	        position = [Math.floor(Math.random()*361), Math.floor(Math.random()*4)];
+            		$('.background').css({backgroundImage: '-webkit-linear-gradient('+Math.floor(Math.random()*361)+'deg, rgb('+colors[0].red+','+colors[0].green+','+colors[0].blue+') '+colors[0].percent+'%, rgb('+colors[1].red+','+colors[1].green+','+colors[1].blue+') '+colors[1].percent+'%, rgb('+colors[2].red+','+colors[2].green+','+colors[2].blue+') '+colors[2].percent+'%)'});
+            	},
+            ],
+
+			patterns: [
+				{
+					background: 'radial-gradient(circle closest-side at 60% 43%, #b03 26%, rgba(187,0,51,0) 27%), radial-gradient(circle closest-side at 40% 43%, #b03 26%, rgba(187,0,51,0) 27%), radial-gradient(circle closest-side at 40% 22%, #d35 45%, rgba(221,51,85,0) 46%), radial-gradient(circle closest-side at 60% 22%, #d35 45%, rgba(221,51,85,0) 46%), radial-gradient(circle closest-side at 50% 35%, #d35 30%, rgba(221,51,85,0) 31%), radial-gradient(circle closest-side at 60% 43%, #b03 26%, rgba(187,0,51,0) 27%) 50px 50px, radial-gradient(circle closest-side at 40% 43%, #b03 26%, rgba(187,0,51,0) 27%) 50px 50px, radial-gradient(circle closest-side at 40% 22%, #d35 45%, rgba(221,51,85,0) 46%) 50px 50px, radial-gradient(circle closest-side at 60% 22%, #d35 45%, rgba(221,51,85,0) 46%) 50px 50px, radial-gradient(circle closest-side at 50% 35%, #d35 30%, rgba(221,51,85,0) 31%) 50px 50px',
+					backgroundColor: '#b03',
+					backgroundSize: '100px 100px'
+				},
+
+				{
+					background: 'repeating-linear-gradient(45deg, #FFE11A, #FFE11A 50%, #FD7400 50%, #FD7400)',
+					backgroundSize: '20px 20px'
+				},
+
+				{
+					backgroundColor: 'grey',
+					backgroundImage: 'repeating-linear-gradient(120deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 30px), repeating-linear-gradient(60deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1) 1px, transparent 1px, transparent 30px), linear-gradient(60deg, rgba(0, 0, 0, 0.1) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, 0.1) 75%, rgba(0, 0, 0, 0.1)), linear-gradient(120deg, rgba(0, 0, 0, 0.1) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, 0.1) 75%, rgba(0, 0, 0, 0.1))',
+					backgroundSize: '60px/sqrt(3) 60px'
+				},
+				{
+					background: 'radial-gradient(circle at 20px 20px, #333 4px, #ddd 4px, #ddd 7px, transparent 0) 5px 5px, radial-gradient(circle at 20px 13px, #333 10px, #ddd 10px, #ddd 13px, transparent 0) 5px 5px, radial-gradient(circle at 12px 20px, #333 10px, #ddd 10px, #ddd 13px, transparent 0) 5px 5px, radial-gradient(circle at 27px 20px, #333 10px, #ddd 10px, #ddd 13px, transparent 0) 5px 5px, radial-gradient(circle at 20px 25px, #333 10px, #ddd 10px, #ddd 13px, transparent 0) 5px 5px, radial-gradient(circle at 20px 20px, grey 4px, #ddd 4px, #ddd 7px, transparent 0) 40px 40px, radial-gradient(circle at 20px 13px, grey 10px, #ddd 10px, #ddd 13px, transparent 0) 40px 40px, radial-gradient(circle at 12px 20px, grey 10px, #ddd 10px, #ddd 13px, transparent 0) 40px 40px, radial-gradient(circle at 27px 20px, grey 10px, #ddd 10px, #ddd 13px, transparent 0) 40px 40px, radial-gradient(circle at 20px 25px, grey 10px, #ddd 10px, #ddd 13px, transparent 0) 40px 40px',
+					backgroundColor: '#ddd',
+					backgroundSize: '70px 70px',
+					backgroundClip: 'content-box'
+
+
+				}
+			]
+		}
+
+		Object.keys(backs).forEach(function(back) {
+			$('.backs').append(
+				$('<div />').append(
+					$('<label />').text(back).prepend('<input type="radio" name="back" />'),
+					$('<div />').append(
+						...backs[back].map(option => {
+							switch(typeof option) {
+								case 'string':
+									return $('<label />').append($('<span />').css({ backgroundImage: 'url(' + option + ')' })).prepend('<input type="radio" name="back" />')
+								break
+
+								default:
+									return $('<label />').append($('<span />').css(option)).prepend('<input type="radio" name="back" />')
+								break
+							}
+						})
+					)
+				)
+			)
+		})
+
+	</script>
+
+</body>
+</html>
