@@ -246,11 +246,23 @@
       // Center the dialog and open it as a modal
       dialog.showModal();
 
+      function confirmClose() {
+        if (window.confirm('Are you sure you want to close this app?')) {
+          dialog.close();
+        }
+      }
+
       // Close when clicking outside the dialog
       dialog.addEventListener('click', (event) => {
         if (event.target === dialog) {
-          dialog.close();
+          confirmClose();
         }
+      });
+
+      // Confirm before closing with Escape
+      dialog.addEventListener('cancel', (event) => {
+        event.preventDefault();
+        confirmClose();
       });
 
       // Remove the dialog from the DOM when closed
