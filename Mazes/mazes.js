@@ -20,6 +20,11 @@ var mazes = [
 	// 'circular'
 ]
 
+function updateNextMazeType() {
+	var nextMaze = mazes[(Game.index + 1) % mazes.length]
+	$('.mazes').empty().append($('<h1/>').text(nextMaze))
+}
+
 var pressedKeys = new Set()
 var keyDirections = {
 	arrowup: 'up',
@@ -82,11 +87,6 @@ window.addEventListener('blur', function() {
 	updateKeyboardDirection()
 })
 
-$('.mazes').empty();
-mazes.forEach(function(maze) {
-	$('.mazes').append($('<h1/>').text(maze));
-});
-
 $('[name="levelUp"]').click(e => {
 	Game.size +=2
 	seed = 1
@@ -113,6 +113,7 @@ $('.gamePlay').click(e => {
 
 
 $('.menu').click(e => {
+	updateNextMazeType()
 	$('.done_dialog').attr('open', true).show()
 })
 
@@ -232,6 +233,7 @@ var Game = {
 						
 						$('body').addClass('isdone');
 
+						updateNextMazeType()
 						$('.done_dialog').attr('open', true).show()
 					}
 					else {
