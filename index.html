@@ -230,21 +230,26 @@
 
     function openPageDialog(url) {
       const dialog = document.createElement('dialog');
+      const phoneColor = '#20242b';
 
-      dialog.style.width = '450px';
+      dialog.style.width = '400px';
       dialog.style.height = '700px';
       dialog.style.maxWidth = '95vw';
       dialog.style.maxHeight = '95vh';
-      dialog.style.padding = '0';
-      dialog.style.border = 'none';
-      dialog.style.borderRadius = '8px';
+      dialog.style.padding = '8px';
+      dialog.style.border = `solid ${phoneColor}`;
+      dialog.style.borderWidth = '24px 6px';
+      dialog.style.borderRadius = '40px';
       dialog.style.overflow = 'hidden';
+      dialog.style.boxShadow = '0 24px 64px rgb(0 0 0 / 35%)';
+      dialog.style.backgroundColor = phoneColor;
 
       const iframe = document.createElement('iframe');
       iframe.src = url;
       iframe.style.width = '100%';
       iframe.style.height = '100%';
       iframe.style.border = 'none';
+      iframe.style.backgroundColor = phoneColor;
 
       dialog.appendChild(iframe);
       document.body.appendChild(dialog);
