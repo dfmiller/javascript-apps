@@ -270,41 +270,25 @@ var Game = {
 		Game.top = position.top + $('.app_bar').height()
 		Game.bottom = position.top + $('.game_wrapper').height()
 
-		var fontSize = 2
 		$('.draggable').css({ top: 50, left: 50 })
-        /*
-		do {
-			fontSize -= .01
+		var minFontSize = .5
+		var maxFontSize = 5
+		var fontSize = minFontSize
+
+		for (var i = 0; i < 12; i++) {
+			fontSize = (minFontSize + maxFontSize) / 2
 			Game.gameBoard.css({ fontSize: fontSize + 'rem' })
-            console.log(fontSize)
-		} while(
-			(
-				//widest > Game.gameBoard.width() ||
+
+			if (
 				Game.gameBoard[0].scrollHeight > Game.gameBoard.height()
 				|| Game.gameBoard[0].scrollWidth > Game.gameBoard.width()
-			)
-			&& fontSize > 1
-		)
-        /* */
-
-        //*
-        var jump = fontSize
-        while(jump >= .01) {
-			Game.gameBoard.css({ fontSize: fontSize + 'rem' })
-            if (
-                Game.gameBoard[0].scrollHeight > Game.gameBoard.height()
-			    || Game.gameBoard[0].scrollWidth > Game.gameBoard.width()
-                || fontSize > 5
-            ) {
-                fontSize -= jump
-            } else {
-                fontSize += jump
-            }
-            jump = jump/2
-            console.log(fontSize, Game.gameBoard[0].scrollHeight, Game.gameBoard.height(), Game.gameBoard[0].scrollWidth, Game.gameBoard.width())
-        }
-		Game.gameBoard.css({ fontSize: (fontSize - .02) + 'rem' })
-        /* */
+			) {
+				maxFontSize = fontSize
+			} else {
+				minFontSize = fontSize
+			}
+		}
+		Game.gameBoard.css({ fontSize: Math.max(minFontSize - .2, .5) + 'rem' })
 
 
 		Game.letterHeight = $('.draggable').height()
