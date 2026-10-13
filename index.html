@@ -85,6 +85,46 @@
       background: rgb(0 0 0 / 55%);
     }
 
+    .app-dialog {
+      width: min(400px, calc(100vw - 4px), calc(57.142857dvh - 2.285714px));
+      aspect-ratio: 4 / 7;
+      max-height: calc(100dvh - 4px);
+      padding: 4px;
+      border: solid #20242b;
+      border-width: 32px 2px;
+      border-radius: 40px;
+      outline: 1px solid white;
+      overflow: visible;
+      box-shadow: 0 24px 64px rgb(0 0 0 / 35%);
+      background-color: #20242b;
+    }
+
+    .app-dialog__close {
+      position: absolute;
+      top: -24px;
+      right: 10px;
+      z-index: 1;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
+      background-color: rgb(0 0 0 / 50%);
+      color: white;
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .app-dialog__frame {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 8px;
+      background-color: #20242b;
+    }
+
     .card::before {
       content: "";
       position: absolute;
@@ -253,48 +293,18 @@
 
     function openPageDialog(url) {
       const dialog = document.createElement('dialog');
-      const phoneColor = '#20242b';
-
-      dialog.style.width = 'min(400px, calc(100vw - 4px), calc(57.142857dvh - 2.285714px))';
-      dialog.style.aspectRatio = '4 / 7';
-      dialog.style.maxHeight = 'calc(100dvh - 4px)';
-      dialog.style.padding = '8px';
-      dialog.style.border = `solid ${phoneColor}`;
-      dialog.style.borderWidth = '32px 2px';
-      dialog.style.borderRadius = '40px';
-      dialog.style.outline = `1px solid white`;
-      dialog.style.overflow = 'visible';
-      dialog.style.boxShadow = '0 24px 64px rgb(0 0 0 / 35%)';
-      dialog.style.backgroundColor = phoneColor;
+      dialog.className = 'app-dialog';
 
       const closeButton = document.createElement('button');
       closeButton.type = 'button';
       closeButton.setAttribute('aria-label', 'Close app');
       closeButton.textContent = '×';
-      closeButton.style.position = 'absolute';
-      closeButton.style.top = '-24px';
-      closeButton.style.right = '10px';
-      closeButton.style.zIndex = '1';
-      closeButton.style.width = '28px';
-      closeButton.style.height = '28px';
-      closeButton.style.padding = '0';
-      closeButton.style.border = 'none';
-      closeButton.style.borderRadius = '50%';
-      closeButton.style.backgroundColor = 'rgb(0 0 0 / 50%)';
-      closeButton.style.color = 'white';
-      closeButton.style.fontSize = '22px';
-      closeButton.style.lineHeight = '1';
-      closeButton.style.cursor = 'pointer';
+      closeButton.className = 'app-dialog__close';
       closeButton.addEventListener('click', () => dialog.close());
 
       const iframe = document.createElement('iframe');
       iframe.src = url;
-      iframe.style.display = 'block';
-      iframe.style.width = '100%';
-      iframe.style.height = '100%';
-      iframe.style.border = 'none';
-      iframe.style.borderRadius = '8px';
-      iframe.style.backgroundColor = phoneColor;
+      iframe.className = 'app-dialog__frame';
 
       dialog.appendChild(closeButton);
       dialog.appendChild(iframe);
