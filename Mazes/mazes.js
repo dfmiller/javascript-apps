@@ -20,6 +20,68 @@ var mazes = [
 	// 'circular'
 ]
 
+var pressedKeys = new Set()
+var keyDirections = {
+	arrowup: 'up',
+	w: 'up',
+	arrowdown: 'down',
+	s: 'down',
+	arrowleft: 'left',
+	a: 'left',
+	arrowright: 'right',
+	d: 'right'
+}
+
+function updateKeyboardDirection() {
+	Game.dx = Number(pressedKeys.has('d') || pressedKeys.has('arrowright'))
+		- Number(pressedKeys.has('a') || pressedKeys.has('arrowleft'))
+	Game.dy = Number(pressedKeys.has('s') || pressedKeys.has('arrowdown'))
+		- Number(pressedKeys.has('w') || pressedKeys.has('arrowup'))
+}
+
+var dragPointerId = null
+
+function updatePointerDirection(event) {
+	var canvas = Game.canvas.get(0)
+	var bounds = canvas.getBoundingClientRect()
+	var x = Math.max(0, Math.min(Game.width - 1, (event.clientX - bounds.left) * Game.width / bounds.width))
+	var y = Math.max(0, Math.min(Game.height - 1, (event.clientY - bounds.top) * Game.height / bounds.height))
+
+	Game.dx = Math.sign(x - Game.x)
+	Game.dy = Math.sign(y - Game.y)
+}
+
+window.addEventListener('keydown', function(event) {
+	var key = event.key.toLowerCase()
+	if (!keyDirections[key]) {
+		return
+	}
+	if (event.target.closest && event.target.closest('input, textarea, select, [contenteditable="true"]')) {
+		return
+	}
+
+	event.preventDefault()
+	if ($('.done_dialog').is(':visible')) {
+		return
+	}
+
+	pressedKeys.add(key)
+	updateKeyboardDirection()
+})
+
+window.addEventListener('keyup', function(event) {
+	var key = event.key.toLowerCase()
+	if (pressedKeys.delete(key)) {
+		event.preventDefault()
+		updateKeyboardDirection()
+	}
+})
+
+window.addEventListener('blur', function() {
+	pressedKeys.clear()
+	updateKeyboardDirection()
+})
+
 $('.mazes').empty();
 mazes.forEach(function(maze) {
 	$('.mazes').append($('<h1/>').text(maze));
@@ -79,16 +141,42 @@ var Game = {
 		this.canvas.get(1).height = this.height
 		this.fctx = this.canvas.get(1).getContext('2d')
 
-		this.canvas.bind('touchmove', function (event) {
-			event = event.originalEvent
-			event = event.touches[0]
-			Game.dx = Math.sign(event.pageX - Game.x)
-			Game.dy = Math.sign(event.pageY - Game.y)
+		var canvas = this.canvas.get(0)
+		canvas.addEventListener('pointerdown', function(event) {
+			if (event.button !== 0) {
+				return
+			}
+
+			event.preventDefault()
+			dragPointerId = event.pointerId
+			canvas.setPointerCapture(event.pointerId)
+			$('.app').addClass('is-dragging')
+			updatePointerDirection(event)
 		})
 
-		this.canvas.bind('touchend', function (event) {
-			Game.dx = 0
-			Game.dy = 0
+		canvas.addEventListener('pointermove', function(event) {
+			if (event.pointerId === dragPointerId) {
+				updatePointerDirection(event)
+			}
+		})
+
+		function endPointerDrag(event) {
+			if (event.pointerId !== dragPointerId) {
+				return
+			}
+
+			dragPointerId = null
+			$('.app').removeClass('is-dragging')
+			updateKeyboardDirection()
+		}
+
+		canvas.addEventListener('pointerup', endPointerDrag)
+		canvas.addEventListener('pointercancel', endPointerDrag)
+		canvas.addEventListener('lostpointercapture', endPointerDrag)
+
+		window.addEventListener('blur', function() {
+			dragPointerId = null
+			$('.app').removeClass('is-dragging')
 		})
 
 		setInterval(function () {
@@ -243,3 +331,27 @@ var Game = {
 
 Game.once()
 Game.play()
+
+var resizeTimeout
+$(window).on('resize', function() {
+	clearTimeout(resizeTimeout)
+	resizeTimeout = setTimeout(function() {
+		var width = Math.round(Game.canvas.width())
+		var height = Math.round(Game.canvas.height())
+		if (width === Game.width && height === Game.height) {
+			return
+		}
+
+		Game.width = width
+		Game.height = height
+		Game.canvas.each(function() {
+			this.width = width
+			this.height = height
+		})
+		Game.ctx = Game.canvas.get(0).getContext('2d')
+		Game.fctx = Game.canvas.get(1).getContext('2d')
+		pressedKeys.clear()
+		updateKeyboardDirection()
+		Game.play()
+	}, 100)
+})

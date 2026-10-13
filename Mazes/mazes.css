@@ -10,6 +10,11 @@ html, body {
 .app {
 	position: relative;
 	background: #fff;
+	cursor: grab;
+}
+
+.app.is-dragging {
+	cursor: grabbing;
 }
 
 
@@ -115,6 +120,7 @@ x.thumb:after {
 canvas {
 	height: calc(100vh - 3em);
 	display:flex;
+	touch-action: none;
 }
 
 .fore {
@@ -222,4 +228,21 @@ nav {
 
 .isdone {
 	color: red;
+}
+
+@media (min-width: 700px) {
+	.app {
+		width: min(100vw, calc(100vh - 3em));
+		margin-inline: auto;
+	}
+
+	aside::after {
+		content: 'Move with arrow keys or WASD';
+		padding: 0 .75em;
+		font-size: .75em;
+	}
+
+	canvas {
+		height: min(100vw, calc(100vh - 3em));
+	}
 }

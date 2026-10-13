@@ -280,6 +280,11 @@
       // Center the dialog and open it as a modal
       dialog.showModal();
 
+      const previousRootOverflow = document.documentElement.style.overflow;
+      const previousBodyOverflow = document.body.style.overflow;
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden';
+
       function confirmClose() {
         if (window.confirm('Are you sure you want to close this app?')) {
           dialog.close();
@@ -301,6 +306,8 @@
 
       // Remove the dialog from the DOM when closed
       dialog.addEventListener('close', () => {
+        document.documentElement.style.overflow = previousRootOverflow;
+        document.body.style.overflow = previousBodyOverflow;
         dialog.remove();
       });
     }
