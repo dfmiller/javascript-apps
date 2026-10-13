@@ -136,20 +136,6 @@ Game.calcFontSize = function() {
 }
 
 
-initPlugins = function() {
-
-	try {
-		//initAdMob()
-		//showBannerFunc()
-
-		document.addEventListener('onDismissInterstitialAd', function() {
-			Game.new_game()
-		})
-
-	} catch(e) {}
-}
-
-
 Game.init = function() {
 
 	Game.audio = {
@@ -466,8 +452,6 @@ $('.bolts').click(function() {
 		Game.using_help = 'bolt'
 		$('body').addClass('faded')
 		$('.helps-title span').text('Select Color to Remove')
-	} else if (showRewardFunc) {
-		$('.rewardPrompt').attr('open', true)
 	}
 })
 
@@ -479,8 +463,6 @@ $('.swaps').click(function() {
 		Game.using_help = 'swap'
 		$('body').addClass('faded')
 		$('.helps-title span').text('Select Letters to Swap')
-	} else if (showRewardFunc) {
-		$('.rewardPrompt').attr('open', true)
 	}
 })
 
@@ -492,9 +474,7 @@ $('.blanks').click(function() {
 		Game.using_help = 'blank'
 		$('body').addClass('faded')
 		$('.helps-title span').text('Select Letter to Change to Blank')
-	} else if (showRewardFunc) {
-        $('.rewardPrompt').attr('open', true)
-    }
+	}
 })
 
 $('.helps-cancel').click(function() {
@@ -510,33 +490,6 @@ $('.word-wrapper').click(function() {
 $('.closeDialog').click(function() {
 	$(this).closest('dialog').removeAttr('open')
 })
-
-$('.viewAd').click(function() {
-	showRewardFunc()
-	//setTimeout(giveReward, 2000)
-	$(this).closest('dialog').removeAttr('open')
-})
-
-giveReward = function() {
-	let help_reward = $('[name="help_reward"]:checked').get(0)
-	switch (help_reward.value) {
-		case 'bombs':
-			Game.helps.bombs += 1
-		break
-		case 'bolts':
-			Game.helps.bolts += 2
-		break
-		case 'blanks':
-			Game.helps.blanks += 4
-		break
-		case 'swaps':
-			Game.helps.swaps += 6
-		break
-	}
-	$('.' + help_reward.value).attr('data-count', Game.helps[help_reward.value]).addClass('active')
-	Trunk.save(help_reward.value, Game.helps[help_reward.value])
-}
-
 
 $('.menu').click(function() {
 	Dialogs.modal($('<div />').append(
@@ -878,13 +831,7 @@ $('.game-board').on({
 					Game.sound('audio_level_failed')
 					Dialogs.modal(messages.join('<br/>'), {
 						'Try Again': function() {
-                            try {
-    							showInterstitialFunc(Game.use_sounds)
-                            } catch(e) {}
-							if (!window.plugins || !window.plugins.AdMob.interstitialPresented) {
-								Game.new_game()
-							}
-
+							Game.new_game()
 						}
 					})
 
@@ -911,14 +858,7 @@ $('.game-board').on({
 							Trunk.save('highest_level', Game.highest_level)
 							$('.level').text(Game.level + 1).addClass('spark')
 
-                            try {
-    							showInterstitialFunc(Game.use_sounds)
-                            } catch(e) {}
-
-							if (!window.plugins || !window.plugins.AdMob.interstitialPresented) {
-								Game.new_game()
-							}
-
+							Game.new_game()
 						}
 					}).addClass('cool')
 					$('.blok').fadeOut(2000, function() {
@@ -984,7 +924,6 @@ var app = {
 		document.addEventListener('deviceready', this.onDeviceReady, false);
 		this.timeout = setTimeout(function () {
 			Game.calcFontSize()
-			initPlugins()
 			Game.init()
 		}, 1000);
 	},
@@ -997,7 +936,6 @@ var app = {
 		clearTimeout(this.timeout)
 		try {
 			Game.calcFontSize()
-			initPlugins()
 			Game.init()
 		} catch(e) {
 			alert(e)

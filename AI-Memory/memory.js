@@ -135,12 +135,7 @@ $('dialog.gameSettings button').click(function(e) {
 	e.stopPropagation();
 	if ($('#selectPlayers s:not(.icon-block)').length > 0) {
 		$('dialog.gameSettings').hide();
-		try {
-            if (Game.started) { // && players[((rounds) % playerCount)].type == 'icon-user') {
-    			showInterstitialFunc()
-            }
-            Game.started = true
-		} catch(e) { console.log(e) }
+		Game.started = true
 		start();
 	}
 })

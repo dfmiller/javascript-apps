@@ -46,8 +46,6 @@ var app = {
 			if (window.plugins) {
 				window.plugins.insomnia.keepAwake()
 			}
-
-			initAdMob()
 		} catch(e) {
 			//alert(e)
 		}

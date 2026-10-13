@@ -140,9 +140,6 @@ var Colors = {
 		}
 
 		Colors.play()
-
-		initAdMob()
-		showBannerFunc()
 	},
 
 
@@ -318,9 +315,6 @@ $('#right button').click(function() {
 		}
 		$('.level').text(Colors.level)
 	}
-	if (Colors.level > 1) {
-        showInterstitialFunc()
-	}
 	Colors.play()
 })
 
@@ -337,12 +331,9 @@ $('#wrong button').click(function() {
 
 
 try {
-	initAdMob()
-	showBannerFunc()
 	if (window.plugins && window.plugins.insomnia) {
 		window.plugins.insomnia.keepAwake()
 	}
 } catch(e) {
 	alert(e)
 }
-

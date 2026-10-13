@@ -249,11 +249,6 @@ const PhotoPuzzle = {
 		})
 
 		$('.playButton').click(function() {
-			try {
-				showInterstitialFunc()
-			} catch(e) {
-				//alert(e)
-			}
 			PhotoPuzzle.level = $('.pickLevel').val() * 1
 			localStorage.setItem('level', PhotoPuzzle.level)
 			localStorage.setItem('squares', '[]')

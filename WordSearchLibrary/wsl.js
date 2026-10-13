@@ -421,11 +421,6 @@ $('.colorPickerDialog main').empty().append(
 			})
 
 			$('.toContents').on('click', function() {
-	            if (Game.words && Object.keys(Game.words).length === 0) {
-					try {
-						showInterstitialFunc()
-					} catch(e) {}
-	            }
 				localStorage.removeItem('currentPage')
 				buildPages()
 				$('nav').show()
@@ -439,11 +434,6 @@ $('.colorPickerDialog main').empty().append(
 			})
 
 			$('.restartButton').click(function(event) {
-				if (Object.keys(Game.words).length === 0) {
-					try {
-						showInterstitialFunc()
-					} catch(e) {}
-				}
 				Game.found = []
 				localStorage.removeItem('currentFound')
 				Game.begin(Game.page)
@@ -452,11 +442,6 @@ $('.colorPickerDialog main').empty().append(
 
 			$('.nextButton').click(function(event) {
 				if (Game.page < masterList.length-1) {
-					if (Object.keys(Game.words).length === 0) {
-						try {
-							showInterstitialFunc()
-						} catch(e) {}
-					}
 					Game.found = []
 					localStorage.removeItem('currentFound')
 					for(var title in masterList[Game.page+1]) { break }
@@ -993,10 +978,3 @@ $('.colorPickerDialog main').empty().append(
 	})
 
 	Game.init()
-
-	document.addEventListener('deviceready', function() {
-		try {
-			initAdMob()
-			showBannerFunc()
-		} catch(e) { console.log(e) }
-	}, false)

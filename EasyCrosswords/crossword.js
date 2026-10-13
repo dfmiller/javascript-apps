@@ -5,8 +5,6 @@ $('.title').click(function() {
 
 
 
-//showBannerFunc()
-
 //localStorage.removeItem('crossword')
 //localStorage.removeItem('crosswordLevel')
 
@@ -58,10 +56,6 @@ $('.startButton').click(function (){
 
 	$('.loading').show()
 	$('.shell').empty()
-
-	try {
-		showInterstitialFunc()
-	} catch(e) {}
 
 	setTimeout(function() {
 		Game.create()
