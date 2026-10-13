@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" name="viewport" />
+
+	<title>Crossword</title>
+	<link rel="stylesheet" type="text/css" href="crossword.css" />
+	<link rel="stylesheet" type="text/css" href="dialog.css" />
+
+</head>
+<body>
+	<main class="game-wrapper">
+		<article id="board-wrapper" class="board-wrapper">
+			<section id="game-board" class="game-board shell snow-flakes"></section>
+		</article>
+		<aside>
+			<div class="title">Puzzle</div>
+			<div class="flex-row clue-wrapper">
+				<strong class="lastWord ripple"></strong>
+				<div class="hints"></div>
+				<div id="clue" class="ripple"></div>
+				<strong class="nextWord ripple"></strong>
+			</div>
+			<nav>
+				<div class="nextCover">
+					<button type="button" class="menuButton">Select Puzzle</button>
+					<button type="button" class="startButton">Play Again</button>
+				</div>
+			</nav>
+		</aside>
+	</main>
+	<div class="loading loader"></div>
+
+	<dialog class="menuDialog">
+		<form>
+			<header>Crossword Settings</header>
+			<main>
+				<div>
+					<label>
+						<input type="checkbox" class="showErrors" />
+						show incorrect letters in red
+					</label>
+				</div>
+				<div>
+					<label>
+						<input type="checkbox" class="markVowels" />
+						mark squares with vowels
+					</label>
+				</div>
+				<div>
+					<label>
+						game size
+						<select class="gameSize">
+							<option value="18">18 x 18</option>
+							<option value="17">17 x 17</option>
+							<option value="16">16 x 16</option>
+							<option value="15" selected>15 x 15 standard</option>
+							<option value="14">14 x 14</option>
+							<option value="13">13 x 13</option>
+							<option value="12">12 x 12</option>
+							<option value="11">11 x 11</option>
+							<option value="10">10 x 10</option>
+						</select>
+					</label>
+				</div>
+				<div>
+					<label>
+						<input type="checkbox" class="playSounds" checked />
+						play sounds
+					</label>
+				</div>
+				<small>
+					Sound effects obtained from <a href="https://www.zapsplat.com" target="_blank">https://www.zapsplat.com</a>
+				</small>
+				<div>&nbsp;</div>
+				<div class="tabs">
+					<label class="active">Themed</label><label>Random</label>
+				</div>
+				<div class="themed levels active"></div>
+				<div class="random levels"></div>
+			</main>
+			<footer>
+				<div style="display: flex; justify-content: space-between">
+					<button type="button" class="selectColorsButton">Select colors...</button>
+					<button type="button">close</button>
+				</div>
+			</footer>
+		</form>
+	</dialog>
+
+	<dialog class="selectColorsDialog">
+		<form>
+			<header>Select Colors</header>
+			<main>
+				<p class="backgroundColor"><s></s> Background Color</p>
+				<p class="emptyColor"><s></s> Empty Squares Color</p>
+				<p class="clueColor"><s></s> Clue Background Color</p>
+				<p class="keyboardColor"><s></s> Keyboard Background Color</p>
+			</main>
+			<footer>
+				<div style="display: flex; justify-content: space-between">
+					<button type="button" class="resetColors">reset</button>
+					<button type="button" tabindex="1">Close</button>
+				</div>
+			</footer>
+		</form>
+	</dialog>
+
+	<dialog class="colorPickerDialog">
+		<form>
+			<main></main>
+		</form>
+	</dialog>
+
+	<dialog class="changeLevelDialog">
+		<form>
+			<header>Change Crossword?</header>
+			<main>
+				Your progress on this Crossword will be lost.
+			</main>
+			<footer>
+				<button type="button">cancel</button>
+				<button type="button" tabindex="1" class="changeLevel">OK</button>
+			</footer>
+		</form>
+	</dialog>
+
+
+	<dialog class="helpDialog">
+		<form>
+			<header>How to Play</header>
+			<main>
+				<p>
+					Type in the answers to the clues to fill in all the words on the board.
+				</p>
+				<p>
+					A number in parenthesis after the clue indicates the number of words in the answer.
+				</p>
+				<p>Use the back arrow on the keyboard to delete wrong letters or you can just type over them</p>
+				<p><strong>Your can tap the clue to get a hint for the current word</strong></p>
+			</main>
+			<footer>
+				<button type="button">close</button>
+			</footer>
+		</form>
+	</dialog>
+
+	<dialog class="hintsDialog">
+		<form>
+			<header>Need a hint?</header>
+			<main>
+				<p class="text-center">
+					<button type="button" class="showNext hide-button button">show next letter</button>
+				</p>
+				<p class="text-center">
+					<button type="button" class="showVowels hide-button button">show vowels</button>
+				</p>
+				<p class="text-center">
+					<button type="button"
+					class="searchWeb hide-button button">search the web</button>
+				</p>
+			</main>
+			<footer>
+				<button type="button">cancel</button>
+			</footer>
+		</form>
+	</dialog>
+
+	<dialog class="doneDialog">
+		<form>
+			<header>Crossword complete!</header>
+			<main>
+				<!-- p>What do you think of it?
+					Problems or concerns? You can let us know by sending an <a href="mailto: digitalfunmedia@gmail.com?subject=Easy%20Crosswords" target="_blank">email</a>.
+				</p>
+				<p>If you like it, please <a href="https://play.google.com/store/apps/details?id=com.digitalfunmedia.easycrosswords" target="_blank">rate the app in the Google Play Store</a>.
+				</p -->
+			</main>
+			<footer>
+				<button type="button" class="menuButton">Select Puzzle</button>
+				<button type="button" tabindex="1" class="button startButton">Play Again</button>
+			</footer>
+		</form>
+	</dialog>
+
+	<script src="./common.js"></script>
+	<script src="./cordova.js"></script>
+	<script src="./jquery-3.4.1.min.js"></script>
+	<script>
+
+	var themes = {}
+	var allWords = {}
+
+	</script>
+	<script src="./puzzles/animals.js"></script>
+	<script src="./puzzles/circus.js"></script>
+	<script src="./puzzles/house.js"></script>
+	<script src="./puzzles/birthday.js"></script>
+	<script src="./puzzles/transportation.js"></script>
+	<script src="./puzzles/zombies.js"></script>
+	<script src="./puzzles/campout.js"></script>
+	<script src="./puzzles/atthebeach.js"></script>
+	<script src="./puzzles/sports.js"></script>
+	<script src="./puzzles/medieval.js"></script>
+	<script src="./puzzles/first_responders.js"></script>
+	<script src="./puzzles/space.js"></script>
+	<script src="./puzzles/toys.js"></script>
+	<script src="./puzzles/snow_and_ice.js"></script>
+	<script src="./puzzles/science.js"></script>
+	<script src="./puzzles/cooking.js"></script>
+	<script src="./puzzles/autumn.js"></script>
+	<script src="./puzzles/ninjas.js"></script>
+	<!-- script src="./puzzles/romance.js"></script -->
+
+	<script src="./puzzles/allWords.js"></script>
+	<script src="./adMobPlus.js"></script>
+	<script src="./crossword.js"></script>
+
+</body>
+</html>

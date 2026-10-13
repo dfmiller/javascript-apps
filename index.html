@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JavaScript Apps</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --page-bg: #f4f6f8;
+      --card-bg: #ffffff;
+      --text: #17202a;
+      --muted: #667085;
+      --accent: #5267d8;
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: clamp(1rem, 4vw, 3rem);
+      background: var(--page-bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main {
+      width: min(100%, 1200px);
+      margin-inline: auto;
+    }
+
+    .page-header {
+      margin-bottom: 1.5rem;
+    }
+
+    h1 {
+      margin: 0 0 0.5rem;
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      line-height: 1.1;
+    }
+
+    .page-header p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+      gap: clamp(1rem, 2.5vw, 1.5rem);
+      align-items: start;
+    }
+
+    .card {
+      aspect-ratio: 3 / 4;
+      min-width: 0;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      overflow: hidden;
+      isolation: isolate;
+      padding: 1.25rem;
+      border-radius: var(--radius);
+      background: #26344a;
+      color: white;
+      box-shadow: 0 8px 24px rgb(20 30 50 / 12%);
+      text-decoration: none;
+      transition: transform 180ms ease, box-shadow 180ms ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 14px 32px rgb(20 30 50 / 18%);
+    }
+
+    .card:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 4px;
+    }
+
+    dialog::backdrop {
+      background: rgb(0 0 0 / 55%);
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      background:
+        linear-gradient(145deg, rgb(23 32 51 / 82%), rgb(23 32 51 / 26%)),
+        var(--card-image, none) center / cover no-repeat,
+        radial-gradient(circle at 75% 20%, rgb(255 255 255 / 35%), transparent 28%);
+    }
+
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 35% 0 0;
+      z-index: -1;
+      background: linear-gradient(transparent, rgb(0 0 0 / 78%));
+    }
+
+    .card:nth-child(2) { --card-color: #168b86; }
+    .card:nth-child(3) { --card-color: #b45d35; }
+    .card:nth-child(4) { --card-color: #7654a8; }
+    .card:nth-child(5) { --card-color: #3975a8; }
+    .card:nth-child(6) { --card-color: #9b496c; }
+
+    .card-number {
+      position: absolute;
+      top: 1rem;
+      left: 1.1rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      opacity: 0.85;
+    }
+
+    .card-content h2 {
+      margin: 0 0 0.5rem;
+      font-size: clamp(1.2rem, 2vw, 1.55rem);
+      line-height: 1.15;
+    }
+
+    .card-content p {
+      margin: 0;
+      color: rgb(255 255 255 / 85%);
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 520px) {
+      .card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.85rem;
+      }
+
+      .card {
+        padding: 0.9rem;
+        border-radius: 12px;
+      }
+
+      .card-content h2 { font-size: 1.05rem; }
+      .card-content p { font-size: 0.82rem; }
+      .card-number { top: 0.75rem; left: 0.8rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="page-header">
+      <h1>JavaScript Apps</h1>
+      <p>Apps Built with JavaScript, CSS, and HTML</p>
+    </header>
+
+    <section id="cardGrid" class="card-grid" aria-label="Featured cards"></section>
+  </main>
+  <script>
+    const cards = [
+      {
+        id: 1,
+        title: 'AI Memory',
+        description: 'Play Memory against the AI',
+        label: 'FEATURE',
+        color: '#667eea',
+        href: './AI-Memory/index.html',
+        image: './AI-Memory/screen-shot.png'
+      },
+      {
+        id: 2,
+        title: 'RYB ColorMixing',
+        description: 'Select the result when 2 colors mix',
+        label: 'FEATURE',
+        color: '#168b86',
+        href: './ColorMixing/index.html',
+        image: './ColorMixing/ryb.png'
+      },
+      {
+        id: 3,
+        title: 'Easy Crosswords',
+        description: 'Crossword puzzle with hints',
+        label: 'FEATURE',
+        color: '#168b86',
+        href: './EasyCrosswords/crossword.html',
+        image: './EasyCrosswords/320x480.png'
+      },
+      {
+        id: 4,
+        title: 'Jigsaws',
+        description: 'Jigsaw puzzles in various sizes',
+        label: 'FEATURE',
+        color: '#168b86',
+        href: './Jigsaws/jigsaws.html',
+        image: './Jigsaws/jigsaw.png'
+      },
+    ];
+
+    const cardGrid = document.querySelector('#cardGrid');
+
+    cardGrid.innerHTML = cards.map((card) => `
+      <a
+        class="card"
+        style="--card-image: url('${card.image}');"
+        href="${card.href}"
+        onclick="event.preventDefault(); openPageDialog('${card.href}')"
+      >
+        <div class="card-content">
+          <h2>${card.title}</h2>
+          <p>${card.description}</p>
+        </div>
+      </a>
+    `).join('');
+
+    function openPageDialog(url) {
+      const dialog = document.createElement('dialog');
+
+      dialog.style.width = '450px';
+      dialog.style.height = '700px';
+      dialog.style.maxWidth = '95vw';
+      dialog.style.maxHeight = '95vh';
+      dialog.style.padding = '0';
+      dialog.style.border = 'none';
+      dialog.style.borderRadius = '8px';
+      dialog.style.overflow = 'hidden';
+
+      const iframe = document.createElement('iframe');
+      iframe.src = url;
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+      iframe.style.border = 'none';
+
+      dialog.appendChild(iframe);
+      document.body.appendChild(dialog);
+
+      // Center the dialog and open it as a modal
+      dialog.showModal();
+
+      // Close when clicking outside the dialog
+      dialog.addEventListener('click', (event) => {
+        if (event.target === dialog) {
+          dialog.close();
+        }
+      });
+
+      // Remove the dialog from the DOM when closed
+      dialog.addEventListener('close', () => {
+        dialog.remove();
+      });
+    }
+  </script>
+</body>
+</html>

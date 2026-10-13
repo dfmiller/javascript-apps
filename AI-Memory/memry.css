@@ -1,0 +1,324 @@
+
+	html, body {
+		padding: 0; margin: 0;
+		width: 100%;
+		height: 100%;
+		text-align:center;
+
+		position: relative;
+		overflow: hidden;
+	}
+
+   .seen {
+       transform: rotate(1deg) scale(1.01);
+	  }
+
+	.dialog {
+		position: fixed;
+		display: block;
+		border-radius: 5px;
+		box-shadow: 0 0 12px black;
+		border: none;
+		top: 0;
+		bottom: 0;
+		font-size: 18px;
+		text-align: left;
+		color: #333;
+		font-weight: bold;
+		text-shadow: 1px 1px 2px white;
+		background-image: linear-gradient(160deg, hsl(0,0%,78%) 0%, hsl(0,0%,90%) 47%, hsl(0,0%,78%) 53%, hsl(0,0%,70%) 100%);
+		margin: auto 5px;
+        padding: 5px;
+        width: auto;
+		z-index: 100;
+	}
+
+	x.dialog form > div {
+        display: table-row;
+        flex-wrap: wrap;
+	}
+
+	.dialog div {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+	}
+
+	.dialog label {
+		display:table-cell;
+		padding: 0 8px;
+		text-align: right;
+		vertical-align: middle;
+        white-space: nowrap;
+	}
+
+	.dialog small {
+		display: block;
+		font-size: 12px;
+		white-space: nowrap;
+	}
+
+	#selectPlayers {
+		text-align:center;
+	}
+
+	input, select, button, s, b {
+		font-size: inherit;
+		color: inherit;
+		font-weight: inherit;
+		text-shadow: inherit;
+		padding: 2px 8px;
+
+		border: 3px groove silver;
+		background: rgba(0,0,0,.1);
+		border-radius: 10px;
+		outline:none;
+	}
+
+	s {
+		display: inline-block;
+		line-height: 1.5em;
+		text-decoration: none;
+		color: white;
+		margin:5px;
+		border-style:inset;
+		font-size: 12px;
+		font-weight: normal;
+		text-align: center;
+	}
+
+	s.icon-block {
+		opacity:.5;
+		color: inherit;
+		border-style:outset;
+	}
+
+	s[class*="icon-"]:before {
+		display:block;
+		font-size: 22px;
+		width: auto;
+	}
+
+	.locked { pointer-events: none; }
+
+	u {
+		display:inline-block;
+		width: 50px; height: 50px;
+		border-radius: 5px;
+		margin: 2%;
+		vertical-align: top;
+		box-sizing: border-box;
+		text-align: center;
+		padding: 6px 0;
+		opacity: .25;
+		border:5px transparent;
+		box-shadow:0 0 12px black;
+		color:white;
+		position: relative;
+		line-height: 1.2em;
+		font-size: 18px;
+		text-decoration: none;
+		white-space: nowrap;
+		xoverflow:hidden;
+	}
+
+	u small {
+		display:block;
+	}
+
+	u[class*="icon-"]:before {
+		position: absolute;
+		z-index: 0;
+		color: rgba(0,0,0,.5);
+		text-shadow: none;
+		left: 0;
+		top: 5px;
+		font-size: 2.5em;
+		max-width: 80%;
+		overflow: hidden;
+	}
+
+	u span, u small {
+		z-index: 10;
+		position: relative;
+		color: white;
+		font-weight: bold;
+		text-shadow: 0 0 12px black;
+	}
+
+	u.active {
+		opacity: 1;
+		box-shadow: 0 0 12px white;
+	}
+
+	u.active:after {
+		content:' ';
+		display:block;
+		width:75%;
+		height:75%;
+		border-radius:inherit;
+		background: rgba(255,255,255,.25);
+		position:absolute;
+		top:5%;
+		left:5%;
+	}
+
+	.players-1 { width: 92% }
+	.players-2 { width: 44% }
+	.players-3 { width: 28% }
+	.players-4 { width: 20% }
+	.players-5 { width: 15% }
+	.players-6 { width: 12% }
+
+
+
+	i {
+		border-radius:5px;
+		padding:5px;
+		margin:2px;
+		display:inline-block;
+		box-sizing:border-box;
+	}
+
+	.card {
+		background:#fff;
+		box-shadow:0 1px 15px black;
+		x-webkit-transform: rotateY(0deg);
+		x-webkit-transform-style: preserve-3d;
+		-webkit-transition: all .4s ease-in-out;
+		-webkit-backface-visibility: hidden;
+		transition: all .4s ease-in-out;
+		z-index: 10;
+		position: relative;
+
+		color: rgba(96, 96, 96, .8);
+		text-shadow: 1px 4px 6px #fff, 0 0 0 #000, 1px 4px 6px #fff;
+	}
+
+	i.back {
+		-webkit-transform: rotateY(180deg);
+		-webkit-transform-style: preserve-3d;
+		-webkit-transition: all .4s ease-in-out;
+		-webkit-backface-visibility: visible;
+		transition: all .4s ease-in-out;
+		box-shadow: 0 1px 3px black;
+		background-color: rgb(124,195,255);
+		background-color: rgb(255,255,255);
+		z-index: 0;
+		background-image: repeating-linear-gradient(-45deg, transparent, transparent 2px, rgba(0,196,255,.25) 2px, rgba(0,196,255,.25) 4px), repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,196,255,.25) 2px, rgba(0,196,255,.25) 4px)
+		;
+	}
+
+i.back:before {
+		content: '';
+	}
+
+	i.picked:before {
+		content: '';
+	}
+
+	select {
+		margin: 10px 22px;
+	}
+
+	button, b {
+		padding: 10px 20px;
+		margin: 10px auto;
+		display: block;
+	}
+
+	[class^="icon-"]:before, [class*=" icon-"]:before {
+		z-index: 1;
+		position: relative;
+		width:1em;
+	}
+
+	.tb {
+		position: relative;
+	}
+
+	#alerts {
+		position:relative;
+		padding-top: 3em;
+	}
+
+	#alerts span {
+		padding: 5px;
+		border-radius: 8px;
+		margin: 0 5px;
+		color: white;
+		font-weight: bold;
+	}
+
+	#alerts:not(.active) a {
+		display: none;
+	}
+
+	#alerts a {
+		position: absolute;
+		bottom: 3em;
+		left: 5%;
+		width: 90%;
+		margin: 16px auto;
+		background: wheat;
+		border-radius: 20px;
+		padding: 5px 8px;
+		z-index: 10;
+		box-shadow: 0 0 2px black;
+		box-sizing: border-box;
+	}
+
+
+	#alerts:not(.active) span:before,
+	#alerts:not(.active) span:after {
+		display: none;
+	}
+
+	u.active:not(.icon-user) span:before,
+	u.active:not(.icon-user) span:after {
+		content: '';
+		border-radius: 50%;
+		background: wheat;
+		display: block;
+		position: absolute;
+		box-shadow: 0 0 2px black;
+	}
+
+	u.active span:before {
+		width: 10px; height: 10px;
+		top: -8px;
+		right: 8px;
+	}
+
+	u.active span:after {
+		width: 6px; height: 6px;
+    		top: 1px;
+		right: 16px;
+	}
+
+	b {
+		display: none;
+		text-transform: lowercase;
+		margin: -8px 0;
+	}
+
+	.flex-row {
+		display: flex;
+		flex-direction: row;
+	}
+
+	.askRate {
+		display: none;
+	}
+
+	.askRate button {
+		position: relative;
+		display: inline-block;
+	}
+
+	.askRate button a {
+		position: static;
+		background: transparent;
+		box-shadow: none;
+		color blue;
+	}

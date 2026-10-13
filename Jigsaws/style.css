@@ -1,0 +1,383 @@
+.invisible,.totallyinvisible {
+	position:absolute;
+	left:-100000px;
+	width:1px;
+	height:1px;
+	overflow:hidden;
+	outline:0
+}
+
+.invisible:focus {
+	position:static;
+	width:auto;
+	height:auto
+}
+
+article,aside,details,figcaption,figure,footer,header,main,menu,nav,section {
+	display:block
+}
+
+html {
+	-webkit-font-smoothing:antialiased;
+	-moz-osx-font-smoothing:grayscale;
+	margin:0;
+	height:100%;
+    user-select: none;
+}
+
+body {
+	font-family:Arial,Verdana,sans-serif;
+	font-size: 100%;
+	background: #fff;
+	color: #000;
+	margin:0
+}
+
+body.solved {
+	background: #000;
+    color: #fff;
+}
+
+body > header {
+    height: 5em;
+    line-height: 4em;
+}
+
+.canvasWrapper {
+	display:-ms-flexbox;
+	display:flex;
+	align-items:center;
+	justify-content:center;
+	margin:10px;
+	height:calc(100vh - 5em - 20px);
+	box-sizing:border-box;
+    position: relative;
+}
+
+.outlines {
+    position: absolute;
+    top: 0;
+    background: silver;
+}
+
+.canvasWrapper .canvas {
+	xbox-shadow:0 0 10px rgba(0,0,0,.2);
+	xbackground: silver;
+    position: absolute;
+    top: 0;
+}
+
+.clickedPiece .canvasWrapper .canvas {
+	background: transparent;
+}
+
+.icon-button {
+	display: flex;
+    flex-direction: column;
+	position: fixed;
+	padding: .5em;
+	height: 3em;
+	align-items: center;
+}
+
+.icon-button:hover img {
+	opacity: 1
+}
+
+.icon-button img {
+	width: 3em;
+	opacity: .6;
+}
+
+.icon-button span {
+    line-height: 1.25em;
+}
+
+.optionsTrigger {
+	top:0;
+	left:0;
+}
+
+.previewButton {
+	top:0;
+	right:0;
+	max-height: 3em;
+	xoverflow: hidden;
+}
+
+.previewButton img {
+	border-radius: 50%;
+	max-height: 3em;
+	margin-left: .5em;
+}
+
+.previewButton.active {
+	width: 100vw;
+	height: 100vh;
+	max-width: 100vw;
+	max-height: 100vh;
+	border-radius: 0;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	padding: 0;
+    z-index: 100;
+}
+
+.previewButton.active span {
+	display: none;
+}
+
+.previewButton.active img {
+	width: auto;
+	max-width: 100%;
+	max-height: 100%;
+	border-radius: 0;
+	margin: 0;
+}
+
+.nextButton {
+	top:0;
+	right:0;
+	display: none;
+	align-items: center;
+}
+
+.toggleAll {
+	bottom:0;
+	right:0;
+	display: none;
+}
+
+
+#imageGrid {
+	display:flex;
+	max-height:100%;
+	overflow:auto;
+    flex-wrap: wrap;
+}
+
+#imageGrid span {
+	display: flex;
+	align-items: center;
+	xbackground: grey;
+    max-width: 16vmin;
+}
+
+#imageGrid img {
+	max-height: 20vmin;
+	margin: 2px;
+    overflow: hidden;
+}
+
+#imageGrid img.selected {
+	outline: 2px solid orange;
+	outline-offset: -2px;
+}
+
+.optionswrapper,dialog {
+	position:fixed;
+	top:0;
+	left:0;
+	width:100%;
+	height:100vh;
+	display:-ms-flexbox;
+	display:flex;
+	-ms-flex-align:center;
+	align-items:center;
+	justify-content:center;
+	filter:alpha(opacity=0);
+	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=" 0 ")";
+	-moz-opacity:0;
+	-khtml-opacity:0;
+	opacity:0;
+	z-index:-1;
+	transition:all .4s;
+	-moz-transition:all .4s;
+	-webkit-transition:all .4s;
+	-o-transition:all .4s;
+	padding:0;
+	margin:0;
+	border:0;
+	background:rgba(0,0,0,.5)
+}
+
+.optionswrapper.shown,dialog.shown {
+	filter:alpha(opacity=100);
+	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=" 100 ")";
+	-moz-opacity:1;
+	-khtml-opacity:1;
+	opacity:1;
+	z-index:10
+}
+
+.optionswrapper form,dialog form {
+	background:hsla(0,0%,100%,.8);
+	margin:10px;
+	display:flex;
+	flex-direction:column;
+	max-height:100%;
+    max-height:calc(100% - 10px);
+	overflow:auto
+}
+
+.optionswrapper form header,dialog form header {
+	font-size:2em;
+	padding:.25em
+}
+
+.optionswrapper .options,dialog .options {
+	z-index:2;
+	min-width:50px;
+	padding:1em;
+	border-radius:2px;
+	display:flex;
+	flex-direction:column;
+	max-height:100%;
+	overflow:auto
+}
+
+.optionswrapper footer,dialog footer {
+	display:flex;
+	justify-content:space-between;
+	text-align:right;
+	padding:.5em
+}
+
+.optionswrapper footer button,dialog footer button {
+	text-transform:uppercase
+}
+
+.inputwrap {
+	padding:.5em 0;
+    text-align: center;
+}
+
+.inputwrap label {
+	padding:0 0 1em;
+	xdisplay:block
+}
+
+.forminput {
+	padding:.2em;
+	width:4em;
+	border:1px solid #333;
+	font-size:1.3em
+}
+
+.forminput:focus {
+	outline:3px solid #000
+}
+
+.fileinput {
+	-ms-box-sizing:border-box;
+	box-sizing:border-box;
+	width:100%;
+	font-size:1.3em;
+	padding:.3em;
+	border:1px solid #333
+}
+
+.fileinput:focus {
+	outline:3px solid #000
+}
+
+.btnwrapper {
+	padding-top:1em
+}
+
+.aboutlink,.btnwrapper {
+	text-align:center
+}
+
+h1 {
+	display:block;
+	margin:0 0 .5em;
+	padding:0;
+	font-weight:700;
+	font-size:150%;
+	font-size:1.5rem
+}
+
+a {
+	text-decoration:underline
+}
+
+a:hover {
+	text-decoration:none
+}
+
+a:focus {
+	outline:3px solid #000
+}
+
+input:button {
+	padding-top:0;
+	padding-bottom:0;
+	height:2.08em
+}
+
+input:button.btn-small {
+	height:1.42857143em
+}
+
+button {
+	display:inline-block;
+	padding:0 1.5em;
+	line-height:2em;
+	margin:0 0 .5em;
+	-ms-box-sizing:border-box;
+	box-sizing:border-box;
+	border:0;
+	border-radius:3px;
+	xbackground:#000;
+	xcolor:#fff;
+	outline:0;
+	cursor:pointer;
+	text-align:center;
+	font-size:1.3em;
+	font-weight:700;
+	vertical-align:middle;
+	font-family:Arial,Helvetica;
+	border-collapse:separate;
+	overflow:visible
+}
+
+button,button:hover {
+	text-decoration:none
+}
+
+button:hover {
+	background:#666
+}
+
+button:focus {
+	outline:3px solid #000
+}
+
+button.btn-block {
+	display:block;
+	width:100%
+}
+
+button.btn-primary {
+	color:#00f
+}
+
+button.btn-secondary {
+	background:#aa2a16
+}
+
+.puzzleTitle {
+    text-align: center;
+    padding: .5em 0;
+}
+
+
+

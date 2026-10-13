@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
+	<title>Memr'y</title>
+	<link rel="stylesheet" type="text/css" href="./font/fontello.css" />
+	<link rel="stylesheet" type="text/css" href="memry.css" />
+	<link rel="stylesheet" type="text/css" href="backs.css" />
+	<!-- link rel="stylesheet" type="text/css" href="xdialog.css" / -->
+
+
+	<style>
+
+
+	i img {
+		display: none;
+	}
+
+	i.card:not(.back) img {
+		position: absolute;
+		left: 0;
+		top: 0;
+		height: 100%;
+		max-width: 100%;
+		max-height: 100%;
+		text-align: center;
+		display: inline-block;
+		margin: 0 auto;
+		right: 0;
+		bottom: 0;
+	}
+
+
+	#board {
+		display: flex;
+		flex-direction: column;
+		width: 100vw;
+		height: 100vw;
+
+		flex-grow: 1; flex-shrink: 1; flex-basis: auto;
+		justify-content: center;
+
+	}
+
+	#board div {
+		display: flex;
+		display-direction: row;
+		align-items: stretch;
+		align-contents: stretch;
+		justify-items: stretch;
+		justify-contents: stretch;
+		vertical-align: top;
+
+		flex-grow: 1; flex-shrink: 1; flex-basis: auto;
+		justify-content: center;
+
+	}
+	#board div i {
+
+	}
+
+	.flex-row { display: flex; }
+	.flex-column { display: flex; flex-direction: column; }
+
+    input[type=checkbox] {
+        width: 20px;
+        height: 20px;
+        margin: 10px 20px;
+    }
+
+
+	</style>
+
+
+
+</head>
+<body class="wood">
+	<div id="alerts">
+		<a></a>
+		<div id="players"></div>
+	</div>
+
+	<div id="board"></div>
+
+	<div class="tb" style="height:50%"></div>
+
+	<dialog class="gameSettings dialog">
+		<form>
+			<div>
+				<label>Players <small>(tap to toggle)</small></label>
+				<div id="selectPlayers"></div>
+			</div>
+			<div>
+				<label>Board</label>
+				<select id="boardSize"></select>
+			</div>
+			<div>
+				<label>
+					Pictures
+				</label>
+                <div>
+    				<span style="position: relative">
+    					<select id="iconSet"></select>
+					    <img class="sample-icon" src="./pictures/House/icons8-bathtub.png" style="position: absolute; top: 10px; right: 40px; pointer-events: none; height: 40px" />
+    				</span>
+                </div>
+			</div>
+			<div>
+				<label>Play Sounds</label>
+                <div>
+    				<input type="checkbox" id="use_sounds" />
+                </div>
+			</div>
+			<div>
+				<label><b>Cancel</b></label>
+				<button type="button">GO</button>
+			</div>
+			<small>Pictures by <a href="https://icons8.com" target="_blank">Icons8</a></small>
+			<small>Sound effects obtained from <a href="https://www.zapsplat.com" target="_blank">https://www.zapsplat.com</a></small>
+		</form>
+	</dialog>
+
+
+<dialog class="askRate dialog" open>
+	<form>
+		<header></header>
+		<main>
+			<p>If you are enjoying A.I. Memory Matching Card Game, would you mind taking a moment to rate it?</p>
+			<p>Thanks for your support!</p>
+		</main>
+		<footer>
+			<button type="button" class="skip">No, Thanks</button>
+			<button type="button" tabindex="1" class="rateItNow"><a href="https://play.google.com/store/apps/details?id=com.digitalfunmedia.aimemorygame" target="_blank">Rate it Now</a></button>
+		</footer>
+	</form>
+</dialog>
+
+<script type="text/javascript" src="common.js"></script>
+<script src="cordova.js"></script>
+<script src="adMobPlus.js"></script>
+<script src="jquery-3.4.1.slim.min.js"></script>
+<script src="./pictures/camping.js"></script>
+<script src="./pictures/christmas.js"></script>
+<script src="./pictures/construction.js"></script>
+<script src="./pictures/food.js"></script>
+<script src="./pictures/house.js"></script>
+<script src="./pictures/halloween.js"></script>
+<script src="./pictures/medical.js"></script>
+<script src="./pictures/misc.js"></script>
+<script src="./pictures/sports.js"></script>
+<script src="./pictures/transportation.js"></script>
+<script src="memory.js"></script>
+<script src="trunk.js"></script>
+<!-- script src="./js/index.js"></script -->
+
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Jigsaws Unlimited</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<link rel="stylesheet" type="text/css" href="style.css"/>
+</head>
+
+<body id="body">
+
+	<header>
+		<div class="icon-button optionsTrigger">
+			<img src="menu.png"/>
+			<span>Options</span>
+		</div>
+        <div class="puzzleTitle"></div>
+		<div class="icon-button previewButton">
+			<img />
+			<span>Preview</span>
+		</div>
+		<div class="icon-button nextButton">
+			<img src="next.png"/>
+			<span>Next Jigsaw</span>
+		</div>
+	</header>
+
+	<div class="canvasWrapper">
+		<canvas id="canvas" class="canvas"></canvas>
+	</div>
+
+	<div>
+		<div class="icon-button toggleAll"><img src="up.png"/></div>
+	</div>
+
+	<dialog open id="options" class="optionswrapper">
+		<form>
+			<div id="hideoptions"></div>
+			<header>Jigsaw Options</header>
+			<main class="options">
+				<div class="inputwrap">
+					<label for="pieces">
+						Number of pieces:
+					</label>
+					<select id="pieces" class="forminput">
+					</select>
+				</div>
+				<div class="inputwrap">
+                    <label>
+                        <input type="checkbox" class="showOutlines" checked />
+                        Show Outlines
+                    </label>
+                </div>
+				<div class="inputwrap">
+                    <button type="button" onclick="js.getPhoto(1)">TAKE A PICTURE</button>
+                    <button type="button" onclick="js.getPhoto(0)">SELECT A PICTURE</button>
+				</div>
+				<div id="imageGrid"></div>
+			</main>
+			<footer>
+				<button type="button" id="closeDialog" class="btn">cancel</button>
+				<button type="button" id="updatePuzzle" class="btn btn-primary">Play</button>
+			</footer>
+		</form>
+	</dialog>
+
+	<script type="text/javascript" src="common.js"></script>
+	<script type="text/javascript" src="./cordova.js"></script>
+	<script type="text/javascript" src="./adMobPlus.js"></script>
+	<script src="jigsaws.js"></script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' data: content:;">
+		<meta name="format-detection" content="telephone=no">
+		<meta name="msapplication-tap-highlight" content="no">
+		<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+		<link rel="stylesheet" type="text/css" href="css/index.css">
+		<title>Color Mixing</title>
+	</head>
+<body>
+
+	<nav>
+		<strong>Select Color Model</strong>
+		<ul>
+			<li>
+				<button type="button" id="ryb" class="button">
+					<b>RYB</b>
+					<img src="ryb.png" />
+					<p>Traditional subtractive mixing of primary colors</p>
+					<small>easiest</small>
+				</button>
+			</li>
+			<li>
+				<button type="button" id="cmyk" class="button">
+					<b>CMYK</b>
+					<img src="cmyk.png" />
+					<p>Modern subtractive mixing used in printing</p>
+					<small>hard</small>
+				</button>
+			</li>
+			<li>
+				<button type="button" id="rgb" class="button">
+					<b>RGB</b>
+					<img src="rgb.png" />
+					<p>Computer / TV Display additive color model</p>
+					<small>WARNING: geeks only</small>
+				</button>
+			</li>
+		</ul>
+	</nav>
+
+
+
+	<div class="shell">
+
+		<i id="menu" class="menu pull-left">=</i>
+
+		<i id="help" class="pull-right">?</i>
+
+		<h1 id="name">RYB</h1>
+
+		<small>Level: <b class="level">1</b>, Score: <b class="score">0</b></small>
+
+		<div id="colors">
+			<p>These colors mixed...</p>
+			<div id="mixers"></div>
+			<p>...make what color below?</p>
+		</div>
+
+		<div id="code">
+			<p>What is the color of this RGB code:</p>
+			<strong></strong>
+		</div>
+
+		<div id="answers"></div>
+
+		<div id="right" class="dialog">
+			<h1>Correct!</h1>
+			<small>Level: <b class="level">1</b>, Score: <b class="score">0</b></small>
+			<div>
+				<button class="button">Next Color</button>
+			</div>
+		</div>
+
+		<div id="wrong" class="dialog">
+			<h1>Failed!</h1>
+			<small>Level: <b class="level">1</b>, Score: <b class="score">0</b></small>
+			<div>
+				<button class="button">Try Again</button>
+			</div>
+		</div>
+
+	</div>
+
+	<div class="help">
+		<div class="ryb">
+			<b>RYB</b>
+			<img src="ryb.png" />
+			<small>(an abbreviation of red–yellow–blue) is a historical set of colors used in subtractive color mixing, and is one commonly used set of primary colors. It is primarily used in art and design education, particularly painting.</small>
+			<div><a>close</a></div>
+		</div>
+		<div class="cmyk">
+			<b>CMYK</b>
+			<img src="cmyk.png" />
+			<small>is a subtractive color model, used in color printing, and is also used to describe the printing process itself. CMYK refers to the four inks used in some color printing: cyan, magenta, yellow and key (black)</small>
+			<div><a>close</a></div>
+		</div>
+		<div class="rgb">
+			<b>RGB</b>
+			<img src="rgb.png" />
+			<small>is an additive color model in which red, green and blue light are added together in various ways to reproduce a broad array of colors. The name of the model comes from the initials of the three additive primary colors, red, green and blue.</small>
+			<div><a>close</a></div>
+		</div>
+	</div>
+
+<script type="text/javascript" src="cordova.js"></script>
+<script type="text/javascript" src="./js/adMobPlus.js"></script>
+<script src="./js/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="./js/colorTest.js"></script>
+
+</body>
+</html>
