@@ -1,0 +1,98 @@
+
+dialog[open],
+.dialog-wrapper {
+	position: fixed;
+	left: 0; top: 0; bottom: 0; right: 0;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	height:100%;
+	z-index: 100;
+
+	background: radial-gradient(rgba(255,255,255,.5), rgba(0,0,0,.5));
+    padding: 0;
+    margin: 0;
+}
+
+dialog {
+    display: none;
+}
+
+dialog form,
+.dialog-box {
+	box-shadow: 0 0 12px;
+	background: #fff;
+	border-radius: 5px;
+}
+
+.dialog-close {
+	float: right;
+	padding: .25em;
+	margin: -.4em;
+	font-size: larger;
+	cursor: pointer;
+}
+
+.dialog-close:after {
+	content: '\00D7';
+}
+
+dialog header,
+dialog footer,
+.dialog-header,
+.dialog-footer {
+	min-height: 1em;
+	padding: 5px 10px;
+	background: linear-gradient(white, #ddd);
+	display: block;
+	box-shadow: none;
+}
+
+dialog header,
+.dialog-header {
+	text-align: left;
+	border-radius: 5px 5px 0 0;
+}
+
+dialog header h1,
+.dialog-header h1 {
+	display: inline-block;
+	margin: 5px;
+}
+
+dialog header h1:empty,
+.dialog-header h1:empty {
+	display: none;
+}
+
+dialog main,
+.dialog-content {
+	padding: 10px;
+	min-width: 100px;
+	overflow: auto;
+	max-height: 80vh;
+	max-width: 90vw;
+}
+
+dialog footer,
+.dialog-footer {
+	text-align: right;
+	border-radius: 0 0 5px 5px;
+}
+
+dialog footer button,
+.dialog-footer button {
+	padding: 8px 12px;
+	margin: 5px;
+	background: #eee;
+	border-radius: 5px;
+	border: none;
+	box-shadow: 0 0 4px #444;
+}
+
+dialog footer button.primary,
+.dialog-footer button.primary {
+	background: #fff;
+	box-shadow: 0 0 6px #222;
+}

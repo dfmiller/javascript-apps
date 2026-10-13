@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+		<link rel="stylesheet" type="text/css" href="css/dialog.css" />
+		<link rel="stylesheet" type="text/css" href="css/wordz.css" />
+		<link rel="stylesheet" type="text/css" href="css/font-awesome.min.css" />
+		<link href="https://fonts.googleapis.com/css?family=Shrikhand|Yanone+Kaffeesatz" rel="stylesheet">
+		<title>Word Search Crush</title>
+	</head>
+	<body class="shell">
+
+		<header class="status-bar">
+			<div class="imp menu-wrapper">
+				<span class="menu fa fa-bars"></span>
+			</div>
+			<div class="imp goal">&nbsp;</div>
+			<div class="imp menu-wrapper">
+				<span class="mute fa fa-volume-up"></span>
+			</div>
+		</header>
+
+		<div class="status-bar imp clear-both text-center word-wrapper"><span class="word">&nbsp;</span></div>
+
+		<div class="status-bar imp helps-title"><span></span></div>
+
+		<div class="game-wrapper">
+			<div class="y">
+				<div class="game-board">
+					<div class="loading">Loading...</div>
+				</div>
+			</div>
+		</div>
+
+		<footer class="status-bar">
+			<div class="imp">
+				Level: <span class="level"></span>
+			</div>
+			<div class="imp helps">
+				<!-- span class="bombs fa fa-bomb"></span -->
+				<span class="bolts fa fa-bolt"></span>
+				<span class="blanks fa fa-circle-o"></span>
+				<span class="swaps fa fa-exchange"></span>
+			</div>
+			<div class="imp">
+				Score: <span class="score"></span>
+			</div>
+			<div class="imp helps-cancel"><span>cancel</span></div>
+		</footer>
+
+		<span id="font-test">W</span>
+
+        <dialog class="rewardPrompt">
+			<form>
+				<header></header>
+				<main class="helps">
+					<p>View an ad to receive a reward</p>
+					<small>Select reward:</small>
+					<!-- div>
+						<label>
+							<input type="radio" name="help_reward" value="bombs" checked />
+							<i></i>
+							One (1) Bomb <span class="active fa fa-bomb"></span>
+						</label>
+					</div -->
+					<p>
+						<label>
+							<input type="radio" name="help_reward" value="bolts" checked />
+							<i></i>
+							2 Bolts <span class="active fa fa-bolt"></span>
+						</label>
+					</p>
+					<p>
+						<label>
+							<input type="radio" name="help_reward" value="blanks" />
+							<i></i>
+							4 Blanks <span class="active fa fa-circle-o"></span>
+						</label>
+					</p>
+					<p>
+						<label>
+							<input type="radio" name="help_reward" value="swaps" />
+							<i></i>
+							6 Swaps <span class="active fa fa-exchange"></span>
+						</label>
+					</p>
+				</main>
+				<footer>
+					<button type="button" class="closeDialog">No, Thanks</button>
+					<button type="button" tabindex="1" class="viewAd">Get Reward</button>
+				</footer>
+			</form>
+        </dialog>
+
+		<dialog class="askRate">
+			<form>
+				<header></header>
+				<main>
+					<p>If you are enjoying Word Search Crush, would you mind taking a moment to rate it?</p>
+					<p>Thanks for your support!</p>
+				</main>
+				<footer>
+					<button type="button" class="skip">No, Thanks</button>
+					<button type="button" tabindex="1" class="rateItNow"><a href="https://play.google.com/store/apps/details?id=com.digitalfunmedia.wordsearchcrush" target="_blank">Rate it Now</a></button>
+				</footer>
+			</form>
+		</dialog>
+
+		<script type="text/javascript" src="common.js"></script>
+		<script type="text/javascript" src="cordova.js"></script>
+		<script type="text/javascript" src="adMobPlus.js"></script>
+		<script type="text/javascript" src="js/jquery-3.4.1.min.js"></script>
+		<script type="text/javascript" src="js/allWords.js"></script>
+		<script type="text/javascript" src="js/ukWords.js"></script>
+		<script type="text/javascript" src="js/offensive.js"></script>
+		<script type="text/javascript" src="js/dialog.js"></script>
+		<script type="text/javascript" src="js/trunk.js"></script>
+		<script type="text/javascript" src="js/index.js"></script>
+
+	</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<link rel="stylesheet" type="text/css" href="./dialog.css" />
+	<link rel="stylesheet" type="text/css" href="./jumbled.css" />
+</head>
+<body>
+	<article class="game_wrapper pastels rainbow-background">
+		<header class="app_bar flex-row space-between">
+			<b class="menuButton icon-menu"></b>
+			<div style="line-height: 1em">
+				<div style="white-space: nowrap;padding: 0 .5em;">Jumbled Quotes</div>
+				<small class="level">Round -</small>
+			</div>
+	 		<s class="spacer"></s>
+			<!-- b class="soundButton">&#x1F507;</b -->
+			<s class="spacer"></s>
+			<b class="hintButton">HINT</b>
+		</header>
+		<p class="instructions">Drag the letters onto the blanks to reveal a quote</p>
+		<main class="game-board"></main>
+		<footer>
+			<button type="button" class="nextRound">NEXT ROUND</button>
+		</footer>
+	</article>
+	<!-- div class="filler">&nbsp;</div -->
+
+	<dialog class="menuDialog">
+		<form class="pastels">
+			<header>Select Round</header>
+			<main>
+				<!-- p>Problems or concerns? You can let us know by sending an
+					<a href="mailto: digitalfunmedia@gmail.com?subject=Letter Scramble">email</a>.
+				</p -->
+				<div class="flex-row full-height">
+	
+					<div class="selectLevel">
+					</div>
+				</div>
+			</main>
+			<footer>
+				<button type="button">close</button>
+				<!-- button type="button" class="nextRound">Next Round</button -->
+			</footer>
+		</form>
+	 </dialog>
+
+	<div class="log"></div>
+
+	<textarea style="display: none"></textarea>
+
+    <script src="cordova.js"></script>
+    <script src="adMobPlus.js"></script>
+
+	<script type="text/javascript" src="./jquery-3.4.1.min.js"></script>
+	<script type="text/javascript" src="./motivational.js"></script>
+	<script type="text/javascript" src="./jumbled.js"></script>
+</body>
+</html>
