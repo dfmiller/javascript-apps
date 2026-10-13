@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+	<link rel="stylesheet" type="text/css" href="mazes.css" />
+	<link rel="stylesheet" type="text/css" href="dialog.css" />
+	<style>
+	</style>
+</head>
+<body>
+	<div class="app flex-column fill-width fill-height">
+		<div class="fill-width">
+			<canvas id="canvas" class="fill-width"></canvas>
+			<canvas class="fore fill-width"></canvas>
+		</div>
+		
+		<b class="end"></b>
+		<b class="start"></b>
+		<i class="dot"></i>
+
+		<aside class="flex-row" style="font-size:1em;justify-content: space-between; align-items: center;">
+			<span class="menu">&#9776;</span>
+			<div>
+				<label>Maze </label>
+				<span class="maze">1</span>
+			</div>
+			<div>
+				<label>Level </label>
+				<span class="color">1</span>
+			</div>
+			<div>
+				<label>Round </label>
+				<span class="round">1</span>
+			</div>
+			<div></div>
+		</aside>
+	</div>
+
+	<div class="done">
+		Maze Completed
+	</div>
+
+	<dialog class="done_dialog">
+		<form>
+			<header>Maze Options</header>
+			<main>
+				<section class="flex-row flex-wrap mazes">
+					<h1>Blocky</h1>
+					<h1>Arcade</h1>
+				</section>
+
+				<div>
+					<label>Level</label>
+					<button type="button" class="success" name="levelDown">Level Down</button>
+					<input type="number" name="level" />
+					<button type="button" class="success" name="levelUp">Level Up</button>
+				</div>
+				<div>
+					<label>Round</label>
+					<button type="button" class="success" name="lastRound">Last Round</button>
+					<input type="number" name="round" />
+					<button type="button" class="success" name="nextRound">Next Round</button>
+				</div>
+			</main>
+			<footer>
+				<button type="button" name="closeDialog">cancel</button>
+				
+				<button type="button" class="gamePlay" tabindex="1">New Maze</button>
+			</footer>
+		</form>
+	</dialog>
+
+	<script type="text/javascript" src="jquery.js"></script>
+
+	<script src="builder.js"></script>
+	<script src="style1.js"></script>
+
+
+	<script src="builder2.js"></script>
+	<script src="style2.js"></script>
+	<script src="streets.js"></script>
+
+	<script src="triangles.js"></script>
+	<script src="triangular.js"></script>
+
+	<script src="diagonal-maze.js"></script>
+	<script src="maze-one.js"></script>
+	<script src="builder3.js"></script>
+	<script src="maze-three.js"></script>
+	<script src="circular.js"></script>
+
+	<script src="flat.js"></script>
+
+	<script src="mazes.js"></script>
+
+</body>
+</html>

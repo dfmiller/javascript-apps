@@ -199,6 +199,18 @@
         image: './JumbledQuotes/screenshot.png'
       },
       {
+        title: 'Mazes',
+        description: 'Solve mazes',
+        href: './Mazes/index.html',
+        image: './Mazes/screenshot.png'
+      },
+      {
+        title: 'Photo Puzzle',
+        description: '',
+        href: './PhotoPuzzle/index.html',
+        image: './PhotoPuzzle/screenshot.png'
+      },
+      {
         title: 'Word Search Crush',
         description: 'Find words and crush them',
         href: './WordSearchCrush/index.html',
@@ -232,20 +244,20 @@
       const dialog = document.createElement('dialog');
       const phoneColor = '#20242b';
 
-      dialog.style.width = '400px';
-      dialog.style.height = '700px';
-      dialog.style.maxWidth = '95vw';
-      dialog.style.maxHeight = '95vh';
+      dialog.style.width = 'min(400px, 95vw, 54.2857vh)';
+      dialog.style.aspectRatio = '4 / 7';
       dialog.style.padding = '8px';
       dialog.style.border = `solid ${phoneColor}`;
-      dialog.style.borderWidth = '24px 6px';
+      dialog.style.borderWidth = '32px 2px';
       dialog.style.borderRadius = '40px';
+      dialog.style.outline = `1px solid white`;
       dialog.style.overflow = 'hidden';
       dialog.style.boxShadow = '0 24px 64px rgb(0 0 0 / 35%)';
       dialog.style.backgroundColor = phoneColor;
 
       const iframe = document.createElement('iframe');
       iframe.src = url;
+      iframe.style.display = 'block';
       iframe.style.width = '100%';
       iframe.style.height = '100%';
       iframe.style.border = 'none';

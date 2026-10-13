@@ -1,0 +1,20 @@
+var architecture = [
+	'./set2/_adobe.jpg',
+//	'./set2/beach.jpg',
+	'./set2/_bridge.jpg',
+	'./set2/_city.jpg',
+	'./set2/_colorful.jpg',
+	'./set2/_doorway.jpg',
+	'./set2/harbour.jpg',
+	'./set2/mayan-pyramid.jpg',
+	'./set2/new-york.jpg',
+	'./set2/new-york-skyline.jpg',
+	'./set2/roof-tops.jpg',
+	'./set2/street.jpg',
+//	'./set2/tracks.jpg',
+//	'./set2/train.jpg',
+	'./set2/_tunnel.jpg',
+	'https://images2.imgbox.com/d3/0e/psQcj7HX_o.jpg',
+    'aws/bridge2.jpg',
+]
+

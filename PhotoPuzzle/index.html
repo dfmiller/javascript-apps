@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<link rel="stylesheet" type="text/css" href="./dialog.css">
+	<title>Photo Puzzles</title>
+	<style>
+
+
+	html, body {
+		padding:0; margin:0;
+		width: 100vw;
+		height: 100vh;
+		overflow:hidden;
+		font-family: sans-serif;
+		font-size: 4vw;
+		position: relative;
+		background: #000;
+	}
+
+	/* layout */
+
+	/* { outline: 1px solid orange; outline-offset: -1px; } /* */
+
+	.main {
+		display: flex;
+		flex-direction: column;
+		width: 100%;
+		height: 100%;
+
+		background: black;
+		color: white;
+	}
+
+	.header {
+		display: flex;
+		flex-direction: row;
+		height: calc(100vh - 100vw - 6em);
+
+		background: black;
+		color: white;
+		flex: 1 1 0;
+		align-items: center;
+		-webkit-justify-content: space-evenly;
+		justify-content: space-evenly;
+		width: 100vw;
+	}
+
+	.header > div {
+		text-align: center;
+		width: 23vw;
+	}
+
+	.header span {
+		font-size: .8rem;
+		color: #888;
+		text-align: left;
+		display: inline-block;
+	}
+
+	.header strong {
+		font-size: 2rem;
+		font-weight: normal;
+		display: block;
+		color: white;
+	}
+
+	.navigation {
+		display: flex;
+		align-items: center;
+		padding: .25em;
+		box-sizing: border-box;
+		white-space: nowrap;
+		padding-right: 1em;
+		background: #444;
+	}
+
+	.footer {
+		display: flex;
+		align-items: center;
+		padding: .125em;
+		box-sizing: border-box;
+		white-space: nowrap;
+		height: 1em;
+	}
+
+	.spacer {
+		width: 100%;
+	}
+
+	.preview {
+		overflow: hidden;
+		max-width: 50vw;
+		max-height: 50vw;
+		height: calc(100vh - 100vw - 8em);
+		min-height: 3em;
+		width: calc(100vh - 100vw - 8em);
+        position: relative;
+	}
+
+	.preview.tap:after {
+		content: 'tap to zoom';
+		color: white;
+		text-shadow: 0 0 3px black;
+		position: absolute;
+		top: 50%;
+		left: 0;
+		right: 0;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background: rgba(0,0,0,.25);
+		height: 1em;
+		margin: -.5em 0;
+		pointer-events: none;
+	}
+
+	.game-board {
+		width: 100vw;
+		height: 100vw;
+		position: relative;
+	}
+
+	.game-board.step-0:before,
+	.game-board.step-1:before,
+	.game-board.step-2:before,
+	.game-board.new-high:before,
+	.game-board.puzzle-complete:before {
+		position: absolute;
+		top: -1.25em;
+		left: 0;
+		right: 0;
+		width: 100%;
+		display: block;
+		text-align: center;
+		font-size: 1.25em;
+		background: rgba(0,0,0,.8);
+		color: limegreen;
+	}
+
+	.game-board.step-0:before {
+		content: 'tap each square to rotate into place';
+		color: white;
+	}
+
+	.game-board.step-1:before {
+		content: 'tap any square to begin';
+		color: white;
+	}
+
+	.game-board.step-2:before {
+		content: 'tap another to swap them';
+		color: white;
+	}
+
+	.game-board.new-high:before {
+		content: 'New High Score!';
+		color: limegreen;
+	}
+
+	.game-board.puzzle-complete:before {
+		content: 'Puzzle Complete!';
+		color: limegreen;
+	}
+
+
+	.game-board:not([data-name=""])::after {
+		content: attr(data-name);
+		position: absolute;
+		bottom: -1em;
+		left: 0;
+		right: 0;
+		width: 100%;
+		display: block;
+		text-align: left;
+		font-size: .8em;
+		background: rgba(0,0,0,.8);
+		color: white;
+		padding: 0 .5em;
+	}
+
+
+	/* */
+	.form-row,
+	.row {
+		display: table-row;
+		display: flex;
+	}
+	.form-row > label,
+	.row > label {
+		display: table-cell;
+		font-weight: bold;
+		padding: .5em;
+		padding-top: 10px;
+		text-align: center !important;
+		vertical-align: middle;
+	}
+
+	span.dashed {
+		display: inline-block;
+		padding: 3px;
+		background: #fff;
+		margin: 2vw;
+		box-sizing: border-box;
+		width: 21vw;
+		height: 15vw;
+		text-align: center;
+		verticle-align: middle;
+		position: relative;
+		box-shadow: 2px 2px 5px black;
+		font-size: .8rem;
+
+		xborder: 2px dashed gray;
+		border-radius: 5px;
+		background: white;
+		box-shadow: none;
+	}
+	span.dashed img {
+		max-width: 100%;
+		max-height: 100%;
+
+		display: block;
+		margin: 0 auto;
+		max-height: 80%;
+	}
+
+	.thumbs {
+		xborder: 1px solid black;
+		xbackground: #ccc;
+		xpadding: 5px;
+		display: flex;
+		flex-direction: column;
+		max-height: 100%;
+		overflow: auto;
+		height: 100vh;
+	}
+
+
+	.thumbs ::-webkit-scrollbar {
+		x-webkit-appearance: none;
+		xwidth: 8px;
+	}
+
+	.thumbs ::-webkit-scrollbar-thumb {
+		xborder-radius: 9px;
+		xbackground-color: rgba(128,128,128,1);
+		x-webkit-box-shadow: 0 0 2px rgba(0,0,0,1);
+	}
+
+
+	.thumbs > div {
+		flex-wrap: wrap;
+		align-items: start;
+		justify-content: center;
+		overflow: auto;
+		max-height: 35vh;
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		min-width: 85vw;
+		display: flex;
+		flex-direction: row;
+		max-height: 100%;
+		overflow: auto;
+		padding: 2vw;
+	}
+
+	.thumbs > div:empty:after {
+		content: 'select an option above to add a photo';
+		font-size: 1em;
+		grid-column: 1/5;
+		text-align: center;
+		line-height: 6em;
+		width: 85vw;
+	}
+
+	.thumbs div span {
+		display: inline-block;
+		background: #000;
+		margin: 1vw;
+		width: 20vw;
+		height: 20vw;
+		text-align: center;
+		box-shadow: 1px 1px 5px black;
+		overflow: hidden;
+		position: relative;
+	}
+	.thumbs span img {
+		xmax-width: 100%;
+		max-height: 100%;
+	}
+
+	.thumbs span.selected {
+		box-shadow: none;
+		outline: 4px solid #08f;
+		outline-offset: 1px;
+		box-shadow: inset 2px 2px 5px black;
+		animation: 1s pulsing infinite alternate;
+		width: 22vw;
+		height: 22vw;
+		margin: 0vw 0 0 0vw;
+	}
+
+	.thumbs div span:after {
+		xcontent: '_ . _ _ _';
+		display: block;
+		background: gray;
+		width: 100%;
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+	}
+
+	.sizes {
+		display: flex;
+		flex-wrap: wrap;
+	}
+	.sizes label {
+		display; inline-block;
+		white-space: nowrap;
+		padding: 4px;
+		position: relative;
+	}
+	.sizes input {
+		position: absolute;
+		top: .5em;
+	}
+	.sizes input + span {
+		display: inline-block;
+		padding: 1px .5em 1px 1em;
+		xbackground: #fff;
+		xborder-radius: 5px;
+	}
+	.sizes input:checked + span {
+		outline: 4px solid #08f;
+	}
+
+	dialog header:not(:empty) {
+		font-size: 1.125rem;
+		background: #ddd;
+		padding: 5px;
+		text-align: center;
+	}
+	dialog main {
+		background: #eee;
+		padding: 5px;
+		font-size: 1.0125rem;
+	}
+	dialog footer {
+		text-align: right;
+		font-weight: bold;
+		font-size: .8rem;
+		background: #ddd;
+		padding: 5px;
+	}
+	button {
+		font: inherit;
+	}
+
+	#zoom {
+		overflow: hidden;
+		display: none;
+		z-index: 100;
+		position: absolute;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		right: 0;
+		background: rgba(0,0,0,.8);
+		cursor: -webkit-zoom-out;
+		cursor: zoom-out;
+	}
+
+	#zoom_img:after {
+		content: 'tap anywhere to close';
+		color: white;
+		text-shadow: 0 0 3px black;
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: -1em;
+		display: flex;
+		xjustify-content: center;
+		align-items: center;
+		text-align: center;
+		padding: 0 2em;
+		xfont-size: 1.25rem;
+		pointer-events: none;
+	}
+
+	#img_wrapper {
+		left: 0 !important;
+		top: 0 !important;
+	}
+
+	.img-wrapper {
+		left: 0px;
+		top: 0px;
+		transform: scale(0.239583);
+		transform-origin: 0 0;
+		position: absolute;
+		position: relative;
+	}
+
+	.img {
+		width: 768px;
+		height: 768px;
+		background-repeat: no-repeat;
+		xposition: absolute;
+		xleft: 0;
+		xtop: 0;
+		xwidth: 100%;
+		xheight: 100%;
+		xbackground-size: contain;
+		xbackground-position: center center;
+	}
+
+	#squares {
+		position: absolute;
+		left: 0;
+		top: 0;
+	}
+
+	.broken {
+		outline: 4px solid white;
+		outline-offset: -8px;
+	}
+
+	.broken:before {
+		content: '';
+		position: absolute;
+		top: 0px;
+		left: 0px;
+		right: 0px;
+		bottom: 0px;
+		border: 4px solid black;
+	}
+
+	.square {
+		position: absolute;
+		display: inline-block;
+		background-repeat: no-repeat;
+		background-color: gray;
+	}
+
+	.square.selected {
+		outline: 8px solid #0f8;
+		outline-offset: -8px;
+		z-index: 1;
+		animation: 1s pulsing infinite alternate;
+		transform: rotate(5deg);
+	}
+
+	dialog select {
+		font-size: 1.1em;
+		padding: .2em;
+	}
+
+	dialog footer button[tabindex="1"] {
+		font-size: 2em !important;
+		padding: .2em;
+	}
+
+	.tabs {
+		padding: 0;
+		position: relative;
+		display: flex;
+		overflow: auto;
+		flex: 0 0 2.25em;
+	}
+
+	.tabs li {
+		display: inline-block;
+		list-style: none;
+		margin: 0 1px 1px;
+		padding: .5em 1em;
+		text-transform: uppercase;
+		white-space: nowrap;
+	}
+
+	.tabs li.selected {
+		background: #ccc;
+		border-bottom: 2px solid blue;
+	}
+
+	@keyframes pulsing {
+		from { outline-color: #0f8; }
+		to { outline-color: #00f; }
+	}
+
+	.pull-left { float: left }
+	.line-height-3 { line-height: 3em; }
+
+	[class^="rotated-"],
+	[class*=" rotated-"] {
+		xoutline: none;
+		transition: all .5s;
+		xoutline-offset: 0;
+	}
+	[class^="rotated-"]:before,
+	[class*=" rotated-"]:before {
+		display:none;
+	}
+
+
+	.rotated-0 { transform: rotate(0deg); outline: none; }
+	.rotated-1 { transform: rotate(90deg); }
+	.rotated-2 { transform: rotate(180deg);	}
+	.rotated-3 { transform: rotate(270deg); }
+	.rotated-4 { transform: rotate(360deg); }
+	.rotated-5 { transform: rotate(450deg); }
+	.rotated-6 { transform: rotate(540deg); }
+	.rotated-7 { transform: rotate(630deg); }
+
+	.menu-icon {
+		margin: 1em;
+		width: 1.5em;
+		height: 1em;
+		background: linear-gradient(to bottom, #fff 0%, #fff 20%, transparent 20%, transparent 40%, #fff 40%, #fff 60%, transparent 60%, transparent 80%, #fff 80%, #fff 100%);
+		border: none;
+	}
+
+    dialog main div input[type=checkbox] {
+        margin: 1em;
+    }
+
+	</style>
+</head>
+<body>
+
+	<main class="main">
+		<nav id="controls" class="navigation">
+			<button type="button" class="newGame menu-icon"></button>
+			<header id="logo">Photo Puzzles</header>
+			<div class="spacer"></div>
+			<div>Best: <span id="high_score">0</span></div>
+		</nav>
+		<header class="header">
+			<div>
+				<span>Score: <strong id="score">0</strong></span>
+			</div>
+			<div>
+				<span>Fixed: <strong id="fixed">0</strong></span>
+			</div>
+			<aside class="preview tap" id="preview">
+				<div id="img_wrapper" class="img-wrapper">
+					<div id="img" class="img"></div>
+				</div>
+			</aside>
+		</header>
+		<article class="game-board gameBoard" id="board">
+			<div id="squares"></div>
+		</article>
+		<footer class="footer">
+		</footer>
+		<div id="zoom">
+			<div id="zoom_wrapper" class="img-wrapper">
+				<div id="zoom_img" class="img"></div>
+			</div>
+		</div>
+	</main>
+
+	<dialog class="helpDialog closeDialog">
+		<form>
+			<header>How to Play</header>
+			<main>
+				<p>Complete the picture by rearranging the square pieces.  Tap two pieces at a time to swap their locations.  When a piece is in the correct spot it will lock in place.</p>
+			</main>
+			<footer class="text-bottom">
+				<button type="button" class="text-center">close</button>
+			</footer>
+		</form>
+	</dialog>
+
+	<dialog class="settingsDialog">
+		<form>
+			<!-- header>Select Photo to Begin</header -->
+			<header>New Game Settings</header>
+			<main>
+
+				<div class="form-row">
+					<label>Select Photo</label>
+					<span class="dashed snapPhoto">
+						<img src="camera.jpg"/>
+						snap a photo
+					</span>
+					<span class="dashed pickPhoto">
+						<img src="pict.jpg"/>
+						pick a photo
+					</span>
+				</div>
+
+				<ul class="tabs"></ul>
+
+				<div class="thumbs"></div>
+
+				<div class="form-row">
+					<label>Grid Size</label>
+					<select class="gridSizes size-wrapper" name="gridSize"></select>
+				</div>
+
+				<div class="form-row">
+					<label>Game</label>
+					<select class="pickLevel">
+						<option value="1">Shuffled Squares</option>
+						<option value="2">Rotated Squares</option>
+					</select>
+				</div>
+
+				<div class="form-row">
+					<label>Play Sounds</label>
+					<input class="playSounds" type="checkbox" />
+                    <span style="padding: .8em; font-size: .8em">
+                        Sounds from <a href="http://zapsplat.com">Zapsplat.com</a>
+                    </span>
+				</div>
+
+
+			</main>
+			<footer class="text-bottom">
+				<button type="reset" disabled class="pull-left line-height-3">cancel</button>
+				<button type="submit" tabindex="1" class="playButton">Play</button>
+			</footer>
+		</form>
+	</dialog>
+
+
+	<dialog class="askRate">
+		<form>
+			<header></header>
+			<main>
+				<p>If you are enjoying the Photo Puzzles, would you mind taking a moment to rate it?</p>
+				<p>Thanks for your support!</p>
+			</main>
+			<footer>
+				<button type="button" class="skip">No, thanks</button>
+				<button type="button" tabindex="1" class="rateItNow"><a href="https://play.google.com/store/apps/details?id=com.digitalfunmedia.photopuzzle" target="_blank">Rate it Now</a></button>
+			</footer>
+		</form>
+	</dialog>
+
+	<script src="./common.js"></script>
+	<script src="./jquery-3.4.1.min.js"></script>
+	<script src="./cordova.js"></script>
+	<script src="./adMobPlus.js"></script>
+	<script src="./spring-photos.js"></script>
+	<script src="./summer-photos.js"></script>
+	<script src="./autumn-photos.js"></script>
+	<script src="./winter-photos.js"></script>
+	<script src="./architecture.js"></script>
+	<script src="./nature.js"></script>
+	<script src="./animals.js"></script>
+	<script src="./misc.js"></script>
+	<script src="./photo-puzzle.js"></script>
+
+
+	<script>
+
+	var app = {
+		// Application Constructor
+		initialize: function() {
+			document.addEventListener('deviceready', this.onDeviceReady.bind(this), false);
+			this.timeout = setTimeout(this.onDeviceReady.bind(this), 5000)
+		},
+
+		onDeviceReady: function() {
+			clearTimeout(this.timeout)
+
+			if (window.plugins && window.plugins.intent) {
+				window.plugins.intent.getCordovaIntent(app.intentHandler)
+				window.plugins.intent.setNewIntentHandler(app.intentHandler)
+			}
+
+			initAdMob()
+			showBannerFunc()
+		},
+
+		intentHandler: function(Intent) {
+			if (Intent.clipItems) {
+				//alert(JSON.stringify(Intent))
+				Intent.clipItems.forEach(function(clipItem) {
+					//alert(clipItem.uri)
+					//if (clipItem.type === 'image/jpeg' || clipItem.type === 'image/png') {
+					$('.settingsDialog').attr('open', true)
+					PhotoPuzzle.createSource(clipItem.uri, true, 'myphotos')
+					//}
+				})
+			}
+		}
+
+
+	}
+
+	app.initialize();
+
+	</script>
+</body>
+</html>
