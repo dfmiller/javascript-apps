@@ -79,6 +79,18 @@
       cursor: pointer;
     }
 
+    .app-dialog__header {
+      position: absolute;
+      top: -26px;
+      right: 0;
+      left: 0;
+      height: 32px;
+    }
+
+    .app-dialog__title {
+      display: none;
+    }
+
     .filter-chip[aria-pressed="true"] {
       border-color: var(--accent);
       background: var(--accent);
@@ -149,7 +161,7 @@
 
     .app-dialog__close {
       position: absolute;
-      top: -24px;
+      top: 2px;
       right: 10px;
       z-index: 1;
       width: 28px;
@@ -216,6 +228,61 @@
     }
 
     @media (max-width: 520px) {
+      .app-dialog {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        width: 100vw;
+        height: 100dvh;
+        max-width: none;
+        max-height: none;
+        aspect-ratio: auto;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        outline: none;
+        overflow: hidden;
+        box-shadow: none;
+      }
+
+      .app-dialog__header {
+        position: relative;
+        top: auto;
+        right: auto;
+        left: auto;
+        display: flex;
+        flex: 0 0 48px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0 12px;
+        background: #20242b;
+      }
+
+      .app-dialog__title {
+        display: block;
+        min-width: 0;
+        overflow: hidden;
+        color: white;
+        font-size: 1rem;
+        font-weight: 600;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .app-dialog__close {
+        position: static;
+        flex: 0 0 28px;
+      }
+
+      .app-dialog__frame {
+        flex: 1;
+        min-height: 0;
+        border-radius: 0;
+      }
+
       .page-header {
         align-items: flex-start;
         flex-wrap: wrap;
@@ -407,7 +474,7 @@
         data-tag="${card.tag}"
         style="--card-image: url('${card.image}');"
         href="${card.href}"
-        onclick="event.preventDefault(); openPageDialog('${card.href}')"
+        onclick="event.preventDefault(); openPageDialog('${card.href}', '${card.title}')"
       >
         <span class="card-number">
           ${card.type.toUpperCase()} / ${card.tag}
@@ -459,9 +526,16 @@
       'All tags'
     );
 
-    function openPageDialog(url) {
+    function openPageDialog(url, title) {
       const dialog = document.createElement('dialog');
       dialog.className = 'app-dialog';
+
+      const header = document.createElement('div');
+      header.className = 'app-dialog__header';
+
+      const titleElement = document.createElement('span');
+      titleElement.className = 'app-dialog__title';
+      titleElement.textContent = title;
 
       const closeButton = document.createElement('button');
       closeButton.type = 'button';
@@ -474,7 +548,9 @@
       iframe.src = url;
       iframe.className = 'app-dialog__frame';
 
-      dialog.appendChild(closeButton);
+      header.appendChild(titleElement);
+      header.appendChild(closeButton);
+      dialog.appendChild(header);
       dialog.appendChild(iframe);
       document.body.appendChild(dialog);
 
