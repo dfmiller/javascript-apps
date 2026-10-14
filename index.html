@@ -31,7 +31,15 @@
     }
 
     .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
       margin-bottom: 1.5rem;
+    }
+
+    .page-header__content {
+      min-width: 0;
     }
 
     h1 {
@@ -44,6 +52,42 @@
       margin: 0;
       color: var(--muted);
       line-height: 1.5;
+    }
+
+    .filters {
+      display: grid;
+      flex: 0 1 auto;
+      justify-items: end;
+      gap: 0.5rem;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 0.5rem;
+    }
+
+    .filter-chip {
+      padding: 0.45rem 0.85rem;
+      border: 1px solid #d0d5dd;
+      border-radius: 999px;
+      background: var(--card-bg);
+      color: var(--text);
+      font: inherit;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .filter-chip[aria-pressed="true"] {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: white;
+    }
+
+    .filter-chip:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 2px;
     }
 
     .card-grid {
@@ -69,6 +113,10 @@
       box-shadow: 0 8px 24px rgb(20 30 50 / 12%);
       text-decoration: none;
       transition: transform 180ms ease, box-shadow 180ms ease;
+    }
+
+    .card[hidden] {
+      display: none;
     }
 
     .card:hover {
@@ -168,6 +216,20 @@
     }
 
     @media (max-width: 520px) {
+      .page-header {
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+
+      .filters {
+        justify-items: start;
+        max-width: 100%;
+      }
+
+      .filter-group {
+        justify-content: flex-start;
+      }
+
       .card-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 0.85rem;
@@ -199,8 +261,14 @@
 <body>
   <main>
     <header class="page-header">
-      <h1>JavaScript Apps</h1>
-      <p>Apps Built with JavaScript, CSS, and HTML</p>
+      <div class="page-header__content">
+        <h1>JavaScript Apps</h1>
+        <p>Apps Built with JavaScript, CSS, and HTML</p>
+      </div>
+      <section class="filters" aria-label="Filter apps">
+        <div id="typeFilters" class="filter-group" role="group" aria-label="Filter by type"></div>
+        <div id="tagFilters" class="filter-group" role="group" aria-label="Filter by tag"></div>
+      </section>
     </header>
 
     <section id="cardGrid" class="card-grid" aria-label="Featured cards"></section>
@@ -212,118 +280,131 @@
     </footer>
   </main>
   <script>
+    const APP_TYPES = Object.freeze({
+      GAME: 'game',
+      UTILITY: 'utility'
+    });
+    const APP_TAGS = Object.freeze({
+      PLAY_STORE: 'Play Store',
+      VIBE_CODED: 'Vibe Coded'
+    });
+    const ALL_FILTER = 'all';
+
     const cards = [
       {
-        type: 'game',
-        tag: 'Play Store',
+        type: APP_TYPES.GAME,
+        tag: APP_TAGS.PLAY_STORE,
         title: 'AI Memory',
         description: 'Play Memory against the AI',
         href: './AI-Memory/index.html',
         image: './AI-Memory/screen-shot.png'
       },
       {
-        type: 'game',
-        tag: 'Play Store',
-        title: 'RYB ColorMixing',
-        description: 'Select the result when 2 colors mix',
-        href: './ColorMixing/index.html',
-        image: './ColorMixing/ryb.png'
-      },
-      {
-        type: 'game',
-        tag: 'Play Store',
+        type: APP_TYPES.GAME,
+        tag: APP_TAGS.PLAY_STORE,
         title: 'Easy Crosswords',
         description: 'Crossword puzzle with hints',
         href: './EasyCrosswords/crossword.html',
         image: './EasyCrosswords/320x480.png'
       },
       {
-        type: 'game',
-        tag: 'Play Store',
+        type: APP_TYPES.UTILITY,
+        tag: APP_TAGS.VIBE_CODED,
+        title: 'Inkling',
+        description: 'Draw and write',
+        href: './Inkling/inkling.html',
+        image: './Inkling/screenshot.png'
+      },
+      {
+        type: APP_TYPES.GAME,
+        tag: APP_TAGS.PLAY_STORE,
         title: 'Jigsaws',
         description: 'Jigsaw puzzles in various sizes',
         href: './Jigsaws/jigsaws.html',
         image: './Jigsaws/jigsaw.png'
       },
       {
-        type: 'game',
-        tag: 'Play Store',
+        type: APP_TYPES.GAME,
+        tag: APP_TAGS.PLAY_STORE,
         title: 'Jumbled Quotes',
         description: 'Arrange the letters to complete a quotation',
         href: './JumbledQuotes/jumbled_quotes.html',
         image: './JumbledQuotes/screenshot.png'
       },
       {
-        type: 'game',
-        tag: 'Play Store',
+        type: APP_TYPES.GAME,
+        tag: APP_TAGS.PLAY_STORE,
         title: 'Mazes',
         description: 'Solve mazes',
         href: './Mazes/index.html',
         image: './Mazes/screenshot.png'
       },
       {
-        type: 'game',
-        tag: 'Play Store',
+        type: APP_TYPES.GAME,
+        tag: APP_TAGS.PLAY_STORE,
         title: 'Photo Puzzle',
         description: '',
         href: './PhotoPuzzle/index.html',
         image: './PhotoPuzzle/screenshot.png'
       },
       {
-        type: 'game',
-        tag: 'Play Store',
-        title: 'Word Search Crush',
-        description: 'Find words and crush them',
-        href: './WordSearchCrush/index.html',
-        image: './WordSearchCrush/screenshot.png'
-      },
-      {
-        type: 'game',
-        tag: 'Play Store',
-        title: 'Word Search Library',
-        description: 'Classic word search with multiple themes',
-        href: './WordSearchLibrary/index.html',
-        image: './WordSearchLibrary/screenshot.png'
-      },
-      {
-        type: 'game',
-        tag: 'Vibe Coded',
-        title: 'Stone Maze Hero',
-        description: 'Explore an underground dungeon',
-        href: './StoneMazeHero/index.html',
-        image: './StoneMazeHero/screenshot.png'
-      },
-      {
-        type: 'game',
-        tag: 'Vibe Coded',
+        type: APP_TYPES.GAME,
+        tag: APP_TAGS.VIBE_CODED,
         title: 'Planet Explorers',
         description: 'Explore planets',
         href: './PlanetExplorers/index.html',
         image: './PlanetExplorers/screenshot.png'
       },
       {
-        type: 'utility',
-        tag: 'Vibe Coded',
+        type: APP_TYPES.UTILITY,
+        tag: APP_TAGS.VIBE_CODED,
         title: 'Recipe Box',
         description: 'Recipe storage',
         href: './RecipeBox/index.html',
         image: './RecipeBox/screenshot.png'
       },
       {
-        type: 'utility',
-        tag: 'Vibe Coded',
-        title: 'Inkling',
-        description: 'Draw and write',
-        href: './Inkling/inkling.html',
-        image: './Inkling/screenshot.png'
+        type: APP_TYPES.GAME,
+        tag: APP_TAGS.PLAY_STORE,
+        title: 'RYB ColorMixing',
+        description: 'Select the result when 2 colors mix',
+        href: './ColorMixing/index.html',
+        image: './ColorMixing/ryb.png'
+      },
+      {
+        type: APP_TYPES.GAME,
+        tag: APP_TAGS.VIBE_CODED,
+        title: 'Stone Maze Hero',
+        description: 'Explore an underground dungeon',
+        href: './StoneMazeHero/index.html',
+        image: './StoneMazeHero/screenshot.png'
+      },
+      {
+        type: APP_TYPES.GAME,
+        tag: APP_TAGS.PLAY_STORE,
+        title: 'Word Search Crush',
+        description: 'Find words and crush them',
+        href: './WordSearchCrush/index.html',
+        image: './WordSearchCrush/screenshot.png'
+      },
+      {
+        type: APP_TYPES.GAME,
+        tag: APP_TAGS.PLAY_STORE,
+        title: 'Word Search Library',
+        description: 'Classic word search with multiple themes',
+        href: './WordSearchLibrary/index.html',
+        image: './WordSearchLibrary/screenshot.png'
       },
     ];
 
     const cardGrid = document.querySelector('#cardGrid');
+    const activeFilters = { type: ALL_FILTER, tag: ALL_FILTER };
 
     cardGrid.innerHTML = cards.map((card) => `
       <a
         class="card"
+        data-type="${card.type}"
+        data-tag="${card.tag}"
         style="--card-image: url('${card.image}');"
         href="${card.href}"
         onclick="event.preventDefault(); openPageDialog('${card.href}')"
@@ -337,6 +418,46 @@
         </div>
       </a>
     `).join('');
+
+    function createFilterChips(container, group, values, allLabel) {
+      const options = [
+        [ALL_FILTER, allLabel],
+        ...values.map((value) => [value, value[0].toUpperCase() + value.slice(1)])
+      ];
+
+      options.forEach(([value, label]) => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'filter-chip';
+        chip.textContent = label;
+        chip.setAttribute('aria-pressed', String(activeFilters[group] === value));
+        chip.addEventListener('click', () => {
+          activeFilters[group] = value;
+          container.querySelectorAll('.filter-chip').forEach((option) => {
+            option.setAttribute('aria-pressed', String(option === chip));
+          });
+          cardGrid.querySelectorAll('.card').forEach((card) => {
+            card.hidden =
+              (activeFilters.type !== ALL_FILTER && card.dataset.type !== activeFilters.type) ||
+              (activeFilters.tag !== ALL_FILTER && card.dataset.tag !== activeFilters.tag);
+          });
+        });
+        container.appendChild(chip);
+      });
+    }
+
+    createFilterChips(
+      document.querySelector('#typeFilters'),
+      'type',
+      Object.values(APP_TYPES),
+      'All types'
+    );
+    createFilterChips(
+      document.querySelector('#tagFilters'),
+      'tag',
+      Object.values(APP_TAGS),
+      'All tags'
+    );
 
     function openPageDialog(url) {
       const dialog = document.createElement('dialog');
