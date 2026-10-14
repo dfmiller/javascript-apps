@@ -137,12 +137,13 @@ var Game = {
 
 					var Z = document.querySelectorAll('.drop-target:not(.correct)')
 					Game.found = Array.from(Z).find(function (z) {
-						var y = Math.abs(z.offsetTop+Game.letterHeight/2 - touch.pageY)
-						var x = Math.abs(z.offsetLeft+Game.left+Game.letterHeight/2 - touch.pageX)
+						var rect = z.getBoundingClientRect()
+						var y = Math.abs(rect.top+rect.height/2 - touch.clientY)
+						var x = Math.abs(rect.left+rect.width/2 - touch.clientX)
 						return (x < Game.letterHeight/3 && y < Game.letterHeight/3 && z.dataLetter == Game.dragLetter.dataLetter)
 					})
+					event.preventDefault()
 				}
-				event.preventDefault()
 			})
 
 			Game.gameBoard.bind('touchend mouseup', function(event) {
@@ -271,7 +272,7 @@ var Game = {
 		Game.bottom = position.top + $('.game_wrapper').height()
 
 		$('.draggable').css({ top: 50, left: 50 })
-		var minFontSize = .5
+		var minFontSize = 1.125
 		var maxFontSize = 5
 		var fontSize = minFontSize
 
@@ -288,13 +289,15 @@ var Game = {
 				minFontSize = fontSize
 			}
 		}
-		Game.gameBoard.css({ fontSize: Math.max(minFontSize - .2, .5) + 'rem' })
+		Game.gameBoard.css({ fontSize: minFontSize + 'rem' })
 
 
 		Game.letterHeight = $('.draggable').height()
 
 		var max = $('.filler').position().top
-		var y = $('.game_wrapper').height() - max  - Game.letterHeight
+		var wrapperHeight = $('.game_wrapper').height()
+		max = Math.min(max, wrapperHeight - Game.letterHeight * 4)
+		var y = Math.max(0, wrapperHeight - max - Game.letterHeight * 1.5)
 		var x = Game.gameBoard.width() - Game.letterHeight
 
 		$('.draggable').each(function() {

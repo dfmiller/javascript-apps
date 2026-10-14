@@ -82,7 +82,7 @@ html, body {
 	flex-wrap: wrap;
 	justify-content: center;
 	xfont-size: 3.25rem;
-	overflow: auto;
+	overflow: hidden;
 	font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
     xfont-family: 'Liu Jian Mao Cao', cursive;
     xfont-family: 'Trochut', cursive;
@@ -170,12 +170,18 @@ header {
     box-shadow: 0 0 2px black;
 }
 
+.app_bar {
+	font-size: 1.1rem;
+	line-height: 1.25;
+	padding: 6px 10px;
+}
+
 .spacer {
  width: 100%;
 }
 
 .hintButton {
-	font-size: .9em;
+	font-size: .75em;
 }
 
 p, em {
@@ -228,6 +234,9 @@ select, button {
 
 .instructions {
 	text-align: center;
+	font-size: .8rem;
+	line-height: 1.15;
+	margin: .25em .5em;
 }
 
 .game-board + footer {
@@ -264,7 +273,6 @@ p {
 .soundButton {
 	color: black;
 }
-
 
 
 
