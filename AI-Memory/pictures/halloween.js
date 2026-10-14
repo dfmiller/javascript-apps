@@ -32,7 +32,7 @@ var halloween = {
   'icons8-halloween-cyclop-monster.png',
   'icons8-halloween.png',
   'icons8-headstone.png',
-  'icons8-jack-o\'-lantern.png',
+  'icons8-jack-o_-lantern.png',
   'icons8-jason-voorhees.png',
   'icons8-magic-crystal-ball.png',
   'icons8-martian.png',
