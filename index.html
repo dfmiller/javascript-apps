@@ -144,12 +144,6 @@
       background: linear-gradient(transparent, rgb(0 0 0 / 78%));
     }
 
-    .card:nth-child(2) { --card-color: #168b86; }
-    .card:nth-child(3) { --card-color: #b45d35; }
-    .card:nth-child(4) { --card-color: #7654a8; }
-    .card:nth-child(5) { --card-color: #3975a8; }
-    .card:nth-child(6) { --card-color: #9b496c; }
-
     .card-number {
       position: absolute;
       top: 1rem;
@@ -220,58 +214,108 @@
   <script>
     const cards = [
       {
+        type: 'game',
+        tag: 'Play Store',
         title: 'AI Memory',
         description: 'Play Memory against the AI',
         href: './AI-Memory/index.html',
         image: './AI-Memory/screen-shot.png'
       },
       {
+        type: 'game',
+        tag: 'Play Store',
         title: 'RYB ColorMixing',
         description: 'Select the result when 2 colors mix',
         href: './ColorMixing/index.html',
         image: './ColorMixing/ryb.png'
       },
       {
+        type: 'game',
+        tag: 'Play Store',
         title: 'Easy Crosswords',
         description: 'Crossword puzzle with hints',
         href: './EasyCrosswords/crossword.html',
         image: './EasyCrosswords/320x480.png'
       },
       {
+        type: 'game',
+        tag: 'Play Store',
         title: 'Jigsaws',
         description: 'Jigsaw puzzles in various sizes',
         href: './Jigsaws/jigsaws.html',
         image: './Jigsaws/jigsaw.png'
       },
       {
+        type: 'game',
+        tag: 'Play Store',
         title: 'Jumbled Quotes',
         description: 'Arrange the letters to complete a quotation',
         href: './JumbledQuotes/jumbled_quotes.html',
         image: './JumbledQuotes/screenshot.png'
       },
       {
+        type: 'game',
+        tag: 'Play Store',
         title: 'Mazes',
         description: 'Solve mazes',
         href: './Mazes/index.html',
         image: './Mazes/screenshot.png'
       },
       {
+        type: 'game',
+        tag: 'Play Store',
         title: 'Photo Puzzle',
         description: '',
         href: './PhotoPuzzle/index.html',
         image: './PhotoPuzzle/screenshot.png'
       },
       {
+        type: 'game',
+        tag: 'Play Store',
         title: 'Word Search Crush',
         description: 'Find words and crush them',
         href: './WordSearchCrush/index.html',
         image: './WordSearchCrush/screenshot.png'
       },
       {
+        type: 'game',
+        tag: 'Play Store',
         title: 'Word Search Library',
         description: 'Classic word search with multiple themes',
         href: './WordSearchLibrary/index.html',
         image: './WordSearchLibrary/screenshot.png'
+      },
+      {
+        type: 'game',
+        tag: 'Vibe Coded',
+        title: 'Stone Maze Hero',
+        description: 'Explore an underground dungeon',
+        href: './StoneMazeHero/index.html',
+        image: './StoneMazeHero/screenshot.png'
+      },
+      {
+        type: 'game',
+        tag: 'Vibe Coded',
+        title: 'Planet Explorers',
+        description: 'Explore planets',
+        href: './PlanetExplorers/index.html',
+        image: './PlanetExplorers/screenshot.png'
+      },
+      {
+        type: 'utility',
+        tag: 'Vibe Coded',
+        title: 'Recipe Box',
+        description: 'Recipe storage',
+        href: './RecipeBox/index.html',
+        image: './RecipeBox/screenshot.png'
+      },
+      {
+        type: 'utility',
+        tag: 'Vibe Coded',
+        title: 'Inkling',
+        description: 'Draw and write',
+        href: './Inkling/inkling.html',
+        image: './Inkling/screenshot.png'
       },
     ];
 
@@ -284,6 +328,9 @@
         href="${card.href}"
         onclick="event.preventDefault(); openPageDialog('${card.href}')"
       >
+        <span class="card-number">
+          ${card.type.toUpperCase()} / ${card.tag}
+        </span>
         <div class="card-content">
           <h2>${card.title}</h2>
           <p>${card.description}</p>

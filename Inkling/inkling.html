@@ -1,0 +1,2133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>Inkling — doodle app</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap');
+
+  :root{
+    --chrome: #17151A;
+    --chrome-2: #221F27;
+    --paper: #FFFDF9;
+    --ink: #1B1B1F;
+    --coral: #FF6355;
+    --marigold: #FFC145;
+    --cerulean: #3FA9F5;
+    --violet: #8C6BFF;
+    --mint: #33C08E;
+    --muted: #8A8792;
+    --line: rgba(255,255,255,0.08);
+  }
+
+  *{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body{
+    margin:0; padding:0; height:100%; overflow:hidden;
+    background: var(--chrome);
+    font-family: 'Inter', sans-serif;
+    touch-action: none;
+    -webkit-user-select:none; user-select:none;
+  }
+
+  #app{
+    display:flex; flex-direction:column;
+    height:100%;
+  }
+
+  /* ---------- Top bar ---------- */
+  header{
+    position: fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding: calc(7px + env(safe-area-inset-top)) 9px 5px;
+    background: var(--chrome);
+    border-bottom: 1px solid var(--line);
+  }
+  .header-left{
+    display:flex; align-items:center; gap:12px;
+  }
+  .menu-wrap{
+    position:relative;
+  }
+  .brand{
+    display:flex; align-items:baseline; gap:8px;
+  }
+  .brand .dot{
+    width:9px; height:9px; border-radius:50%;
+    background: var(--coral);
+    display:inline-block;
+    transform: translateY(-4px);
+  }
+  .brand h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700; font-size:20px; letter-spacing:-0.01em;
+    color: var(--paper); margin:0;
+  }
+  .icon-btn{
+    width:38px; height:38px; border-radius:12px;
+    background: var(--chrome-2);
+    border: 1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    color: var(--paper);
+    cursor:pointer;
+  }
+  .icon-btn:active{ transform: scale(0.92); }
+  .icon-btn:disabled{
+    opacity: 0.32;
+    cursor: default;
+  }
+  .icon-btn:disabled:active{ transform: none; }
+  .icon-btn svg{ width:18px; height:18px; }
+  #undoBtn svg, #redoBtn svg, #clearBtn svg{ width:22px; height:22px; }
+
+  .menu-dropdown{
+    position:absolute; top:calc(100% + 8px); left:0;
+    background: var(--chrome-2);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 6px;
+    min-width: 160px;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.45);
+    opacity:0; visibility:hidden; transform: translateY(-6px);
+    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+    z-index:40;
+  }
+  .menu-dropdown.open{
+    opacity:1; visibility:visible; transform: translateY(0);
+  }
+  .menu-item{
+    display:flex; align-items:center; gap:10px;
+    width:100%;
+    background:none; border:none;
+    padding:10px 12px;
+    border-radius:10px;
+    color: var(--muted);
+    font-family:'Inter', sans-serif;
+    font-size:14px; font-weight:600;
+    cursor:pointer;
+    text-align:left;
+  }
+  .menu-item svg{ width:17px; height:17px; flex-shrink:0; }
+  .menu-item.active{
+    color: var(--paper);
+    background: rgba(255,99,85,0.14);
+  }
+  .menu-item:active{ transform: scale(0.98); }
+
+  /* ---------- Canvas area ---------- */
+  .canvas-wrap{
+    flex:1; position:relative; margin: 0;
+    overflow:hidden;
+    background: var(--paper);
+  }
+  #board{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    touch-action:none;
+  }
+  #bgImageLayer{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover;
+    z-index:5;
+    pointer-events:none;
+    display:none;
+  }
+  .empty-hint{
+    position:absolute; top:50%; left:50%;
+    transform: translate(-50%,-50%);
+    font-family:'Space Grotesk', sans-serif;
+    color: rgba(27,27,31,0.18);
+    font-size:15px; font-weight:500;
+    text-align:center; pointer-events:none;
+    letter-spacing: 0.01em;
+    transition: opacity 0.3s;
+  }
+
+  .text-scroll{
+    position: fixed;
+    top: var(--header-h, 0px);
+    left: 0; right: 0;
+    bottom: var(--toolbar-h, 0px);
+    z-index: 10;
+    overflow-y:auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    pointer-events:none;
+    touch-action: auto;
+  }
+  .text-scroll.editable{
+    pointer-events:auto;
+  }
+  .text-editor{
+    min-height:100%;
+    background: transparent;
+    padding: 11px;
+    font-family:'Inter', sans-serif;
+    font-size:20px; line-height:1.4;
+    color: #1B1B1F;
+    outline:none;
+    display:block;
+    -webkit-user-select:none; user-select:none;
+  }
+  .text-editor.editable{
+    -webkit-user-select:text; user-select:text;
+  }
+  .text-editor.editable:empty::before{
+    content: attr(data-placeholder);
+    color: rgba(27,27,31,0.32);
+    pointer-events:none;
+  }
+  .text-editor h1, .text-editor h2, .text-editor h3, .text-editor h4, .text-editor h5, .text-editor h6{
+    font-family: inherit;
+    font-weight:700;
+    margin: 0.35em 0;
+    color: inherit;
+  }
+  .text-editor h1{ font-size:1.7em; }
+  .text-editor h2{ font-size:1.4em; }
+  .text-editor h3{ font-size:1.15em; }
+  .text-editor h4{ font-size:1.05em; }
+  .text-editor h5{ font-size:0.95em; }
+  .text-editor h6{ font-size:0.85em; }
+  .text-editor blockquote{
+    margin: 0.4em 0;
+    padding-left: 12px;
+    border-left: 3px solid rgba(27,27,31,0.25);
+    font-style: italic;
+  }
+  .text-editor ul, .text-editor ol{
+    margin: 0.3em 0;
+    padding-left: 1.4em;
+  }
+
+  /* ---------- Bottom toolbar ---------- */
+  .toolbar{
+    position: fixed; left:0; right:0; bottom:0; z-index:100;
+    background: var(--chrome-2);
+    border-top: 1px solid var(--line);
+    border-radius: 24px 24px 0 0;
+    padding: 7px 8px calc(7px + env(safe-area-inset-bottom));
+    display:flex; flex-direction:column; gap:7px;
+  }
+
+  .palette{
+    display:flex; align-items:center; gap:10px;
+    padding-bottom:2px;
+  }
+  .blob{
+    --c: var(--ink);
+    width:38px; height:38px; min-width:38px;
+    border-radius: 52% 48% 55% 45% / 48% 52% 48% 52%;
+    background: var(--c);
+    border: none;
+    position:relative;
+    cursor:pointer;
+    transition: transform 0.15s ease;
+    box-shadow:
+      inset 0 -3px 4px rgba(0,0,0,0.3),
+      inset 0 2px 2px rgba(255,255,255,0.35),
+      0 2px 3px rgba(0,0,0,0.35);
+  }
+  .blob:active{ transform: scale(0.86); }
+
+  .blob::after{
+    content:'';
+    position:absolute; inset:0;
+    border-radius: inherit;
+    background:
+      radial-gradient(circle at 32% 26%, rgba(255,255,255,0.65), rgba(255,255,255,0) 48%),
+      radial-gradient(circle at 68% 82%, rgba(0,0,0,0.28), rgba(0,0,0,0) 55%);
+    pointer-events:none;
+    z-index:1;
+  }
+
+  .blob.active::before, .swatch.active::before{
+    content:'';
+    position:absolute; inset:0; margin:auto;
+    width:60%; height:60%;
+    border-radius:50%;
+    background-color: rgba(20,18,23,0.72);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 55% 55%;
+    z-index:3;
+  }
+
+  .blob.eraser{
+    background: var(--chrome);
+    border: 2px dashed var(--muted);
+    border-radius:50%;
+    box-shadow:none;
+  }
+  .blob.eraser::after{ background:none; }
+  .blob.eraser svg{
+    position:absolute; inset:0; margin:auto;
+    width:16px; height:16px; color: var(--muted);
+    z-index:2;
+  }
+
+  .blob.more{
+    background: conic-gradient(from 180deg, #FF6355, #FFC145, #33C08E, #3FA9F5, #8C6BFF, #FF6355);
+    display:flex; align-items:center; justify-content:center;
+    border-radius:50%;
+    margin-left:auto;
+  }
+  .blob.more svg{ width:16px; height:16px; color: var(--paper); filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35)); z-index:2; position:relative; }
+  .blob.more.light-trigger svg{ color: var(--chrome); filter: drop-shadow(0 1px 1px rgba(255,255,255,0.35)); }
+
+  .recent-colors{
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    flex:1; min-width:0;
+    overflow-x:auto;
+  }
+
+  .mode-hidden{ display:none !important; }
+
+  .text-format-row{
+    gap:8px;
+  }
+  .fmt-btn{
+    background: var(--chrome);
+    border: 1px solid var(--line);
+    border-radius:10px;
+    width:36px; height:36px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    color: var(--paper);
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700; font-size:15px;
+    cursor:pointer;
+  }
+  .fmt-btn svg{ width:17px; height:17px; }
+  .fmt-btn:active{ transform: scale(0.9); }
+  .fmt-btn.active{
+    background: rgba(255,99,85,0.18);
+    border-color: var(--coral);
+    color: var(--coral);
+  }
+
+  .fmt-dropdown{ position:relative; flex-shrink:0; }
+  .dropdown-trigger{ position:relative; }
+  .dropdown-trigger::after{
+    content:'';
+    position:absolute; right:2px; bottom:2px;
+    width:6px; height:6px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238A8792' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-size:contain; background-repeat:no-repeat;
+    opacity:0.7;
+  }
+  .opt-icon{ display:none; width:17px; height:17px; }
+  .opt-icon.active{ display:block; }
+
+  .fmt-menu{
+    position:fixed; bottom:0; left:0;
+    background: var(--chrome-2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 5px;
+    display:flex; gap:3px;
+    flex-wrap:wrap;
+    max-width: calc(100vw - 24px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.45);
+    opacity:0; visibility:hidden; transform: translateY(6px);
+    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+    z-index:45;
+  }
+  .fmt-menu.open{ opacity:1; visibility:visible; transform: translateY(0); }
+  .fmt-menu-item{
+    width:34px; height:34px; flex-shrink:0;
+    background:none; border:none; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    color: var(--muted);
+    cursor:pointer;
+  }
+  .fmt-menu-item svg{ width:16px; height:16px; }
+  .fmt-menu-item.active{ background: rgba(255,99,85,0.18); color: var(--coral); }
+  .fmt-menu-item:active{ transform: scale(0.9); }
+
+  .block-menu{
+    flex-direction:column;
+    flex-wrap:nowrap;
+    align-items:stretch;
+    gap:1px;
+    min-width:160px;
+    max-width:none;
+  }
+  .block-menu-item{
+    width:100%; height:auto;
+    justify-content:flex-start;
+    padding:9px 12px;
+    font-family:'Inter', sans-serif;
+    font-size:14px; font-weight:600;
+    text-align:left;
+  }
+
+  .fmt-select{
+    background: var(--chrome);
+    border: 1px solid var(--line);
+    border-radius:10px;
+    height:36px; flex-shrink:0;
+    padding: 0 24px 0 10px;
+    color: var(--paper);
+    font-family:'Inter', sans-serif;
+    font-size:12px; font-weight:600;
+    cursor:pointer;
+    appearance:none; -webkit-appearance:none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238A8792' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position: right 6px center;
+    background-size: 12px 12px;
+  }
+  .fmt-select:focus{ outline: 2px solid var(--coral); outline-offset: 1px; }
+
+
+  .dialog-dropdowns{
+    display:flex; gap:10px;
+    margin: 0 0 16px;
+  }
+  .dropdown-select{
+    flex:1; min-width:0;
+    background: var(--chrome);
+    border: 1px solid var(--line);
+    border-radius:12px;
+    padding: 11px 12px;
+    color: var(--paper);
+    font-family:'Inter', sans-serif;
+    font-size:14px; font-weight:600;
+    appearance:none; -webkit-appearance:none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238A8792' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position: right 10px center;
+    background-size: 14px 14px;
+    padding-right: 30px;
+  }
+  .dropdown-select:focus{ outline: 2px solid var(--coral); outline-offset: 1px; }
+
+  /* ---------- Color picker dialog ---------- */
+  .dialog-overlay{
+    position:fixed; inset:0;
+    background: rgba(10,9,12,0.55);
+    display:flex; align-items:flex-end; justify-content:center;
+    opacity:0; visibility:hidden;
+    transition: opacity 0.2s ease;
+    z-index:200;
+  }
+  .dialog-overlay.open{ opacity:1; visibility:visible; }
+
+  .dialog-sheet{
+    width:100%; max-width:480px;
+    background: var(--chrome-2);
+    border-radius: 24px 24px 0 0;
+    padding: 10px 20px calc(22px + env(safe-area-inset-bottom));
+    transform: translateY(100%);
+    transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .dialog-overlay.open .dialog-sheet{ transform: translateY(0); }
+
+  .confirm-actions{
+    display:flex; gap:10px;
+    margin-top: 6px;
+  }
+  .confirm-btn{
+    flex:1;
+    padding: 13px 0;
+    border-radius: 14px;
+    border: none;
+    font-family:'Inter', sans-serif;
+    font-size:15px; font-weight:600;
+    cursor:pointer;
+  }
+  .confirm-btn:active{ transform: scale(0.97); }
+  .confirm-btn.cancel{
+    background: var(--chrome);
+    color: var(--paper);
+    border: 1px solid var(--line);
+  }
+  .confirm-btn.danger{
+    background: var(--coral);
+    color: var(--chrome-2);
+  }
+
+  .dialog-handle{
+    width:36px; height:4px; border-radius:2px;
+    background: var(--line);
+    margin: 6px auto 12px;
+  }
+
+  .dialog-head{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom: 14px;
+  }
+  .dialog-head h2{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:17px; font-weight:700; color: var(--paper); margin:0;
+  }
+
+  .color-grid{
+    display:grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    max-height: 50vh;
+    overflow-y:auto;
+    padding-bottom:4px;
+  }
+  .swatch{
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: none;
+    position:relative;
+    cursor:pointer;
+    box-shadow:
+      inset 0 -3px 4px rgba(0,0,0,0.3),
+      inset 0 2px 2px rgba(255,255,255,0.35),
+      0 2px 3px rgba(0,0,0,0.3);
+  }
+  .swatch::after{
+    content:'';
+    position:absolute; inset:0;
+    border-radius:50%;
+    background:
+      radial-gradient(circle at 32% 26%, rgba(255,255,255,0.65), rgba(255,255,255,0) 48%),
+      radial-gradient(circle at 68% 82%, rgba(0,0,0,0.28), rgba(0,0,0,0) 55%);
+    pointer-events:none;
+    z-index:1;
+  }
+  .swatch:active{ transform: scale(0.88); }
+
+  .eraser-row{
+    width:100%;
+    margin-top: 14px;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    padding: 13px 0;
+    border-radius: 16px;
+    border: 2px dashed var(--muted);
+    background: var(--chrome);
+    color: var(--muted);
+    font-family:'Inter', sans-serif;
+    font-size:15px; font-weight:600;
+    cursor:pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+  .eraser-row svg{ width:17px; height:17px; }
+  .eraser-row:active{ transform: scale(0.97); }
+  .eraser-row.active{
+    border-style: solid;
+    border-color: var(--coral);
+    color: var(--paper);
+    background: rgba(255,99,85,0.16);
+  }
+  .eraser-row.active::after{
+    content:'';
+    width:16px; height:16px;
+    border-radius:50%;
+    background: var(--coral);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 9px 9px;
+  }
+
+  .controls-row{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:8px; min-width:0;
+    overflow-x:auto;
+  }
+
+  .size-select{
+    flex:1; min-width:0;
+  }
+  .style-select{
+    flex:1; min-width:0;
+  }
+
+  .actions{ display:flex; align-items:center; gap:6px; flex-shrink:0; }
+
+
+  /* subtle paper grain */
+  .grain{
+    position:absolute; inset:0; pointer-events:none;
+    background-image: radial-gradient(rgba(27,27,31,0.035) 1px, transparent 1px);
+    background-size: 3px 3px;
+    mix-blend-mode: multiply;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <div class="header-left">
+      <div class="menu-wrap">
+        <button class="icon-btn" id="menuBtn" aria-label="Menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="menu-dropdown" id="menuDropdown">
+          <button class="menu-item" id="menuBgColor">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="0.5" fill="currentColor"/><circle cx="17.5" cy="10.5" r="0.5" fill="currentColor"/><circle cx="8.5" cy="7.5" r="0.5" fill="currentColor"/><circle cx="6.5" cy="12.5" r="0.5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.5-.7 1.5-1.5 0-.4-.16-.76-.41-1.03-.26-.28-.42-.65-.42-1.05 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.97-4.48-9-10-9z"/></svg>
+            <span>Background Color</span>
+          </button>
+          <button class="menu-item" id="clearBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            <span id="clearBtnLabel">Clear Drawing</span>
+          </button>
+          <button class="menu-item" id="saveBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Export</span>
+          </button>
+        </div>
+      </div>
+      <div class="brand">
+        <span class="dot"></span>
+        <h1>Inkling</h1>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="icon-btn" id="undoBtn" aria-label="Undo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
+      </button>
+      <button class="icon-btn" id="redoBtn" aria-label="Redo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/></svg>
+      </button>
+      <button class="icon-btn" id="modeToggleBtn" aria-label="Switch to text mode">
+        <svg class="opt-icon" data-mode="text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+        <svg class="opt-icon active" data-mode="draw" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="canvas-wrap">
+    <canvas id="board"></canvas>
+    <img id="bgImageLayer" alt="" />
+    <div class="grain"></div>
+    <div class="empty-hint" id="hint">draw something</div>
+    <div class="text-scroll" id="textScroll">
+      <div class="text-editor" id="textEditor" contenteditable="false" spellcheck="false" data-placeholder="Type something…"></div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="palette" id="palette">
+      <button class="blob eraser" id="eraserBtn" aria-label="Eraser">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20H9l-6-6 10-10a2 2 0 0 1 2.83 0l5.17 5.17a2 2 0 0 1 0 2.83L11 22"/></svg>
+      </button>
+      <div class="recent-colors" id="recentColors"></div>
+      <div class="recent-colors text-format-row mode-hidden" id="textFormatRow">
+        <button class="fmt-btn" id="fmtBold" data-cmd="bold" aria-label="Bold"><span>B</span></button>
+        <button class="fmt-btn" id="fmtItalic" data-cmd="italic" aria-label="Italic"><span style="font-style:italic;">I</span></button>
+        <button class="fmt-btn" id="fmtUnderline" data-cmd="underline" aria-label="Underline"><span style="text-decoration:underline;">U</span></button>
+        <button class="fmt-btn" id="fmtFontColor" aria-label="Font color">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M6.5 15.5h11L12 4z"/><line x1="8.7" y1="11.5" x2="15.3" y2="11.5"/></svg>
+        </button>
+        <div class="fmt-dropdown" id="alignDropdown">
+          <button class="fmt-btn dropdown-trigger" id="alignTrigger" aria-label="Alignment">
+            <svg class="opt-icon active" data-value="justifyLeft" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="18" y2="18"/></svg>
+            <svg class="opt-icon" data-value="justifyCenter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="5" y1="18" x2="19" y2="18"/></svg>
+            <svg class="opt-icon" data-value="justifyRight" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="10" y1="12" x2="20" y2="12"/><line x1="6" y1="18" x2="20" y2="18"/></svg>
+            <svg class="opt-icon" data-value="justifyFull" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+          </button>
+          <div class="fmt-menu" id="alignMenu">
+            <button class="fmt-menu-item active" data-value="justifyLeft" aria-label="Align left">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="18" y2="18"/></svg>
+            </button>
+            <button class="fmt-menu-item" data-value="justifyCenter" aria-label="Align center">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="5" y1="18" x2="19" y2="18"/></svg>
+            </button>
+            <button class="fmt-menu-item" data-value="justifyRight" aria-label="Align right">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="10" y1="12" x2="20" y2="12"/><line x1="6" y1="18" x2="20" y2="18"/></svg>
+            </button>
+            <button class="fmt-menu-item" data-value="justifyFull" aria-label="Justify">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="fmt-dropdown" id="listDropdown">
+          <button class="fmt-btn dropdown-trigger" id="listTrigger" aria-label="Bullets">
+            <svg class="opt-icon active" data-value="none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="6" r="1.4" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.4" fill="currentColor" stroke="none"/><line x1="9" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="9" y1="18" x2="21" y2="18"/></svg>
+            <svg class="opt-icon" data-value="ul" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="6" r="1.4" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.4" fill="currentColor" stroke="none"/><line x1="9" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="9" y1="18" x2="21" y2="18"/></svg>
+            <svg class="opt-icon" data-value="ol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><text x="1.5" y="8.5" font-size="7" fill="currentColor" stroke="none" font-family="sans-serif">1</text><line x1="9" y1="6" x2="21" y2="6"/><text x="1.5" y="14.5" font-size="7" fill="currentColor" stroke="none" font-family="sans-serif">2</text><line x1="9" y1="12" x2="21" y2="12"/><text x="1.5" y="20.5" font-size="7" fill="currentColor" stroke="none" font-family="sans-serif">3</text><line x1="9" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <div class="fmt-menu" id="listMenu">
+            <button class="fmt-menu-item active" data-value="none" aria-label="No list">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="21" y2="6"/><line x1="4" y1="12" x2="21" y2="12"/><line x1="4" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <button class="fmt-menu-item" data-value="ul" aria-label="Bulleted list">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="6" r="1.4" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.4" fill="currentColor" stroke="none"/><line x1="9" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="9" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <button class="fmt-menu-item" data-value="ol" aria-label="Numbered list">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><text x="1.5" y="8.5" font-size="7" fill="currentColor" stroke="none" font-family="sans-serif">1</text><line x1="9" y1="6" x2="21" y2="6"/><text x="1.5" y="14.5" font-size="7" fill="currentColor" stroke="none" font-family="sans-serif">2</text><line x1="9" y1="12" x2="21" y2="12"/><text x="1.5" y="20.5" font-size="7" fill="currentColor" stroke="none" font-family="sans-serif">3</text><line x1="9" y1="18" x2="21" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+        <button class="fmt-btn" id="fmtIndent" data-cmd="indent" aria-label="Increase indent">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 8 10 12 6 16"/><line x1="21" y1="6" x2="11" y2="6"/><line x1="21" y1="12" x2="15" y2="12"/><line x1="21" y1="18" x2="11" y2="18"/></svg>
+        </button>
+        <button class="fmt-btn" id="fmtOutdent" data-cmd="outdent" aria-label="Decrease indent">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="10 8 6 12 10 16"/><line x1="21" y1="6" x2="11" y2="6"/><line x1="21" y1="12" x2="15" y2="12"/><line x1="21" y1="18" x2="11" y2="18"/></svg>
+        </button>
+        <div class="fmt-dropdown" id="blockDropdown">
+          <button class="fmt-btn dropdown-trigger" id="blockTrigger" aria-label="Paragraph style">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"/><path d="M4 12h10"/><path d="M4 18h13"/></svg>
+          </button>
+          <div class="fmt-menu block-menu" id="blockMenu">
+            <button class="fmt-menu-item block-menu-item active" data-value="p" aria-label="Paragraph">Paragraph</button>
+            <button class="fmt-menu-item block-menu-item" data-value="h1" aria-label="Heading 1">Heading 1</button>
+            <button class="fmt-menu-item block-menu-item" data-value="h2" aria-label="Heading 2">Heading 2</button>
+            <button class="fmt-menu-item block-menu-item" data-value="h3" aria-label="Heading 3">Heading 3</button>
+            <button class="fmt-menu-item block-menu-item" data-value="h4" aria-label="Heading 4">Heading 4</button>
+            <button class="fmt-menu-item block-menu-item" data-value="h5" aria-label="Heading 5">Heading 5</button>
+            <button class="fmt-menu-item block-menu-item" data-value="h6" aria-label="Heading 6">Heading 6</button>
+            <button class="fmt-menu-item block-menu-item" data-value="blockquote" aria-label="Quote">Quote</button>
+          </div>
+        </div>
+      </div>
+      <button class="blob more" id="colorTrigger" aria-label="Choose a color">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
+      </button>
+
+    </div>
+
+    <div class="controls-row" id="sizes">
+      <select class="fmt-select size-select" id="sizeSelect" aria-label="Tool size">
+        <option value="2">Extra Small</option>
+        <option value="4">Small</option>
+        <option value="10" selected>Medium</option>
+        <option value="20">Large</option>
+        <option value="30">Extra Large</option>
+        <option value="45">Huge</option>
+      </select>
+      <select class="fmt-select style-select" id="brushStyleSelect" aria-label="Tool type">
+        <option value="marker" selected>Marker</option>
+        <option value="crayon">Crayon</option>
+        <option value="spray">Spray</option>
+        <option value="smudge">Smudge</option>
+      </select>
+      <button class="fmt-btn" id="bgFitBtn" aria-label="Switch background image to contain">
+        <svg class="opt-icon active" data-fit="cover" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V5a1 1 0 0 1 1-1h3"/><path d="M16 4h3a1 1 0 0 1 1 1v3"/><path d="M20 16v3a1 1 0 0 1-1 1h-3"/><path d="M8 20H5a1 1 0 0 1-1-1v-3"/><rect x="5" y="5" width="14" height="14" rx="1"/></svg>
+        <svg class="opt-icon" data-fit="contain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V5a1 1 0 0 1 1-1h3"/><path d="M16 4h3a1 1 0 0 1 1 1v3"/><path d="M20 16v3a1 1 0 0 1-1 1h-3"/><path d="M8 20H5a1 1 0 0 1-1-1v-3"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>
+      </button>
+      <button class="fmt-btn" id="bgImageBtn" aria-label="Set background image">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      </button>
+      <input type="file" id="bgImageInput" accept="image/*" style="display:none" />
+    </div>
+  </div>
+
+</div>
+
+<div class="dialog-overlay" id="colorOverlay">
+  <div class="dialog-sheet" id="colorSheet">
+    <div class="dialog-handle"></div>
+    <div class="dialog-head">
+      <h2 id="colorDialogTitle">Choose a color</h2>
+      <button class="icon-btn" id="colorDialogClose" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="dialog-dropdowns mode-hidden" id="textDialogControls">
+      <select class="dropdown-select" id="fontFamilySelect" aria-label="Font family">
+        <option value="'Inter', sans-serif">Sans Serif</option>
+        <option value="'Space Grotesk', sans-serif">Grotesk</option>
+        <option value="Georgia, 'Times New Roman', serif">Serif</option>
+        <option value="'Courier New', monospace">Monospace</option>
+        <option value="'Brush Script MT', cursive">Cursive</option>
+      </select>
+      <select class="dropdown-select" id="fontSizeSelect" aria-label="Font size">
+        <option value="13">13</option>
+        <option value="16">16</option>
+        <option value="20" selected>20</option>
+        <option value="24">24</option>
+        <option value="28">28</option>
+        <option value="34">34</option>
+        <option value="42">42</option>
+        <option value="52">52</option>
+      </select>
+    </div>
+
+    <div class="color-grid" id="colorGrid"></div>
+    <button class="eraser-row" id="dialogEraser">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20H9l-6-6 10-10a2 2 0 0 1 2.83 0l5.17 5.17a2 2 0 0 1 0 2.83L11 22"/></svg>
+      <span>Eraser</span>
+    </button>
+  </div>
+</div>
+
+<div class="dialog-overlay" id="bgOverlay">
+  <div class="dialog-sheet" id="bgSheet">
+    <div class="dialog-handle"></div>
+    <div class="dialog-head">
+      <h2>Background Color</h2>
+      <button class="icon-btn" id="bgDialogClose" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="color-grid" id="bgGrid"></div>
+  </div>
+</div>
+
+<div class="dialog-overlay" id="saveOverlay">
+  <div class="dialog-sheet" id="saveSheet">
+    <div class="dialog-handle"></div>
+    <div class="dialog-head">
+      <h2>Save Doodle</h2>
+      <button class="icon-btn" id="saveDialogClose" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <p style="margin:0 0 4px; color: var(--muted); font-family:'Inter', sans-serif; font-size:14px; line-height:1.4;">
+      You have text on the board. Include it in the saved image?
+    </p>
+    <div class="confirm-actions">
+      <button class="confirm-btn cancel" id="saveDrawingOnlyBtn">Drawing Only</button>
+      <button class="confirm-btn danger" id="saveIncludeTextBtn">Include Text</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const canvas = document.getElementById('board');
+  const ctx = canvas.getContext('2d');
+  const hint = document.getElementById('hint');
+  const wrap = canvas.parentElement;
+  const textEditor = document.getElementById('textEditor');
+  const textScroll = document.getElementById('textScroll');
+  const clearBtnLabel = document.getElementById('clearBtnLabel');
+
+  let color = 'black';
+  let baseSize = 10;
+  let brushStyle = 'marker'; // 'marker' | 'crayon' | 'spray' | 'smudge'
+  let erasing = false;
+  let drawing = false;
+  let lastX, lastY, lastT, lastWidth;
+  let hasDrawn = false;
+  let swatchEls = null;
+  let mode = 'draw'; // 'draw' | 'text'
+  let textColor = 'black';
+  let currentFontSize = 20;
+  let textFontFamily = "'Inter', sans-serif";
+
+  // ---------- Persistence (drawing, text, settings) ----------
+  // Prefers the artifact platform's window.storage API (used when this runs
+  // inside a Claude.ai artifact), but falls back to localStorage so saving
+  // still works when the file is opened standalone in a normal browser —
+  // and finally to an in-memory store if even that is blocked, so the app
+  // at least keeps working for the current session.
+  const STORAGE_KEYS = { canvas: 'inkling:canvas', text: 'inkling:text', settings: 'inkling:settings', bgImage: 'inkling:bgImage' };
+
+  const storageBackend = (function(){
+    if(window.storage && typeof window.storage.get === 'function' && typeof window.storage.set === 'function'){
+      return {
+        label: 'window.storage',
+        async get(key){
+          const res = await window.storage.get(key);
+          return (res && typeof res.value === 'string') ? res.value : null;
+        },
+        async set(key, value){ await window.storage.set(key, value); }
+      };
+    }
+    try{
+      const probeKey = '__inkling_probe__';
+      window.localStorage.setItem(probeKey, '1');
+      window.localStorage.removeItem(probeKey);
+      return {
+        label: 'localStorage',
+        async get(key){ return window.localStorage.getItem(key); },
+        async set(key, value){ window.localStorage.setItem(key, value); }
+      };
+    }catch(e){ /* localStorage unavailable (private mode, disabled, etc.) */ }
+
+    const memoryStore = {};
+    return {
+      label: 'memory',
+      async get(key){ return (key in memoryStore) ? memoryStore[key] : null; },
+      async set(key, value){ memoryStore[key] = value; }
+    };
+  })();
+
+  let hasStorage = true;
+  let storageFailCount = 0;
+  const MAX_STORAGE_FAILURES = 3;
+
+  function noteStorageFailure(label, e){
+    storageFailCount++;
+    console.error(label, e);
+    if(storageFailCount >= MAX_STORAGE_FAILURES){
+      hasStorage = false;
+      console.warn('Persistent storage seems unavailable right now — the app will keep working, just without saving.');
+    }
+  }
+
+  function debounce(fn, wait){
+    let t;
+    return (...args)=>{ clearTimeout(t); t = setTimeout(()=> fn(...args), wait); };
+  }
+
+  // A smaller, capped-resolution snapshot avoids ever hitting a payload-size
+  // issue and keeps saves fast; full quality is only used for the "Save"
+  // export. PNG (not JPEG) is required here: the board canvas itself is
+  // transparent — the visible background color is a separate CSS layer on
+  // the wrapper — and JPEG has no alpha channel, so it would flatten every
+  // transparent pixel to black.
+  function getCanvasSnapshot(){
+    const maxDim = 1400;
+    const scale = Math.min(1, maxDim / Math.max(canvas.width, canvas.height));
+    const out = document.createElement('canvas');
+    out.width = Math.max(1, Math.round(canvas.width * scale));
+    out.height = Math.max(1, Math.round(canvas.height * scale));
+    const octx = out.getContext('2d');
+    octx.drawImage(canvas, 0, 0, out.width, out.height);
+    return out.toDataURL('image/png');
+  }
+
+  async function saveCanvas(){
+    if(!hasStorage) return;
+    try{
+      await storageBackend.set(STORAGE_KEYS.canvas, getCanvasSnapshot());
+    }catch(e){ noteStorageFailure('save canvas failed', e); }
+  }
+
+  async function saveText(){
+    if(!hasStorage) return;
+    try{
+      await storageBackend.set(STORAGE_KEYS.text, textEditor.innerHTML);
+    }catch(e){ noteStorageFailure('save text failed', e); }
+  }
+
+  async function saveSettings(){
+    if(!hasStorage) return;
+    try{
+      const settings = { mode, baseSize, brushStyle, currentFontSize, textFontFamily, canvasBgColor, textColor, color, recentColors, bgFitMode };
+      await storageBackend.set(STORAGE_KEYS.settings, JSON.stringify(settings));
+    }catch(e){ noteStorageFailure('save settings failed', e); }
+  }
+
+  const debouncedSaveCanvas = debounce(saveCanvas, 500);
+  const debouncedSaveText = debounce(saveText, 500);
+  const debouncedSaveSettings = debounce(saveSettings, 400);
+
+  const undoStack = [];
+  const redoStack = [];
+  const MAX_UNDO = 15;
+  const MAX_REDO = 15;
+  const undoBtn = document.getElementById('undoBtn');
+  const redoBtn = document.getElementById('redoBtn');
+
+  function syncUndoRedoButtons(){
+    if(mode === 'text'){
+      undoBtn.disabled = false;
+      redoBtn.disabled = false;
+      return;
+    }
+    undoBtn.disabled = undoStack.length === 0;
+    redoBtn.disabled = redoStack.length === 0;
+  }
+  syncUndoRedoButtons();
+
+  let dpr = window.devicePixelRatio || 1;
+
+  function resize(){
+    const rect = wrap.getBoundingClientRect();
+    const ratio = window.devicePixelRatio || 1;
+    dpr = ratio;
+    const prev = document.createElement('canvas');
+    prev.width = canvas.width; prev.height = canvas.height;
+    if(canvas.width && canvas.height){ prev.getContext('2d').drawImage(canvas,0,0); }
+
+    canvas.width = Math.max(1, Math.round(rect.width * ratio));
+    canvas.height = Math.max(1, Math.round(rect.height * ratio));
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.height + 'px';
+    ctx.setTransform(ratio,0,0,ratio,0,0);
+
+    if(prev.width && prev.height){
+      // Stretch-fit the entire previous image into the new size so nothing
+      // is cropped when available space changes (e.g. on-screen keyboard).
+      ctx.drawImage(prev, 0, 0, prev.width, prev.height, 0, 0, rect.width, rect.height);
+    }
+  }
+  // The canvas is sized once, to the full page, and is then locked —
+  // it deliberately never resizes again (not on window resize, orientation
+  // change, or when the on-screen keyboard opens/closes), so drawings and
+  // text never shift, stretch, or lose quality after the first paint.
+  const appEl = document.getElementById('app');
+  appEl.style.height = (window.visualViewport ? window.visualViewport.height : window.innerHeight) + 'px';
+  resize();
+
+  // Header and toolbar are fixed overlays now, so the text layer needs
+  // matching top/bottom padding or typed content would render underneath
+  // them. Measured once — like everything else here, this never changes.
+  const headerEl = document.querySelector('header');
+  const toolbarEl = document.querySelector('.toolbar');
+  document.documentElement.style.setProperty('--header-h', headerEl.offsetHeight + 'px');
+  document.documentElement.style.setProperty('--toolbar-h', toolbarEl.offsetHeight + 'px');
+
+  function pushUndo(){
+    try{
+      const snap = ctx.getImageData(0,0,canvas.width,canvas.height);
+      undoStack.push(snap);
+      if(undoStack.length > MAX_UNDO) undoStack.shift();
+      redoStack.length = 0;
+      syncUndoRedoButtons();
+    }catch(e){}
+  }
+
+  function pointerPos(e){
+    const rect = canvas.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+
+  function widthFromSpeed(dist, dt){
+    const speed = dt > 0 ? dist / dt : 0; // px per ms
+    const minW = baseSize * 0.45;
+    const maxW = baseSize * 1.35;
+    const w = maxW - speed * 18;
+    return Math.max(minW, Math.min(maxW, w));
+  }
+
+  function start(e){
+    drawing = true;
+    hasDrawn = true;
+    hint.style.opacity = '0';
+    pushUndo();
+    const p = pointerPos(e);
+    lastX = p.x; lastY = p.y; lastT = performance.now();
+    lastWidth = erasing ? baseSize * 1.6 : baseSize * 0.9;
+
+    if(erasing){
+      dot(p.x, p.y, lastWidth);
+    } else if(brushStyle === 'crayon'){
+      crayonDot(p.x, p.y, baseSize);
+      startCrayonHold();
+    } else if(brushStyle === 'spray'){
+      sprayDot(p.x, p.y, baseSize);
+      startSprayHold();
+    } else if(brushStyle === 'smudge'){
+      // Smudge only drags existing pixels, so there's nothing to do
+      // until the pointer actually moves.
+    } else {
+      dot(p.x, p.y, lastWidth);
+    }
+  }
+
+  function dot(x, y, w){
+    ctx.save();
+    ctx.globalCompositeOperation = erasing ? 'destination-out' : 'source-over';
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(x, y, w/2, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // ---------- Crayon brush (dense, tight dot cluster) ----------
+  function crayonDot(x, y, w){
+    const radius = Math.max(4, w/2);
+    const density = Math.max(6, Math.round(w * 1.4));
+    ctx.save();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = color;
+    for(let i=0;i<density;i++){
+      // Bias toward the center for a more natural spray-can falloff.
+      const a = Math.random() * Math.PI * 2;
+      const r = radius * Math.sqrt(Math.random());
+      const speckle = 0.5 + Math.random() * 1.2;
+      ctx.globalAlpha = 0.35 + Math.random() * 0.35;
+      ctx.beginPath();
+      ctx.arc(x + Math.cos(a) * r, y + Math.sin(a) * r, speckle, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function crayonLine(x0, y0, x1, y1, w){
+    const dist = Math.hypot(x1 - x0, y1 - y0);
+    const steps = Math.max(1, Math.ceil(dist / 3));
+    for(let i=1;i<=steps;i++){
+      const t = i / steps;
+      crayonDot(x0 + (x1-x0)*t, y0 + (y1-y0)*t, w);
+    }
+  }
+
+  let crayonHoldTimer = null;
+  function startCrayonHold(){
+    stopCrayonHold();
+    // Held in place, it keeps depositing paint like a real crayon/spray can.
+    crayonHoldTimer = setInterval(()=>{
+      if(!drawing) return;
+      crayonDot(lastX, lastY, baseSize);
+    }, 45);
+  }
+  function stopCrayonHold(){
+    if(crayonHoldTimer){ clearInterval(crayonHoldTimer); crayonHoldTimer = null; }
+  }
+
+  // ---------- Spray brush (loose, wide, sparse dot scatter) ----------
+  function sprayDot(x, y, w){
+    const radius = Math.max(10, w * 1.6);
+    const density = Math.max(3, Math.round(w * 0.5));
+    ctx.save();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = color;
+    for(let i=0;i<density;i++){
+      // Same center-biased falloff, but spread much further out and with
+      // fewer speckles per dot for a light, airy scatter instead of a
+      // dense cluster.
+      const a = Math.random() * Math.PI * 2;
+      const r = radius * Math.sqrt(Math.random());
+      const speckle = 0.4 + Math.random() * 0.9;
+      ctx.globalAlpha = 0.2 + Math.random() * 0.3;
+      ctx.beginPath();
+      ctx.arc(x + Math.cos(a) * r, y + Math.sin(a) * r, speckle, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function sprayLine(x0, y0, x1, y1, w){
+    const dist = Math.hypot(x1 - x0, y1 - y0);
+    const steps = Math.max(1, Math.ceil(dist / 3));
+    for(let i=1;i<=steps;i++){
+      const t = i / steps;
+      sprayDot(x0 + (x1-x0)*t, y0 + (y1-y0)*t, w);
+    }
+  }
+
+  let sprayHoldTimer = null;
+  function startSprayHold(){
+    stopSprayHold();
+    sprayHoldTimer = setInterval(()=>{
+      if(!drawing) return;
+      sprayDot(lastX, lastY, baseSize);
+    }, 45);
+  }
+  function stopSprayHold(){
+    if(sprayHoldTimer){ clearInterval(sprayHoldTimer); sprayHoldTimer = null; }
+  }
+
+  // ---------- Smudge brush ----------
+  // Drags existing canvas pixels along the stroke path instead of laying
+  // down new color, like dragging a finger through wet paint.
+  const smudgeScratch = document.createElement('canvas');
+  const smudgeCtx = smudgeScratch.getContext('2d');
+  function smudgeStamp(fromX, fromY, toX, toY, w){
+    const r = Math.max(6, Math.round(w));
+    const rr = Math.max(1, Math.round(r * dpr));
+    smudgeScratch.width = rr;
+    smudgeScratch.height = rr;
+    smudgeCtx.clearRect(0, 0, rr, rr);
+    smudgeCtx.drawImage(canvas, fromX*dpr - rr/2, fromY*dpr - rr/2, rr, rr, 0, 0, rr, rr);
+    ctx.save();
+    ctx.globalAlpha = 0.5;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.drawImage(smudgeScratch, toX - r/2, toY - r/2, r, r);
+    ctx.restore();
+  }
+
+  function smudgeLine(x0, y0, x1, y1, w){
+    const dist = Math.hypot(x1 - x0, y1 - y0);
+    const steps = Math.max(1, Math.ceil(dist / Math.max(2, w * 0.3)));
+    for(let i=1;i<=steps;i++){
+      const t0 = (i-1) / steps, t1 = i / steps;
+      smudgeStamp(
+        x0 + (x1-x0)*t0, y0 + (y1-y0)*t0,
+        x0 + (x1-x0)*t1, y0 + (y1-y0)*t1,
+        w
+      );
+    }
+  }
+
+  function move(e){
+    if(!drawing) return;
+    const p = pointerPos(e);
+    const now = performance.now();
+    const dist = Math.hypot(p.x - lastX, p.y - lastY);
+    const dt = now - lastT;
+
+    if(erasing){
+      const w = baseSize * 1.6;
+      ctx.save();
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.strokeStyle = color;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = (w + lastWidth) / 2;
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+      ctx.restore();
+      lastX = p.x; lastY = p.y; lastT = now; lastWidth = w;
+      return;
+    }
+
+    if(brushStyle === 'crayon'){
+      crayonLine(lastX, lastY, p.x, p.y, baseSize);
+      lastX = p.x; lastY = p.y; lastT = now; lastWidth = baseSize;
+      return;
+    }
+
+    if(brushStyle === 'spray'){
+      sprayLine(lastX, lastY, p.x, p.y, baseSize);
+      lastX = p.x; lastY = p.y; lastT = now; lastWidth = baseSize;
+      return;
+    }
+
+    if(brushStyle === 'smudge'){
+      smudgeLine(lastX, lastY, p.x, p.y, baseSize);
+      lastX = p.x; lastY = p.y; lastT = now; lastWidth = baseSize;
+      return;
+    }
+
+    // Marker (default): variable-width stroke that responds to speed.
+    const w = widthFromSpeed(dist, dt);
+    ctx.save();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = color;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = (w + lastWidth) / 2;
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    ctx.restore();
+
+    lastX = p.x; lastY = p.y; lastT = now; lastWidth = w;
+  }
+
+  function end(){
+    if(drawing) debouncedSaveCanvas();
+    drawing = false;
+    stopCrayonHold();
+    stopSprayHold();
+  }
+
+  canvas.addEventListener('pointerdown', (e)=>{ canvas.setPointerCapture(e.pointerId); start(e); });
+  canvas.addEventListener('pointermove', move);
+  canvas.addEventListener('pointerup', end);
+  canvas.addEventListener('pointercancel', end);
+  canvas.addEventListener('pointerleave', (e)=>{ if(drawing) end(); });
+
+  // ---------- Color helpers ----------
+  const probe = document.createElement('div');
+  probe.style.display = 'none';
+  document.body.appendChild(probe);
+  function isLight(cssColor){
+    probe.style.color = cssColor;
+    const computed = getComputedStyle(probe).color; // "rgb(r, g, b)"
+    const m = computed.match(/\d+/g);
+    if(!m) return false;
+    const [r,g,b] = m.map(Number);
+    const luminance = (0.299*r + 0.587*g + 0.114*b) / 255;
+    return luminance > 0.75;
+  }
+
+  // ---------- Palette ----------
+  const eraserBtn = document.getElementById('eraserBtn');
+  const colorTrigger = document.getElementById('colorTrigger');
+  const recentContainer = document.getElementById('recentColors');
+
+  let recentColors = ['black', 'red', 'dodgerblue', 'limegreen', 'gold'];
+
+  function updateActiveStates(){
+    const activeColor = mode === 'text' ? textColor : color;
+
+    eraserBtn.classList.toggle('active', erasing);
+    const dialogEraser = document.getElementById('dialogEraser');
+    if(dialogEraser) dialogEraser.classList.toggle('active', erasing);
+
+    recentContainer.querySelectorAll('.blob').forEach(b=>{
+      b.classList.toggle('active', !erasing && b.getAttribute('data-color').toLowerCase() === activeColor.toLowerCase());
+    });
+
+    if(swatchEls){
+      swatchEls.forEach(s=>{
+        s.classList.toggle('active', !erasing && s.getAttribute('data-color').toLowerCase() === activeColor.toLowerCase());
+      });
+    }
+  }
+
+  function renderRecentColors(){
+    recentContainer.innerHTML = '';
+    recentColors.forEach(c=>{
+      const btn = document.createElement('button');
+      btn.className = 'blob';
+      btn.style.setProperty('--c', c);
+      btn.style.background = c;
+      btn.setAttribute('data-color', c);
+      btn.addEventListener('click', ()=> setColor(c));
+      recentContainer.appendChild(btn);
+    });
+    updateActiveStates();
+  }
+
+  function setColor(newColor){
+    if(mode === 'text'){
+      textColor = newColor;
+      textEditor.style.color = newColor;
+      textEditor.focus();
+      document.execCommand('foreColor', false, newColor);
+      updateActiveStates();
+      debouncedSaveSettings();
+      debouncedSaveText();
+      return;
+    }
+
+    erasing = false;
+    color = newColor;
+
+    const idx = recentColors.findIndex(c => c.toLowerCase() === newColor.toLowerCase());
+    if(idx === -1){
+      recentColors.unshift(newColor);
+      if(recentColors.length > 6) recentColors = recentColors.slice(0, 6);
+      renderRecentColors();
+    } else {
+      updateActiveStates();
+    }
+    debouncedSaveSettings();
+  }
+
+  function setEraser(){
+    if(mode === 'text') return;
+    erasing = true;
+    updateActiveStates();
+  }
+
+  renderRecentColors();
+
+  eraserBtn.addEventListener('click', setEraser);
+
+  // ---------- Color picker dialog ----------
+  const colors = [
+    "white", "lightgray", "gray", "black", "pink", "hotpink",
+    "indianred", "rosybrown", "saddlebrown", "peru", "red",
+    "orangered", "tomato", "orange", "gold", "yellow",
+    "olivedrab", "limegreen", "seagreen", "springgreen",
+    "mediumaquamarine", "turquoise", "cyan", "deepskyblue",
+    "dodgerblue", "blue", "mediumslateblue", "blueviolet",
+    "plum", "magenta"
+  ];
+
+  const colorOverlay = document.getElementById('colorOverlay');
+  const colorGrid = document.getElementById('colorGrid');
+
+  function buildColorGrid(){
+    const frag = document.createDocumentFragment();
+    swatchEls = colors.map(c=>{
+      const btn = document.createElement('button');
+      btn.className = 'swatch' + (isLight(c) ? ' light-swatch' : '');
+      btn.style.background = c;
+      btn.setAttribute('data-color', c);
+      btn.setAttribute('aria-label', c);
+      btn.addEventListener('click', ()=>{
+        setColor(c);
+        closeColorDialog();
+      });
+      frag.appendChild(btn);
+      return btn;
+    });
+    colorGrid.appendChild(frag);
+    updateActiveStates();
+  }
+  buildColorGrid();
+
+  document.getElementById('dialogEraser').addEventListener('click', ()=>{
+    setEraser();
+    closeColorDialog();
+  });
+
+  function openColorDialog(){
+    updateActiveStates();
+    document.getElementById('dialogEraser').classList.toggle('mode-hidden', mode === 'text');
+    document.getElementById('textDialogControls').classList.toggle('mode-hidden', mode === 'draw');
+    document.getElementById('colorDialogTitle').textContent = mode === 'text' ? 'Text color' : 'Choose a color';
+    colorOverlay.classList.add('open');
+  }
+  function closeColorDialog(){ colorOverlay.classList.remove('open'); }
+
+  colorTrigger.addEventListener('click', openColorDialog);
+  document.getElementById('fmtFontColor').addEventListener('click', openColorDialog);
+  document.getElementById('colorDialogClose').addEventListener('click', closeColorDialog);
+  colorOverlay.addEventListener('click', (e)=>{
+    if(e.target === colorOverlay) closeColorDialog();
+  });
+
+  // ---------- Sizes & brush style (drawing) ----------
+  const sizeSelect = document.getElementById('sizeSelect');
+  sizeSelect.addEventListener('change', ()=>{
+    baseSize = parseInt(sizeSelect.value, 10);
+    debouncedSaveSettings();
+  });
+
+  const brushStyleSelect = document.getElementById('brushStyleSelect');
+  brushStyleSelect.addEventListener('change', ()=>{
+    brushStyle = brushStyleSelect.value;
+    debouncedSaveSettings();
+  });
+
+  // ---------- Text formatting ----------
+  const fmtBtns = document.querySelectorAll('.fmt-btn[data-cmd]');
+
+  function setDropdownState(dropdownId, value){
+    const wrap = document.getElementById(dropdownId);
+    wrap.querySelectorAll('.opt-icon').forEach(ic=>{
+      ic.classList.toggle('active', ic.getAttribute('data-value') === value);
+    });
+    wrap.querySelectorAll('.fmt-menu-item').forEach(mi=>{
+      mi.classList.toggle('active', mi.getAttribute('data-value') === value);
+    });
+  }
+
+  function updateFmtActiveStates(){
+    try{
+      document.getElementById('fmtBold').classList.toggle('active', document.queryCommandState('bold'));
+      document.getElementById('fmtItalic').classList.toggle('active', document.queryCommandState('italic'));
+      document.getElementById('fmtUnderline').classList.toggle('active', document.queryCommandState('underline'));
+
+      let alignVal = 'justifyLeft';
+      if(document.queryCommandState('justifyCenter')) alignVal = 'justifyCenter';
+      else if(document.queryCommandState('justifyRight')) alignVal = 'justifyRight';
+      else if(document.queryCommandState('justifyFull')) alignVal = 'justifyFull';
+      setDropdownState('alignDropdown', alignVal);
+
+      let listVal = 'none';
+      if(document.queryCommandState('insertUnorderedList')) listVal = 'ul';
+      else if(document.queryCommandState('insertOrderedList')) listVal = 'ol';
+      setDropdownState('listDropdown', listVal);
+
+      const block = (document.queryCommandValue('formatBlock') || '').toLowerCase();
+      const blockOptions = ['p','h1','h2','h3','h4','h5','h6','blockquote'];
+      setDropdownState('blockDropdown', blockOptions.includes(block) ? block : 'p');
+    }catch(e){}
+  }
+
+  fmtBtns.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      textEditor.focus();
+      document.execCommand(btn.getAttribute('data-cmd'), false, null);
+      updateFmtActiveStates();
+      debouncedSaveText();
+    });
+  });
+
+  // Shared behavior for the icon-based dropdown menus (alignment, list style)
+  function setupFmtDropdown(dropdownId, onSelect){
+    const wrap = document.getElementById(dropdownId);
+    const trigger = wrap.querySelector('.dropdown-trigger');
+    const menu = wrap.querySelector('.fmt-menu');
+
+    function positionMenu(){
+      const rect = trigger.getBoundingClientRect();
+      const menuWidth = menu.getBoundingClientRect().width;
+      const maxLeft = window.innerWidth - menuWidth - 8;
+      const left = Math.max(8, Math.min(rect.left, maxLeft));
+      menu.style.left = left + 'px';
+      menu.style.bottom = (window.innerHeight - rect.top + 8) + 'px';
+    }
+
+    trigger.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      document.querySelectorAll('.fmt-menu.open').forEach(m=>{ if(m !== menu) m.classList.remove('open'); });
+      const willOpen = !menu.classList.contains('open');
+      if(willOpen) positionMenu();
+      menu.classList.toggle('open');
+    });
+
+    // Keep the menu glued to its trigger (or close it) if the viewport
+    // changes shape while it's open — otherwise the fixed-position menu
+    // is left stranded at its old coordinates.
+    window.addEventListener('resize', ()=>{
+      if(menu.classList.contains('open')) positionMenu();
+    });
+    window.addEventListener('orientationchange', ()=>{
+      if(menu.classList.contains('open')) menu.classList.remove('open');
+    });
+
+    menu.querySelectorAll('.fmt-menu-item').forEach(item=>{
+      item.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        textEditor.focus();
+        onSelect(item.getAttribute('data-value'));
+        menu.classList.remove('open');
+        updateFmtActiveStates();
+        debouncedSaveText();
+      });
+    });
+
+    document.addEventListener('click', (e)=>{
+      if(!wrap.contains(e.target)) menu.classList.remove('open');
+    });
+  }
+
+  setupFmtDropdown('alignDropdown', (value)=>{
+    document.execCommand(value, false, null);
+  });
+
+  setupFmtDropdown('listDropdown', (value)=>{
+    try{
+      if(value === 'ul') document.execCommand('insertUnorderedList');
+      else if(value === 'ol') document.execCommand('insertOrderedList');
+      else {
+        if(document.queryCommandState('insertUnorderedList')) document.execCommand('insertUnorderedList');
+        else if(document.queryCommandState('insertOrderedList')) document.execCommand('insertOrderedList');
+      }
+    }catch(e){}
+  });
+
+  setupFmtDropdown('blockDropdown', (value)=>{
+    try{ document.execCommand('formatBlock', false, '<' + value + '>'); }catch(e){}
+  });
+
+  textEditor.addEventListener('keyup', updateFmtActiveStates);
+  textEditor.addEventListener('mouseup', updateFmtActiveStates);
+  textEditor.addEventListener('input', debouncedSaveText);
+
+  // ---------- Font family & size (in the color dialog, text mode) ----------
+  const fontFamilySelect = document.getElementById('fontFamilySelect');
+  const fontSizeSelect = document.getElementById('fontSizeSelect');
+
+  textEditor.style.fontFamily = textFontFamily;
+  textEditor.style.fontSize = currentFontSize + 'px';
+  fontFamilySelect.value = textFontFamily;
+  fontSizeSelect.value = String(currentFontSize);
+
+  fontFamilySelect.addEventListener('change', ()=>{
+    textFontFamily = fontFamilySelect.value;
+    textEditor.style.fontFamily = textFontFamily;
+    textEditor.focus();
+    try{ document.execCommand('fontName', false, textFontFamily); }catch(e){}
+    debouncedSaveSettings();
+    debouncedSaveText();
+  });
+
+  fontSizeSelect.addEventListener('change', ()=>{
+    currentFontSize = parseInt(fontSizeSelect.value, 10);
+    textEditor.style.fontSize = currentFontSize + 'px';
+    textEditor.focus();
+    debouncedSaveSettings();
+  });
+
+  // ---------- Undo / Redo ----------
+  undoBtn.addEventListener('click', ()=>{
+    if(mode === 'text'){
+      textEditor.focus();
+      document.execCommand('undo');
+      debouncedSaveText();
+      return;
+    }
+
+    if(undoStack.length === 0) return;
+    const current = ctx.getImageData(0,0,canvas.width,canvas.height);
+    redoStack.push(current);
+    if(redoStack.length > MAX_REDO) redoStack.shift();
+
+    const snap = undoStack.pop();
+    ctx.putImageData(snap, 0, 0);
+    syncUndoRedoButtons();
+    debouncedSaveCanvas();
+  });
+
+  redoBtn.addEventListener('click', ()=>{
+    if(mode === 'text'){
+      textEditor.focus();
+      document.execCommand('redo');
+      debouncedSaveText();
+      return;
+    }
+
+    if(redoStack.length === 0) return;
+    const current = ctx.getImageData(0,0,canvas.width,canvas.height);
+    undoStack.push(current);
+    if(undoStack.length > MAX_UNDO) undoStack.shift();
+
+    const snap = redoStack.pop();
+    ctx.putImageData(snap, 0, 0);
+    syncUndoRedoButtons();
+    debouncedSaveCanvas();
+  });
+
+  // ---------- Clear (with confirm) ----------
+  const bgOverlay = document.getElementById('bgOverlay');
+  const bgGrid = document.getElementById('bgGrid');
+  let canvasBgColor = 'white';
+
+  function setBgColor(c){
+    canvasBgColor = c;
+    wrap.style.backgroundColor = c;
+    document.querySelectorAll('.bg-swatch').forEach(s=>{
+      s.classList.toggle('active', s.getAttribute('data-bg').toLowerCase() === c.toLowerCase());
+    });
+    debouncedSaveSettings();
+  }
+
+  function buildBgGrid(){
+    const frag = document.createDocumentFragment();
+    colors.forEach(c=>{
+      const btn = document.createElement('button');
+      btn.className = 'swatch bg-swatch' + (isLight(c) ? ' light-swatch' : '') + (c.toLowerCase() === canvasBgColor.toLowerCase() ? ' active' : '');
+      btn.style.background = c;
+      btn.setAttribute('data-bg', c);
+      btn.setAttribute('aria-label', c);
+      btn.addEventListener('click', ()=> setBgColor(c));
+      frag.appendChild(btn);
+    });
+    bgGrid.appendChild(frag);
+  }
+  buildBgGrid();
+  wrap.style.backgroundColor = canvasBgColor;
+
+  function openBgDialog(){
+    bgOverlay.classList.add('open');
+  }
+  function closeBgDialog(){ bgOverlay.classList.remove('open'); }
+
+  document.getElementById('bgDialogClose').addEventListener('click', closeBgDialog);
+  bgOverlay.addEventListener('click', (e)=>{
+    if(e.target === bgOverlay) closeBgDialog();
+  });
+
+  // ---------- Background image ----------
+  // Rendered as a real <img> layer stacked above the (transparent) drawing
+  // canvas but below the text layer (see #bgImageLayer z-index in the CSS).
+  // Any near-white pixels in the chosen photo are made transparent before
+  // display, so the canvas underneath (and the drawing on it) shows through
+  // the light parts of the image. The same processed image is kept in
+  // memory as an Image() so it can be composited synchronously into the
+  // exported PNG.
+  const bgImageBtn = document.getElementById('bgImageBtn');
+  const bgImageInput = document.getElementById('bgImageInput');
+  const bgImageLayer = document.getElementById('bgImageLayer');
+  const bgFitBtn = document.getElementById('bgFitBtn');
+  let bgImageData = null;
+  let bgImageEl = null;
+  let bgFitMode = 'cover'; // 'cover' | 'contain'
+
+  function applyBgFitMode(newMode){
+    bgFitMode = newMode;
+    bgImageLayer.style.objectFit = bgFitMode;
+    bgFitBtn.querySelectorAll('.opt-icon').forEach(ic=>{
+      ic.classList.toggle('active', ic.getAttribute('data-fit') === bgFitMode);
+    });
+    bgFitBtn.setAttribute('aria-label', bgFitMode === 'cover' ? 'Switch background image to contain' : 'Switch background image to cover');
+  }
+
+  bgFitBtn.addEventListener('click', ()=>{
+    applyBgFitMode(bgFitMode === 'cover' ? 'contain' : 'cover');
+    debouncedSaveSettings();
+  });
+
+  // Rewrites `img` onto an offscreen canvas, flattening any near-white
+  // pixel to fully transparent, and returns the result as a PNG data URL.
+  const WHITE_THRESHOLD = 245;
+  function whiteToTransparentDataUrl(img){
+    const off = document.createElement('canvas');
+    off.width = img.naturalWidth || img.width;
+    off.height = img.naturalHeight || img.height;
+    const octx = off.getContext('2d');
+    octx.drawImage(img, 0, 0, off.width, off.height);
+    const imageData = octx.getImageData(0, 0, off.width, off.height);
+    const data = imageData.data;
+    for(let i = 0; i < data.length; i += 4){
+      if(data[i] >= WHITE_THRESHOLD && data[i+1] >= WHITE_THRESHOLD && data[i+2] >= WHITE_THRESHOLD){
+        data[i+3] = 0;
+      }
+    }
+    octx.putImageData(imageData, 0, 0);
+    return off.toDataURL('image/png');
+  }
+
+  function applyBgImageStyle(dataUrl){
+    if(dataUrl){
+      bgImageLayer.src = dataUrl;
+      bgImageLayer.style.display = 'block';
+      const img = new Image();
+      img.onload = ()=>{ bgImageEl = img; };
+      img.src = dataUrl;
+    } else {
+      bgImageLayer.removeAttribute('src');
+      bgImageLayer.style.display = 'none';
+      bgImageEl = null;
+    }
+  }
+
+  async function saveBgImage(){
+    if(!hasStorage) return;
+    try{ await storageBackend.set(STORAGE_KEYS.bgImage, bgImageData || ''); }
+    catch(e){ noteStorageFailure('save bg image failed', e); }
+  }
+
+  function setBgImage(dataUrl){
+    bgImageData = dataUrl;
+    applyBgImageStyle(dataUrl);
+    saveBgImage();
+  }
+
+  // Draws `img` into `context` covering the full w×h box (like CSS
+  // object-fit: cover), cropping whichever axis overflows.
+  function drawImageCover(context, img, w, h){
+    const ir = img.width / img.height;
+    const cr = w / h;
+    let sw, sh, sx, sy;
+    if(ir > cr){
+      sh = img.height;
+      sw = sh * cr;
+      sx = (img.width - sw) / 2;
+      sy = 0;
+    } else {
+      sw = img.width;
+      sh = sw / cr;
+      sx = 0;
+      sy = (img.height - sh) / 2;
+    }
+    context.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
+  }
+
+  // Draws `img` into `context` fit entirely within the w×h box (like CSS
+  // object-fit: contain), letterboxing whichever axis has slack instead
+  // of cropping.
+  function drawImageContain(context, img, w, h){
+    const ir = img.width / img.height;
+    const cr = w / h;
+    let dw, dh, dx, dy;
+    if(ir > cr){
+      dw = w;
+      dh = w / ir;
+      dx = 0;
+      dy = (h - dh) / 2;
+    } else {
+      dh = h;
+      dw = h * ir;
+      dx = (w - dw) / 2;
+      dy = 0;
+    }
+    context.drawImage(img, 0, 0, img.width, img.height, dx, dy, dw, dh);
+  }
+
+  function drawBgImageFitted(context, img, w, h){
+    if(bgFitMode === 'contain') drawImageContain(context, img, w, h);
+    else drawImageCover(context, img, w, h);
+  }
+
+  bgImageBtn.addEventListener('click', ()=> bgImageInput.click());
+  bgImageInput.addEventListener('change', (e)=>{
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      const img = new Image();
+      img.onload = ()=>{
+        clearDrawing();
+        setBgImage(whiteToTransparentDataUrl(img));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+    bgImageInput.value = '';
+  });
+
+  function clearDrawing(){
+    pushUndo();
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    hint.style.opacity = '1';
+    hasDrawn = false;
+    debouncedSaveCanvas();
+  }
+
+  function performClear(){
+    if(mode === 'text'){
+      textEditor.innerHTML = '';
+      debouncedSaveText();
+    } else {
+      clearDrawing();
+    }
+  }
+
+  // ---------- Save ----------
+  const saveOverlay = document.getElementById('saveOverlay');
+
+  function openSaveDialog(){ saveOverlay.classList.add('open'); }
+  function closeSaveDialog(){ saveOverlay.classList.remove('open'); }
+
+  document.getElementById('saveDialogClose').addEventListener('click', closeSaveDialog);
+  saveOverlay.addEventListener('click', (e)=>{
+    if(e.target === saveOverlay) closeSaveDialog();
+  });
+
+  // Draws the contents of the text layer directly with canvas 2D text APIs
+  // (rather than rasterizing an SVG/foreignObject, which permanently taints
+  // the canvas in Chromium and breaks toDataURL()).
+  function drawTextLayer(ctx, boxWidth){
+    const PAD = 11;
+    const LINE_HEIGHT_RATIO = 1.4;
+    let y = PAD;
+    const blockTags = new Set(['DIV','P','H1','H2','H3','H4','H5','H6','BLOCKQUOTE','UL','OL']);
+
+    function fontStringFor(el, sizePx){
+      const s = window.getComputedStyle(el);
+      const italic = s.fontStyle === 'italic' ? 'italic ' : '';
+      const bold = (parseInt(s.fontWeight, 10) || 400) >= 600 ? 'bold ' : '';
+      return italic + bold + sizePx + 'px ' + s.fontFamily;
+    }
+
+    function blockAlign(el){
+      const a = window.getComputedStyle(el).textAlign;
+      return (a === 'center' || a === 'right') ? a : 'left';
+    }
+
+    function blockMargin(el, side){
+      return parseFloat(window.getComputedStyle(el)[side]) || 0;
+    }
+
+    function containerHasBlockChild(el){
+      return Array.from(el.children).some(c => blockTags.has(c.tagName));
+    }
+
+    // Flatten a list of inline child nodes into {text, el}/{br:true} tokens.
+    function tokenizeInline(nodes, containerEl){
+      const tokens = [];
+      function walk(node){
+        if(node.nodeType === 3){
+          const words = node.textContent.split(/(\s+)/).filter(w=>w.length);
+          words.forEach(w=> tokens.push({ text:w, el: node.parentElement || containerEl }));
+          return;
+        }
+        if(node.nodeType !== 1) return;
+        if(node.tagName === 'BR'){ tokens.push({ br:true }); return; }
+        if(blockTags.has(node.tagName)) return; // handled separately by the caller
+        node.childNodes.forEach(walk);
+      }
+      nodes.forEach(walk);
+      return tokens;
+    }
+
+    // Greedy word-wrap + draw for one run of inline tokens.
+    function layoutBlock(tokens, x0, x1, align, baseSizePx, defaultEl){
+      if(!tokens.length) return;
+
+      const lines = [[]];
+      tokens.forEach(tok=>{
+        if(tok.br){ lines.push([]); return; }
+        const el = tok.el || defaultEl;
+        const s = window.getComputedStyle(el);
+        const sizePx = parseFloat(s.fontSize) || baseSizePx;
+        ctx.font = fontStringFor(el, sizePx);
+        const w = ctx.measureText(tok.text).width;
+        let line = lines[lines.length - 1];
+        const lineWidth = line.reduce((sum, t)=> sum + t.w, 0);
+        if(tok.text.trim() === '' && line.length === 0) return; // no leading spaces
+        if(lineWidth + w > (x1 - x0) && line.length){
+          lines.push([]);
+          line = lines[lines.length - 1];
+        }
+        line.push({ text: tok.text, el, sizePx, w });
+      });
+
+      lines.forEach(line=>{
+        if(!line.length){ y += baseSizePx * LINE_HEIGHT_RATIO; return; }
+        while(line.length && line[0].text.trim() === '') line.shift();
+        while(line.length && line[line.length-1].text.trim() === '') line.pop();
+        if(!line.length){ y += baseSizePx * LINE_HEIGHT_RATIO; return; }
+        const lineWidth = line.reduce((sum, t)=> sum + t.w, 0);
+        const maxSize = Math.max(baseSizePx, ...line.map(t=>t.sizePx));
+        let cx = x0;
+        if(align === 'center') cx = x0 + Math.max(0, (x1 - x0 - lineWidth) / 2);
+        else if(align === 'right') cx = x1 - lineWidth;
+        const baseline = y + maxSize * 0.82;
+        line.forEach(tok=>{
+          const s = window.getComputedStyle(tok.el);
+          ctx.font = fontStringFor(tok.el, tok.sizePx);
+          ctx.fillStyle = s.color;
+          ctx.textBaseline = 'alphabetic';
+          ctx.fillText(tok.text, cx, baseline);
+          if(s.textDecorationLine && s.textDecorationLine.includes('underline')){
+            ctx.strokeStyle = s.color;
+            ctx.lineWidth = Math.max(1, tok.sizePx * 0.05);
+            ctx.beginPath();
+            ctx.moveTo(cx, baseline + 2);
+            ctx.lineTo(cx + tok.w, baseline + 2);
+            ctx.stroke();
+          }
+          cx += tok.w;
+        });
+        y += maxSize * LINE_HEIGHT_RATIO;
+      });
+    }
+
+    // Walk a container's direct children, drawing block elements as blocks
+    // and grouping consecutive inline/text nodes into paragraphs.
+    function processContainer(container, x0, x1){
+      let pending = [];
+      function flush(){
+        if(!pending.length) return;
+        const tokens = tokenizeInline(pending, container);
+        layoutBlock(tokens, x0, x1, blockAlign(container), currentFontSize, container);
+        pending = [];
+      }
+      Array.from(container.childNodes).forEach(node=>{
+        if(node.nodeType === 1 && blockTags.has(node.tagName)){
+          flush();
+          drawBlock(node, x0, x1);
+        } else {
+          pending.push(node);
+        }
+      });
+      flush();
+    }
+
+    function drawBlock(el, x0, x1){
+      y += blockMargin(el, 'marginTop');
+      const tag = el.tagName;
+
+      if(tag === 'UL' || tag === 'OL'){
+        let n = 1;
+        Array.from(el.children).forEach(li=>{
+          if(li.tagName !== 'LI') return;
+          const marker = (tag === 'OL') ? (n++ + '.') : '\u2022';
+          const size = parseFloat(window.getComputedStyle(li).fontSize) || currentFontSize;
+          ctx.font = fontStringFor(li, size);
+          ctx.fillStyle = window.getComputedStyle(li).color;
+          ctx.textBaseline = 'alphabetic';
+          ctx.fillText(marker, x0, y + size * 0.82);
+          if(containerHasBlockChild(li)){
+            processContainer(li, x0 + 22, x1);
+          } else {
+            layoutBlock(tokenizeInline(Array.from(li.childNodes), li), x0 + 22, x1, blockAlign(li), size, li);
+          }
+        });
+        y += blockMargin(el, 'marginBottom');
+        return;
+      }
+
+      if(tag === 'BLOCKQUOTE'){
+        const startY = y;
+        const size = parseFloat(window.getComputedStyle(el).fontSize) || currentFontSize;
+        if(containerHasBlockChild(el)){
+          processContainer(el, x0 + 14, x1);
+        } else {
+          layoutBlock(tokenizeInline(Array.from(el.childNodes), el), x0 + 14, x1, blockAlign(el), size, el);
+        }
+        ctx.strokeStyle = 'rgba(27,27,31,0.25)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(x0 + 1, startY);
+        ctx.lineTo(x0 + 1, Math.max(startY, y - (size * (LINE_HEIGHT_RATIO - 1))));
+        ctx.stroke();
+        y += blockMargin(el, 'marginBottom');
+        return;
+      }
+
+      // Heading, paragraph, div, or a plain wrapper div around other blocks.
+      if(containerHasBlockChild(el)){
+        processContainer(el, x0, x1);
+      } else {
+        const size = parseFloat(window.getComputedStyle(el).fontSize) || currentFontSize;
+        layoutBlock(tokenizeInline(Array.from(el.childNodes), el), x0, x1, blockAlign(el), size, el);
+      }
+      y += blockMargin(el, 'marginBottom');
+    }
+
+    processContainer(textEditor, PAD, boxWidth - PAD);
+  }
+
+  async function performSave(includeText){
+    const dpr = window.devicePixelRatio || 1;
+    const out = document.createElement('canvas');
+    out.width = canvas.width;
+    out.height = canvas.height;
+    const octx = out.getContext('2d');
+    octx.fillStyle = canvasBgColor;
+    octx.fillRect(0,0,out.width,out.height);
+    octx.drawImage(canvas, 0, 0);
+    if(bgImageEl) drawBgImageFitted(octx, bgImageEl, out.width, out.height);
+
+    if(includeText){
+      try{
+        const rect = wrap.getBoundingClientRect();
+        octx.save();
+        octx.scale(dpr, dpr);
+        drawTextLayer(octx, rect.width);
+        octx.restore();
+      }catch(e){ /* if text rendering fails, fall back to drawing-only */ }
+    }
+
+    const link = document.createElement('a');
+    link.download = 'inkling-doodle.png';
+    link.href = out.toDataURL('image/png');
+    link.click();
+  }
+
+  function hasTextContent(){
+    return textEditor.textContent.trim().length > 0 ||
+      !!textEditor.querySelector('img, ul, ol, blockquote, h1, h2, h3');
+  }
+
+  document.getElementById('saveDrawingOnlyBtn').addEventListener('click', ()=>{
+    closeSaveDialog();
+    performSave(false);
+  });
+
+  document.getElementById('saveIncludeTextBtn').addEventListener('click', ()=>{
+    closeSaveDialog();
+    performSave(true);
+  });
+
+  document.getElementById('saveBtn').addEventListener('click', ()=>{
+    if(hasTextContent()){
+      openSaveDialog();
+    } else {
+      performSave(false);
+    }
+  });
+
+  // ---------- Menu (Background Color / Clear / Export) ----------
+  const menuBtn = document.getElementById('menuBtn');
+  const menuDropdown = document.getElementById('menuDropdown');
+  const modeToggleBtn = document.getElementById('modeToggleBtn');
+
+  function openMenu(){ menuDropdown.classList.add('open'); }
+  function closeMenu(){ menuDropdown.classList.remove('open'); }
+
+  menuBtn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    menuDropdown.classList.toggle('open');
+  });
+  document.addEventListener('click', (e)=>{
+    if(!menuDropdown.contains(e.target) && e.target !== menuBtn && !menuBtn.contains(e.target)){
+      closeMenu();
+    }
+  });
+
+  // "Background Color" opens the color-selection sheet; "Clear" performs
+  // its context-aware action (clear text or clear drawing) immediately,
+  // with no dialog in the way.
+  document.getElementById('menuBgColor').addEventListener('click', ()=>{
+    openBgDialog();
+    closeMenu();
+  });
+  document.getElementById('clearBtn').addEventListener('click', ()=>{
+    performClear();
+    closeMenu();
+  });
+  document.getElementById('saveBtn').addEventListener('click', closeMenu);
+
+  function setMode(newMode, opts){
+    const silent = !!(opts && opts.silent);
+    mode = newMode;
+
+    modeToggleBtn.querySelectorAll('.opt-icon').forEach(ic=>{
+      ic.classList.toggle('active', ic.getAttribute('data-mode') === mode);
+    });
+    modeToggleBtn.setAttribute('aria-label', mode === 'draw' ? 'Switch to text mode' : 'Switch to draw mode');
+    colorTrigger.classList.toggle('mode-hidden', mode === 'text');
+
+    recentContainer.classList.toggle('mode-hidden', mode === 'text');
+    document.getElementById('textFormatRow').classList.toggle('mode-hidden', mode === 'draw');
+    document.getElementById('sizes').classList.toggle('mode-hidden', mode === 'text');
+    eraserBtn.classList.toggle('mode-hidden', mode === 'text');
+
+    textEditor.contentEditable = (mode === 'text') ? 'true' : 'false';
+    textEditor.classList.toggle('editable', mode === 'text');
+    textScroll.classList.toggle('editable', mode === 'text');
+    hint.style.opacity = (mode === 'text') ? '0' : (hasDrawn ? '0' : '1');
+    canvas.style.pointerEvents = (mode === 'text') ? 'none' : 'auto';
+    clearBtnLabel.textContent = (mode === 'text') ? 'Clear Text' : 'Clear Drawing';
+
+    if(mode === 'text'){
+      if(!silent) textEditor.focus();
+      updateFmtActiveStates();
+    } else if(!silent){
+      textEditor.blur();
+    }
+
+    syncUndoRedoButtons();
+    closeMenu();
+    debouncedSaveSettings();
+  }
+
+  modeToggleBtn.addEventListener('click', ()=> setMode(mode === 'draw' ? 'text' : 'draw'));
+
+  // Reset any scroll the browser introduces when the keyboard opens/closes,
+  // without touching #app's size (the canvas must stay a fixed size).
+  textEditor.addEventListener('blur', ()=> window.scrollTo(0, 0));
+
+
+  // ---------- Restore saved drawing, text, and settings ----------
+  async function loadAll(){
+    if(!hasStorage) return;
+
+    try{
+      const value = await storageBackend.get(STORAGE_KEYS.settings);
+      if(value){
+        const s = JSON.parse(value);
+        if(typeof s.baseSize === 'number'){
+          baseSize = s.baseSize;
+          sizeSelect.value = String(baseSize);
+        }
+        if(typeof s.brushStyle === 'string'){
+          brushStyle = s.brushStyle;
+          brushStyleSelect.value = brushStyle;
+        }
+        if(typeof s.currentFontSize === 'number'){
+          currentFontSize = s.currentFontSize;
+          textEditor.style.fontSize = currentFontSize + 'px';
+          fontSizeSelect.value = String(currentFontSize);
+        }
+        if(typeof s.textFontFamily === 'string'){
+          textFontFamily = s.textFontFamily;
+          textEditor.style.fontFamily = textFontFamily;
+          fontFamilySelect.value = textFontFamily;
+        }
+        if(s.canvasBgColor) setBgColor(s.canvasBgColor);
+        if(s.bgFitMode === 'cover' || s.bgFitMode === 'contain') applyBgFitMode(s.bgFitMode);
+        if(s.textColor){ textColor = s.textColor; textEditor.style.color = textColor; }
+        if(s.color) color = s.color;
+        if(Array.isArray(s.recentColors) && s.recentColors.length) recentColors = s.recentColors.slice(0, 6);
+        renderRecentColors();
+        if(s.mode === 'text' || s.mode === 'draw') setMode(s.mode, { silent: true });
+      }
+    }catch(e){ /* nothing saved yet */ }
+
+    try{
+      const value = await storageBackend.get(STORAGE_KEYS.text);
+      if(value) textEditor.innerHTML = value;
+    }catch(e){ /* nothing saved yet */ }
+
+    try{
+      const value = await storageBackend.get(STORAGE_KEYS.bgImage);
+      if(value){
+        bgImageData = value;
+        applyBgImageStyle(value);
+      }
+    }catch(e){ /* nothing saved yet */ }
+
+    try{
+      const value = await storageBackend.get(STORAGE_KEYS.canvas);
+      if(value){
+        const img = new Image();
+        img.onload = ()=>{
+          const ratio = window.devicePixelRatio || 1;
+          ctx.drawImage(img, 0, 0, canvas.width / ratio, canvas.height / ratio);
+          hasDrawn = true;
+          if(mode === 'draw') hint.style.opacity = '0';
+        };
+        img.src = value;
+      }
+    }catch(e){ /* nothing saved yet */ }
+  }
+  loadAll();
+
+  // prevent iOS bounce/scroll
+  document.addEventListener('touchmove', (e)=>{
+    if(e.target.closest && e.target.closest('#textScroll')) return;
+    e.preventDefault();
+  }, { passive:false });
+})();
+</script>
+</body>
+</html>
