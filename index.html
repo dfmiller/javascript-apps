@@ -109,6 +109,25 @@
       align-items: start;
     }
 
+    .app-section + .app-section {
+      margin-top: 2.5rem;
+    }
+
+    .app-section__header {
+      margin-bottom: 1rem;
+    }
+
+    .app-section__header h2 {
+      margin: 0 0 0.35rem;
+      font-size: 1.5rem;
+    }
+
+    .app-section__header p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
     .card {
       aspect-ratio: 3 / 4;
       min-width: 0;
@@ -334,11 +353,10 @@
       </div>
       <section class="filters" aria-label="Filter apps">
         <div id="typeFilters" class="filter-group" role="group" aria-label="Filter by type"></div>
-        <div id="tagFilters" class="filter-group" role="group" aria-label="Filter by tag"></div>
       </section>
     </header>
 
-    <section id="cardGrid" class="card-grid" aria-label="Featured cards"></section>
+    <div id="appSections"></div>
 
     <footer>
       <p class="footer-content">
@@ -351,16 +369,16 @@
       GAME: 'game',
       UTILITY: 'utility'
     });
-    const APP_TAGS = Object.freeze({
-      PLAY_STORE: 'Play Store',
-      VIBE_CODED: 'Vibe Coded'
+    const APP_SECTIONS = Object.freeze({
+      PLAY_STORE: 'Play Store Apps',
+      VIBE_CODED: 'Vibe Coded Apps'
     });
     const ALL_FILTER = 'all';
 
     const cards = [
       {
         type: APP_TYPES.GAME,
-        tag: APP_TAGS.PLAY_STORE,
+        section: APP_SECTIONS.PLAY_STORE,
         title: 'AI Memory',
         description: 'Play Memory against the AI',
         href: './AI-Memory/index.html',
@@ -368,7 +386,7 @@
       },
       {
         type: APP_TYPES.GAME,
-        tag: APP_TAGS.PLAY_STORE,
+        section: APP_SECTIONS.PLAY_STORE,
         title: 'Easy Crosswords',
         description: 'Crossword puzzle with hints',
         href: './EasyCrosswords/crossword.html',
@@ -376,7 +394,7 @@
       },
       {
         type: APP_TYPES.UTILITY,
-        tag: APP_TAGS.VIBE_CODED,
+        section: APP_SECTIONS.VIBE_CODED,
         title: 'Inkling',
         description: 'Draw and write',
         href: './Inkling/inkling.html',
@@ -384,7 +402,7 @@
       },
       {
         type: APP_TYPES.GAME,
-        tag: APP_TAGS.PLAY_STORE,
+        section: APP_SECTIONS.PLAY_STORE,
         title: 'Jigsaws',
         description: 'Jigsaw puzzles in various sizes',
         href: './Jigsaws/jigsaws.html',
@@ -392,7 +410,7 @@
       },
       {
         type: APP_TYPES.GAME,
-        tag: APP_TAGS.PLAY_STORE,
+        section: APP_SECTIONS.PLAY_STORE,
         title: 'Jumbled Quotes',
         description: 'Arrange the letters to complete a quotation',
         href: './JumbledQuotes/jumbled_quotes.html',
@@ -400,7 +418,7 @@
       },
       {
         type: APP_TYPES.GAME,
-        tag: APP_TAGS.PLAY_STORE,
+        section: APP_SECTIONS.PLAY_STORE,
         title: 'Mazes',
         description: 'Solve mazes',
         href: './Mazes/index.html',
@@ -408,7 +426,7 @@
       },
       {
         type: APP_TYPES.GAME,
-        tag: APP_TAGS.PLAY_STORE,
+        section: APP_SECTIONS.PLAY_STORE,
         title: 'Photo Puzzle',
         description: '',
         href: './PhotoPuzzle/index.html',
@@ -416,7 +434,7 @@
       },
       {
         type: APP_TYPES.GAME,
-        tag: APP_TAGS.VIBE_CODED,
+        section: APP_SECTIONS.VIBE_CODED,
         title: 'Planet Explorers',
         description: 'Explore planets',
         href: './PlanetExplorers/index.html',
@@ -424,7 +442,7 @@
       },
       {
         type: APP_TYPES.UTILITY,
-        tag: APP_TAGS.VIBE_CODED,
+        section: APP_SECTIONS.VIBE_CODED,
         title: 'Recipe Box',
         description: 'Recipe storage',
         href: './RecipeBox/index.html',
@@ -432,7 +450,7 @@
       },
       {
         type: APP_TYPES.GAME,
-        tag: APP_TAGS.PLAY_STORE,
+        section: APP_SECTIONS.PLAY_STORE,
         title: 'RYB ColorMixing',
         description: 'Select the result when 2 colors mix',
         href: './ColorMixing/index.html',
@@ -440,7 +458,7 @@
       },
       {
         type: APP_TYPES.GAME,
-        tag: APP_TAGS.VIBE_CODED,
+        section: APP_SECTIONS.VIBE_CODED,
         title: 'Stone Maze Hero',
         description: 'Explore an underground dungeon',
         href: './StoneMazeHero/index.html',
@@ -448,7 +466,7 @@
       },
       {
         type: APP_TYPES.GAME,
-        tag: APP_TAGS.PLAY_STORE,
+        section: APP_SECTIONS.PLAY_STORE,
         title: 'Word Search Crush',
         description: 'Find words and crush them',
         href: './WordSearchCrush/index.html',
@@ -456,7 +474,7 @@
       },
       {
         type: APP_TYPES.GAME,
-        tag: APP_TAGS.PLAY_STORE,
+        section: APP_SECTIONS.PLAY_STORE,
         title: 'Word Search Library',
         description: 'Classic word search with multiple themes',
         href: './WordSearchLibrary/index.html',
@@ -464,29 +482,53 @@
       },
     ];
 
-    const cardGrid = document.querySelector('#cardGrid');
-    const activeFilters = { type: ALL_FILTER, tag: ALL_FILTER };
+    const appSections = [
+      {
+        name: APP_SECTIONS.PLAY_STORE,
+        description: 'Apps coded by hand and originally published to the Google Play Store.'
+      },
+      {
+        name: APP_SECTIONS.VIBE_CODED,
+        description: 'Apps created with the assistance of Artifical Inteligence.'
+      }
+    ];
+    const activeType = { value: ALL_FILTER };
+    const appSectionsContainer = document.querySelector('#appSections');
 
-    cardGrid.innerHTML = cards.map((card) => `
-      <a
-        class="card"
-        data-type="${card.type}"
-        data-tag="${card.tag}"
-        style="--card-image: url('${card.image}');"
-        href="${card.href}"
-        onclick="event.preventDefault(); openPageDialog('${card.href}', '${card.title}')"
-      >
-        <span class="card-number">
-          ${card.type.toUpperCase()} / ${card.tag}
-        </span>
-        <div class="card-content">
-          <h2>${card.title}</h2>
-          <p>${card.description}</p>
-        </div>
-      </a>
+    appSectionsContainer.innerHTML = appSections.map((section, index) => `
+      <section class="app-section" aria-labelledby="appSectionTitle${index}">
+        <header class="app-section__header">
+          <h2 id="appSectionTitle${index}">${section.name}</h2>
+          <p>${section.description}</p>
+        </header>
+        <div class="card-grid" data-section="${section.name}"></div>
+      </section>
     `).join('');
 
-    function createFilterChips(container, group, values, allLabel) {
+    appSections.forEach((section) => {
+      const cardGrid = appSectionsContainer.querySelector(
+        `.card-grid[data-section="${section.name}"]`
+      );
+      cardGrid.innerHTML = cards
+        .filter((card) => card.section === section.name)
+        .map((card) => `
+          <a
+            class="card"
+            data-type="${card.type}"
+            style="--card-image: url('${card.image}');"
+            href="${card.href}"
+            onclick="event.preventDefault(); openPageDialog('${card.href}', '${card.title}')"
+          >
+            <span class="card-number">${card.type.toUpperCase()}</span>
+            <div class="card-content">
+              <h2>${card.title}</h2>
+              <p>${card.description}</p>
+            </div>
+          </a>
+        `).join('');
+    });
+
+    function createFilterChips(container, values, allLabel) {
       const options = [
         [ALL_FILTER, allLabel],
         ...values.map((value) => [value, value[0].toUpperCase() + value.slice(1)])
@@ -497,16 +539,18 @@
         chip.type = 'button';
         chip.className = 'filter-chip';
         chip.textContent = label;
-        chip.setAttribute('aria-pressed', String(activeFilters[group] === value));
+        chip.setAttribute('aria-pressed', String(activeType.value === value));
         chip.addEventListener('click', () => {
-          activeFilters[group] = value;
+          activeType.value = value;
           container.querySelectorAll('.filter-chip').forEach((option) => {
             option.setAttribute('aria-pressed', String(option === chip));
           });
-          cardGrid.querySelectorAll('.card').forEach((card) => {
-            card.hidden =
-              (activeFilters.type !== ALL_FILTER && card.dataset.type !== activeFilters.type) ||
-              (activeFilters.tag !== ALL_FILTER && card.dataset.tag !== activeFilters.tag);
+          appSectionsContainer.querySelectorAll('.app-section').forEach((section) => {
+            const cards = section.querySelectorAll('.card');
+            cards.forEach((card) => {
+              card.hidden = activeType.value !== ALL_FILTER && card.dataset.type !== activeType.value;
+            });
+            section.hidden = [...cards].every((card) => card.hidden);
           });
         });
         container.appendChild(chip);
@@ -515,15 +559,8 @@
 
     createFilterChips(
       document.querySelector('#typeFilters'),
-      'type',
       Object.values(APP_TYPES),
       'All types'
-    );
-    createFilterChips(
-      document.querySelector('#tagFilters'),
-      'tag',
-      Object.values(APP_TAGS),
-      'All tags'
     );
 
     function openPageDialog(url, title) {
