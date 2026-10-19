@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Recipe Box</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; transition: font-size .15s; }
 
   :root {
     --bg: #1a1a1a;
@@ -88,33 +89,6 @@
   .layout { display: flex; flex: 1; }
 
   /* ── SIDEBAR ── */
-  .sidebar {
-    width: 220px; flex-shrink: 0;
-    background: #111; border-right: 1px solid var(--border);
-    padding: 16px 0; display: flex; flex-direction: column; gap: 4px;
-    transition: transform .2s;
-  }
-  .sidebar.collapsed { display: none; }
-  .sidebar-label {
-    font-size: .7rem; font-weight: 600; color: var(--text-muted);
-    text-transform: uppercase; letter-spacing: .08em;
-    padding: 8px 20px 4px;
-  }
-  .sidebar-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 9px 20px; cursor: pointer; border-radius: 0 24px 24px 0;
-    font-size: .875rem; color: var(--text-muted); transition: all .12s;
-    margin-right: 12px; user-select: none;
-  }
-  .sidebar-item:hover { background: var(--surface2); color: var(--text); }
-  .sidebar-item.active { background: #3a2a1e; color: var(--accent); font-weight: 500; }
-  .sidebar-item svg { flex-shrink: 0; opacity: .8; }
-  .sidebar-count {
-    margin-left: auto; background: var(--surface2); color: var(--text-muted);
-    font-size: .7rem; border-radius: 10px; padding: 1px 7px; min-width: 20px; text-align: center;
-  }
-  .sidebar-item.active .sidebar-count { background: #4a3020; color: var(--accent); }
-
   /* ── MENU DRAWER ── */
   .menu-overlay {
     position: fixed; inset: 0; z-index: 300;
@@ -160,34 +134,7 @@
   #importFileInput { display: none; }
 
   /* ── MAIN CONTENT ── */
-  .main { flex: 1; padding: 24px; overflow-y: auto; position: relative; }
-  .main-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 20px;
-  }
-  /* Category dropdown in header */
-  .cat-dropdown {
-    background: none; border: none; cursor: pointer; font-family: var(--font);
-    color: var(--text-muted); font-size: .95rem; font-weight: 600;
-    display: flex; align-items: center; gap: 5px; padding: 4px 0;
-    outline: none; appearance: none; -webkit-appearance: none;
-  }
-  .cat-dropdown:hover { color: var(--text); }
-  .cat-select-wrap { position: relative; display: inline-flex; align-items: center; }
-  .cat-select-wrap::after {
-    content: ''; position: absolute; right: 0; top: 50%;
-    transform: translateY(-50%);
-    border: 4px solid transparent; border-top-color: var(--text-muted);
-    margin-top: 2px; pointer-events: none;
-  }
-  .cat-select-wrap select {
-    background: none; border: none; cursor: pointer; font-family: var(--font);
-    color: var(--text-muted); font-size: .95rem; font-weight: 600;
-    padding: 4px 18px 4px 0; outline: none; appearance: none; -webkit-appearance: none;
-  }
-  .cat-select-wrap select:hover { color: var(--text); }
-  .cat-select-wrap select option { background: #1a1a1a; color: var(--text); }
-
+  .main { flex: 1; padding: 24px; padding-bottom: 96px; overflow-y: auto; position: relative; }
   /* ── FAB ── */
   .fab {
     position: fixed; bottom: 28px; right: 28px;
@@ -207,48 +154,6 @@
   }
   .fab:active { transform: scale(.96); }
 
-  /* ── GRID VIEW ── */
-  .recipe-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 16px;
-  }
-  .recipe-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; overflow: hidden; cursor: pointer;
-    transition: border-color .15s, transform .15s, box-shadow .15s;
-    position: relative;
-  }
-  .recipe-card:hover {
-    border-color: var(--accent); transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0,0,0,.4);
-  }
-  .card-thumb {
-    height: 120px; background: var(--surface2);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 2.5rem; border-bottom: 1px solid var(--border);
-  }
-  .card-body { padding: 12px; }
-  .card-title { font-size: .9rem; font-weight: 600; margin-bottom: 4px; line-height: 1.3; }
-  .card-meta { font-size: .75rem; color: var(--text-muted); display: flex; gap: 8px; flex-wrap: wrap; }
-  .card-tag {
-    background: var(--tag-bg); border: 1px solid var(--border);
-    border-radius: 4px; padding: 1px 6px; font-size: .7rem; color: var(--text-muted);
-  }
-  .card-actions {
-    position: absolute; top: 8px; right: 8px;
-    display: flex; gap: 4px; opacity: 0; transition: opacity .15s;
-  }
-  .recipe-card:hover .card-actions { opacity: 1; }
-  .card-action-btn {
-    background: rgba(0,0,0,.7); border: none; cursor: pointer;
-    color: var(--text); border-radius: 6px; padding: 5px;
-    display: flex; align-items: center; transition: background .12s;
-  }
-  .card-action-btn:hover { background: rgba(0,0,0,.9); }
-  .card-action-btn.star-btn { color: #888; }
-  .card-action-btn.star-btn.starred { color: #f5c842; }
-
   /* ── LIST VIEW ── */
   .recipe-list { display: flex; flex-direction: column; gap: 8px; }
   .recipe-row {
@@ -257,11 +162,12 @@
     padding: 12px 16px; cursor: pointer; transition: border-color .12s, background .12s;
   }
   .recipe-row:hover { border-color: var(--accent); background: var(--surface2); }
-  .row-emoji { font-size: 1.6rem; flex-shrink: 0; width: 36px; text-align: center; }
+  .row-bookmark-btn { background: none; border: none; cursor: pointer; flex-shrink: 0; padding: 4px; display: flex; align-items: center; border-radius: 6px; transition: transform .15s; }
+  .row-bookmark-btn:hover { transform: scale(1.15); }
   .row-info { flex: 1; min-width: 0; }
   .row-title { font-size: .9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .row-meta { font-size: .75rem; color: var(--text-muted); margin-top: 2px; }
-  .row-actions { display: flex; gap: 6px; opacity: 0; transition: opacity .15s; }
+  .row-actions { display: flex; gap: 6px; opacity: 1; transition: opacity .15s; }
   .recipe-row:hover .row-actions { opacity: 1; }
   .row-action-btn {
     background: none; border: none; cursor: pointer;
@@ -294,13 +200,23 @@
   .modal {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 16px; width: 100%; max-width: 640px;
-    max-height: 90vh; overflow-y: auto; padding: 28px;
+    max-height: 90vh; overflow: hidden;
+    display: flex; flex-direction: column;
     transform: translateY(16px); transition: transform .2s;
   }
   .overlay.open .modal { transform: none; }
   .modal-header {
     display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 24px;
+    padding: 20px 28px 16px; flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .modal-body {
+    flex: 1; overflow-y: auto; padding: 24px 28px;
+  }
+  .modal-footer {
+    display: flex; justify-content: flex-end; gap: 10px;
+    flex-shrink: 0; border-top: 1px solid var(--border);
+    padding: 16px 28px; margin-top: 0;
   }
   .modal-title { font-size: 1.15rem; font-weight: 700; }
   .modal-close {
@@ -319,9 +235,8 @@
     transition: border-color .15s;
   }
   .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--accent); }
-  .form-textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+  .form-textarea { resize: none; min-height: 80px; line-height: 1.6; overflow: hidden; }
   .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
   .btn-secondary {
     background: none; border: 1px solid var(--border); color: var(--text);
     padding: 9px 20px; border-radius: 8px; cursor: pointer; font-size: .875rem;
@@ -344,7 +259,7 @@
   .btn-danger:hover { background: rgba(224,112,112,.1); }
 
   /* ── VIEW MODAL ── */
-  .view-modal { max-width: 680px; padding: 14px; }
+  .view-modal { max-width: 680px; }
   .vm-hero { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
   /* Wake lock button */
   .wake-btn {
@@ -355,7 +270,7 @@
   }
   .wake-btn:hover { border-color: var(--accent); color: var(--accent); }
   .wake-btn.active { border-color: #f5c842; color: #f5c842; background: rgba(245,200,66,.08); }
-  .vm-emoji { font-size: 3rem; }
+
   .vm-title { font-size: 1.4rem; font-weight: 700; line-height: 1.2; }
   .vm-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
   .vm-tag { background: #3a2a1e; color: var(--accent); border-radius: 6px; padding: 2px 10px; font-size: .75rem; font-weight: 500; }
@@ -370,8 +285,29 @@
     display: flex; align-items: center; gap: 10px;
     font-size: .875rem; padding: 6px 10px;
     background: var(--surface2); border-radius: 6px;
+    cursor: pointer; transition: opacity .15s; user-select: none;
   }
-  .ingredient-list li::before { content: '·'; color: var(--accent); font-weight: 700; font-size: 1.2rem; }
+  .ingredient-list li.checked { opacity: .45; }
+  .ingredient-list li.checked .ing-text { text-decoration: line-through; }
+  .ing-checkbox {
+    flex-shrink: 0; width: 17px; height: 17px;
+    border: 2px solid var(--text-muted); border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s, border-color .15s;
+  }
+  .ingredient-list li.checked .ing-checkbox { background: var(--accent); border-color: var(--accent); }
+  .ing-check-icon { display: none; }
+  .ingredient-list li.checked .ing-check-icon { display: block; }
+  .ing-text { flex: 1; }
+  .instruction-list { list-style: none; display: flex; flex-direction: column; gap: 10px; padding: 0; }
+  .instruction-list li {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: .875rem; line-height: 1.75; color: var(--text);
+  }
+  .instruction-bullet {
+    flex-shrink: 0; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent); margin-top: 9px;
+  }
   .instructions-text { font-size: .875rem; line-height: 1.75; color: var(--text); white-space: pre-wrap; }
   .vm-note { font-size: .8rem; color: var(--text-muted); font-style: italic; margin-top: 4px; line-height: 1.6; }
 
@@ -380,10 +316,23 @@
     position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%) translateY(80px);
     background: #333; color: var(--text); padding: 10px 20px;
     border-radius: 24px; font-size: .875rem; z-index: 500;
-    transition: transform .3s; border: 1px solid var(--border);
+    transition: transform .3s, opacity .3s;
+    border: 1px solid var(--border);
     box-shadow: 0 4px 20px rgba(0,0,0,.4);
+    opacity: 0; pointer-events: none;
   }
-  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
+
+  /* ── BOOKMARKS (bar now lives in view modal) ── */
+
+  /* bookmark btn inside view modal */
+  .vm-bookmark-btn {
+    background: var(--surface2); border: none; cursor: pointer;
+    padding: 7px; border-radius: 8px; display: flex; align-items: center;
+    transition: background .12s; color: var(--text-muted);
+  }
+  .vm-bookmark-btn:hover { background: var(--border); }
+  .vm-bookmark-btn.bookmarked { color: var(--accent); }
 
   /* ── TAGS INPUT ── */
   .tags-display { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
@@ -420,10 +369,210 @@
   }
 
   @media (max-width: 640px) {
-    .sidebar { display: none; }
     .form-row-2 { grid-template-columns: 1fr; }
-    .main { padding: 16px; }
+
+    /* Main padding */
+    .main { padding: 12px 14px; padding-bottom: 96px; }
+
+    /* Topbar safe areas */
+    .topbar {
+      padding-left: max(12px, env(safe-area-inset-left));
+      padding-right: max(12px, env(safe-area-inset-right));
+    }
+
+    /* Search fills full width on mobile */
+    .topbar-search { max-width: none; }
+
+    /* Bookmark bar scrollable */
+    .bookmark-bar { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
+
+    /* Bigger accordion tap targets */
+    .accordion-header { padding: 10px 4px; }
+
+    /* Recipe rows — slightly tighter on narrow screens */
+    .recipe-row { padding: 12px 12px; gap: 10px; }
+    .row-actions { opacity: 1; } /* always visible on touch */
+
+    /* Larger touch targets for row buttons */
+    .row-action-btn { padding: 8px; }
+    .row-bookmark-btn { padding: 8px; }
+
+    /* Modals go full-screen */
+    .overlay { padding: 0; align-items: flex-end; }
+    .modal {
+      max-width: 100%;
+      max-height: 92dvh;
+      border-radius: 20px 20px 0 0;
+      transform: translateY(32px);
+    }
+    .modal-header { padding: 16px 20px 12px; }
+    .modal-body { padding: 16px 20px; }
+    .modal-footer { padding: 12px 20px; }
+
+    /* View modal header actions — prevent overflow */
+    .vm-header-actions { gap: 6px; }
+    .vm-bookmark-btn, .topbar-icon-btn { min-width: 36px; min-height: 36px; }
+
+    /* View modal sections */
+    .vm-section { margin-bottom: 20px; }
+
+    /* Ingredient rows — bigger tap area */
+    .ingredient-list li { padding: 10px 12px; }
+
+    /* FAB — respect safe area */
+    .fab {
+      bottom: max(24px, env(safe-area-inset-bottom, 24px));
+      right: max(20px, env(safe-area-inset-right, 20px));
+    }
+
+    /* Forms */
+    .modal-body textarea, .modal-body input[type="text"], .modal-body select {
+      font-size: 16px; /* prevent iOS zoom on focus */
+    }
   }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f5f5f0;
+      --surface: #ffffff;
+      --surface2: #eeede8;
+      --border: #d8d6d0;
+      --text: #1a1a1a;
+      --text-muted: #6b6860;
+      --accent: #b07040;
+      --accent-hover: #c07f4a;
+      --danger: #c04040;
+    }
+    .topbar, .menu-drawer { background: #f0efe9; }
+    .menu-item.active { background: #f0dfc8; }
+    .menu-item.active .menu-count { background: #e8cfa8; }
+    .vm-tag, .tag-chip { background: #f0dfc8; }
+    .toast { background: #ffffff; }
+    .bookmark-tooltip { background: #f0efe9; }
+    .overlay { background: rgba(0,0,0,.35); }
+    .fab { box-shadow: 0 4px 20px rgba(0,0,0,.2); }
+    .fab:hover { box-shadow: 0 6px 28px rgba(0,0,0,.28); }
+    .wake-btn.active { background: rgba(245,200,66,.15); }
+  }
+
+  /* ── ACCORDION ── */
+  .accordion { display: flex; flex-direction: column; gap: 16px; }
+  .accordion-section {}
+  .accordion-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 4px; cursor: pointer; user-select: none;
+    border-bottom: 1px solid var(--border); margin-bottom: 8px;
+  }
+  .accordion-header:hover .accordion-title { color: var(--text); }
+  .accordion-title {
+    font-size: .72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .09em; color: var(--text-muted); flex: 1;
+    transition: color .12s;
+  }
+  .accordion-count {
+    font-size: .7rem; color: var(--text-muted);
+    background: var(--surface2); border-radius: 10px;
+    padding: 1px 7px; min-width: 20px; text-align: center;
+  }
+  .accordion-chevron {
+    color: var(--text-muted); transition: transform .2s;
+    display: flex; align-items: center;
+  }
+  .accordion-section.collapsed .accordion-chevron { transform: rotate(-90deg); }
+  .accordion-body { display: flex; flex-direction: column; gap: 8px; }
+  .accordion-section.collapsed .accordion-body { display: none; }
+
+
+  /* Drag handle for bottom-sheet modals on mobile */
+  .modal-handle {
+    display: none; width: 36px; height: 4px;
+    background: var(--border); border-radius: 2px;
+    margin: 10px auto 0; flex-shrink: 0;
+  }
+  @media (max-width: 640px) {
+    .modal-handle { display: block; }
+  }
+
+  /* ── VIEW MODAL BOOKMARK BAR ── */
+  .vm-bookmark-bar {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    padding: 0 0 14px; border-bottom: 1px solid var(--border); margin-bottom: 14px;
+  }
+  .vm-bookmark-slot {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 20px; padding: 5px 12px 5px 8px;
+    cursor: pointer; font-size: .78rem; color: var(--text-muted);
+    transition: background .12s, color .12s;
+    font-family: var(--font);
+    max-width: 160px;
+  }
+  .vm-bookmark-slot:hover { background: var(--border); color: var(--text); }
+  .vm-bookmark-slot.vm-bookmark-active {
+    background: color-mix(in srgb, var(--bm-color) 15%, var(--surface2));
+    border-color: var(--bm-color);
+    color: var(--text); cursor: default;
+  }
+  .vm-bookmark-label {
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px;
+  }
+
+
+  /* ── BACKUP ALERT ── */
+  .backup-alert {
+    position: fixed; bottom: max(24px, env(safe-area-inset-bottom, 24px));
+    left: max(16px, env(safe-area-inset-left, 16px));
+    display: flex; align-items: center; gap: 8px;
+    background: #c07828; color: #fff;
+    border-radius: 20px; padding: 8px 14px;
+    font-size: .78rem; font-family: var(--font);
+    cursor: pointer; z-index: 80;
+    box-shadow: 0 4px 16px rgba(0,0,0,.35);
+    animation: alertPop .25s ease;
+    max-width: calc(100vw - 120px);
+  }
+  .backup-alert:hover { background: #d08830; }
+  @keyframes alertPop {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-color-scheme: light) {
+    .backup-alert { background: #b06820; }
+    .backup-alert:hover { background: #c07828; }
+  }
+
+
+  /* ── STORAGE INDICATOR ── */
+  .storage-section { padding: 12px 20px 16px; }
+  .storage-bar-wrap { display: flex; flex-direction: column; gap: 6px; }
+  .storage-bar-track {
+    height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden;
+  }
+  .storage-bar-fill {
+    height: 100%; width: 0%; border-radius: 3px;
+    background: var(--accent); transition: width .4s, background .4s;
+  }
+  .storage-bar-fill.warn { background: #e09a3c; }
+  .storage-bar-fill.critical { background: var(--danger); }
+  .storage-label { font-size: .72rem; color: var(--text-muted); }
+
+
+  /* ── FONT SIZE SELECTOR ── */
+  .font-size-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 20px;
+  }
+  .font-size-label { font-size: .75rem; color: var(--text-muted); flex: 1; }
+  .font-size-btns { display: flex; gap: 4px; }
+  .font-size-btn {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text-muted); border-radius: 6px; cursor: pointer;
+    padding: 4px 10px; font-family: var(--font); transition: background .12s, color .12s, border-color .12s;
+  }
+  .font-size-btn:hover { background: var(--border); color: var(--text); }
+  .font-size-btn.active { background: var(--accent); border-color: var(--accent); color: #1a1a1a; font-weight: 600; }
+
+
 </style>
 </head>
 <body>
@@ -437,35 +586,37 @@
   </button>
 
   <!-- Title / Search swap -->
-  <div class="topbar-title-wrap">
-    <span class="topbar-title" id="topbarTitle" onclick="openSearch()">Recipe Box</span>
+  <div class="topbar-title-wrap" onclick="openSearch()">
+    <span class="topbar-title" id="topbarTitle">Recipe Box</span>
     <input class="topbar-search" type="text" id="searchInput"
       placeholder="Search recipes…"
-      oninput="renderRecipes()"
+      oninput="renderRecipes(); updateSearchBtn()"
       onblur="closeSearch()">
   </div>
 
-  <!-- Search icon -->
-  <button class="topbar-icon-btn search-toggle-btn" onclick="openSearch()" id="searchBtn" title="Search">
-    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+  <!-- Search / Clear button -->
+  <button class="topbar-icon-btn search-toggle-btn" onclick="handleSearchBtn()" id="searchBtn" title="Search">
+    <svg id="searchIcon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
       <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <svg id="clearIcon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:none">
+      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
     </svg>
   </button>
 
-  <div class="view-toggle">
-    <button class="view-btn active" id="gridBtn" onclick="setView('grid')" title="Grid view">
-      <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>
-    </button>
-    <button class="view-btn" id="listBtn" onclick="setView('list')" title="List view">
-      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
-        <circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/>
-      </svg>
-    </button>
-  </div>
+
   <button class="topbar-icon-btn" onclick="toggleStar()" id="starFilterBtn" title="Starred">
     <svg id="starFilterIcon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
       <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+    </svg>
+  </button>
+  <button class="topbar-icon-btn" onclick="toggleGrouping()" id="groupToggleBtn" title="Group by category">
+    <svg id="groupedIcon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/>
+      <circle cx="20" cy="12" r="2" fill="currentColor" stroke="none"/><circle cx="20" cy="18" r="2" fill="currentColor" stroke="none"/>
+    </svg>
+    <svg id="flatIcon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:none">
+      <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
     </svg>
   </button>
 </header>
@@ -473,20 +624,6 @@
 <div class="layout">
   <!-- MAIN -->
   <main class="main" id="mainContent">
-    <div class="main-header">
-      <div class="cat-select-wrap">
-        <select class="cat-dropdown" id="catSelect" onchange="onCatSelect()">
-          <option value="all">All Recipes</option>
-          <option value="starred">⭐ Starred</option>
-          <option value="Breakfast">🍳 Breakfast</option>
-          <option value="Entrée">🍽️ Entrée</option>
-          <option value="Side Dish">🥗 Side Dish</option>
-          <option value="Dessert">🍰 Dessert</option>
-          <option value="Snack">🥨 Snack</option>
-          <option value="Drink">🥤 Drink</option>
-        </select>
-      </div>
-    </div>
     <div id="recipeContainer"></div>
   </main>
 </div>
@@ -503,22 +640,12 @@
       <div class="menu-section-label">Browse</div>
       <button class="menu-item active" id="mcat-all" onclick="setCategory('all'); closeMenuDrawer()">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-        All Recipes <span class="menu-count" id="count-all">0</span>
+        All Recipes <span class="menu-count" id="count-all"></span>
       </button>
-      <button class="menu-item" id="mcat-starred" onclick="setCategory('starred'); closeMenuDrawer()">
+      <button class="menu-item" id="drawerStarredBtn" onclick="toggleStar(); closeMenuDrawer()">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        Starred <span class="menu-count" id="count-starred">0</span>
+        Starred <span class="menu-count" id="count-starred"></span>
       </button>
-    </div>
-
-    <div class="menu-section">
-      <div class="menu-section-label">Categories</div>
-      <button class="menu-item" id="mcat-Breakfast" onclick="setCategory('Breakfast'); closeMenuDrawer()">🍳 Breakfast <span class="menu-count" id="count-Breakfast">0</span></button>
-      <button class="menu-item" id="mcat-Entrée" onclick="setCategory('Entrée'); closeMenuDrawer()">🍽️ Entrée <span class="menu-count" id="count-Entrée">0</span></button>
-      <button class="menu-item" id="mcat-Side Dish" onclick="setCategory('Side Dish'); closeMenuDrawer()">🥗 Side Dish <span class="menu-count" id="count-Side Dish">0</span></button>
-      <button class="menu-item" id="mcat-Dessert" onclick="setCategory('Dessert'); closeMenuDrawer()">🍰 Dessert <span class="menu-count" id="count-Dessert">0</span></button>
-      <button class="menu-item" id="mcat-Snack" onclick="setCategory('Snack'); closeMenuDrawer()">🥨 Snack <span class="menu-count" id="count-Snack">0</span></button>
-      <button class="menu-item" id="mcat-Drink" onclick="setCategory('Drink'); closeMenuDrawer()">🥤 Drink <span class="menu-count" id="count-Drink">0</span></button>
     </div>
 
     <div class="menu-section">
@@ -533,7 +660,62 @@
       </button>
       <input type="file" id="importFileInput" accept=".json" onchange="importData(event)">
     </div>
+    <div class="menu-section storage-section">
+      <div class="menu-section-label">Storage</div>
+      <div class="storage-bar-wrap">
+        <div class="storage-bar-track"><div class="storage-bar-fill" id="storageBarFill"></div></div>
+        <div class="storage-label" id="storageLabel">Checking…</div>
+      </div>
+    </div>
+
+    <div class="menu-section">
+      <div class="menu-section-label">Settings</div>
+      <div class="font-size-row">
+        <span class="font-size-label">Text size</span>
+        <div class="font-size-btns">
+          <button class="font-size-btn" data-size="14" onclick="setFontSize(14)">A</button>
+          <button class="font-size-btn" data-size="16" onclick="setFontSize(16)">A</button>
+          <button class="font-size-btn" data-size="18" onclick="setFontSize(18)" style="font-size:1.05rem">A</button>
+          <button class="font-size-btn" data-size="20" onclick="setFontSize(20)" style="font-size:1.2rem">A</button>
+        </div>
+      </div>
+    </div>
   </nav>
+</div>
+
+<!-- IMPORT CONFIRM MODAL -->
+<div class="overlay" id="importConfirmOverlay">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <span class="modal-title">Import Recipes</span>
+      <button class="modal-close" onclick="closeModal('importConfirmOverlay')">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body" style="padding-top:12px">
+      <p id="importConfirmMsg" style="font-size:.9rem;line-height:1.6;color:var(--text-muted);margin-bottom:16px"></p>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 0;border-top:1px solid var(--border)" id="importClearRow">
+        <input type="checkbox" id="importClearCheck" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+        <span style="font-size:.875rem" id="importClearLabel"></span>
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('importConfirmOverlay')">Cancel</button>
+      <button class="btn-primary" onclick="confirmImport()">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- BACKUP ALERT -->
+<div id="backupAlert" class="backup-alert" onclick="exportData()" title="Export a backup" style="display:none">
+  <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+  </svg>
+  <span>Unsaved changes — tap to back up</span>
 </div>
 
 <!-- FAB -->
@@ -546,6 +728,7 @@
 <!-- PASTE MODAL -->
 <div class="overlay" id="pasteOverlay" onclick="closeIfBackdrop(event,'pasteOverlay')">
   <div class="modal paste-modal">
+    <div class="modal-handle"></div>
     <div class="modal-header">
       <span class="modal-title">Import Recipe</span>
       <button class="modal-close" onclick="closeModal('pasteOverlay')">
@@ -554,7 +737,7 @@
         </svg>
       </button>
     </div>
-
+    <div class="modal-body">
     <textarea class="paste-area" id="pasteInput"
       placeholder="Paste any recipe here — from a website, email, notes app, or just typed out freeform.
 
@@ -568,7 +751,8 @@ Works best when the recipe has clear sections like:
 
     <div class="modal-divider">or</div>
 
-    <div class="modal-footer" style="margin-top:0">
+    </div><!-- /.modal-body -->
+    <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal('pasteOverlay'); openAddModal()">Fill in manually</button>
       <button class="btn-primary" onclick="runPaste()">Parse Recipe →</button>
     </div>
@@ -578,6 +762,7 @@ Works best when the recipe has clear sections like:
 <!-- ADD / EDIT MODAL -->
 <div class="overlay" id="editOverlay" onclick="closeIfBackdrop(event,'editOverlay')">
   <div class="modal">
+    <div class="modal-handle"></div>
     <div class="modal-header">
       <span class="modal-title" id="editModalTitle">New Recipe</span>
       <button class="modal-close" onclick="closeModal('editOverlay')">
@@ -586,7 +771,7 @@ Works best when the recipe has clear sections like:
         </svg>
       </button>
     </div>
-
+    <div class="modal-body">
     <div class="form-row">
       <label class="form-label">Recipe Name</label>
       <input class="form-input" id="f-name" placeholder="e.g. Lemon Pasta" maxlength="80">
@@ -607,29 +792,29 @@ Works best when the recipe has clear sections like:
       </div>
       <div class="form-row" style="margin-bottom:0">
         <label class="form-label">Servings</label>
-        <input class="form-input" id="f-servings" type="number" min="1" max="99" placeholder="4">
+        <input class="form-input" id="f-servings" type="number" min="1" max="99">
       </div>
     </div>
 
     <div class="form-row-2" style="margin-top:16px">
       <div class="form-row" style="margin-bottom:0">
         <label class="form-label">Prep Time (min)</label>
-        <input class="form-input" id="f-prep" type="number" min="0" placeholder="15">
+        <input class="form-input" id="f-prep" type="number" min="0">
       </div>
       <div class="form-row" style="margin-bottom:0">
         <label class="form-label">Cook Time (min)</label>
-        <input class="form-input" id="f-cook" type="number" min="0" placeholder="30">
+        <input class="form-input" id="f-cook" type="number" min="0">
       </div>
     </div>
 
     <div class="form-row" style="margin-top:16px">
       <label class="form-label">Ingredients <span style="font-weight:400;text-transform:none;letter-spacing:0">(one per line)</span></label>
-      <textarea class="form-textarea" id="f-ingredients" placeholder="2 cups flour&#10;1 tsp salt&#10;3 large eggs"></textarea>
+      <textarea class="form-textarea" id="f-ingredients" oninput="autoResize(this)" placeholder="2 cups flour&#10;1 tsp salt&#10;3 large eggs"></textarea>
     </div>
 
     <div class="form-row">
       <label class="form-label">Instructions</label>
-      <textarea class="form-textarea" id="f-instructions" style="min-height:120px" placeholder="Step-by-step directions…"></textarea>
+      <textarea class="form-textarea" id="f-instructions" oninput="autoResize(this)" placeholder="Step-by-step directions…"></textarea>
     </div>
 
     <div class="form-row">
@@ -640,9 +825,10 @@ Works best when the recipe has clear sections like:
 
     <div class="form-row">
       <label class="form-label">Notes</label>
-      <textarea class="form-textarea" id="f-notes" placeholder="Tips, variations, source…" style="min-height:60px"></textarea>
+      <textarea class="form-textarea" id="f-notes" oninput="autoResize(this)" placeholder="Tips, variations, source…"></textarea>
     </div>
 
+    </div><!-- /.modal-body -->
     <div class="modal-footer">
       <button class="btn-danger" id="deleteBtn" onclick="deleteCurrentRecipe()" style="display:none">Delete</button>
       <button class="btn-secondary" onclick="closeModal('editOverlay')">Cancel</button>
@@ -670,13 +856,11 @@ const CAT_EMOJI = {
   'Drink':     '🥤',
   '':          '🍴',
 };
-function emojiFor(category) {
-  return CAT_EMOJI[category] || '🍴';
-}
 
 // ── IndexedDB setup ──────────────────────────────────────────────
 const DB_NAME = 'RecipeBox', DB_VER = 1, STORE = 'recipes';
-let db, currentId = null, currentCategory = 'all', viewMode = 'grid', starFilter = false, currentTags = [];
+let db, currentId = null, currentCategory = 'all', starFilter = false, currentTags = [];
+let isGrouped = localStorage.getItem('recipebox-grouped') !== 'false'; // default: grouped
 
 function openDB() {
   return new Promise((res, rej) => {
@@ -712,14 +896,10 @@ async function loadAll() {
 }
 
 function updateCounts() {
-  const cats = ['all','starred','Breakfast','Entrée','Side Dish','Dessert','Snack','Drink'];
-  cats.forEach(cat => {
-    const el = document.getElementById('count-' + cat);
-    if(!el) return;
-    if(cat === 'all') el.textContent = recipes.length;
-    else if(cat === 'starred') el.textContent = recipes.filter(r => r.starred).length;
-    else el.textContent = recipes.filter(r => r.category === cat).length;
-  });
+  const allEl = document.getElementById('count-all');
+  const starEl = document.getElementById('count-starred');
+  if(allEl) allEl.textContent = recipes.length;
+  if(starEl) starEl.textContent = recipes.filter(r => r.starred).length;
 }
 
 // ── Search toggle ─────────────────────────────────────────────────
@@ -734,25 +914,52 @@ function openSearch() {
 function closeSearch() {
   const title = document.getElementById('topbarTitle');
   const input = document.getElementById('searchInput');
-  // Small delay so clicking elsewhere doesn't snap shut before blur registers
   setTimeout(() => {
     if(document.activeElement !== input) {
-      input.classList.remove('visible');
-      title.classList.remove('hidden');
+      // Keep visible if there's a query
+      if(!input.value) {
+        input.classList.remove('visible');
+        title.classList.remove('hidden');
+      }
     }
   }, 150);
 }
 
+function updateSearchBtn() {
+  const hasText = document.getElementById('searchInput').value.length > 0;
+  document.getElementById('searchIcon').style.display = hasText ? 'none' : '';
+  document.getElementById('clearIcon').style.display = hasText ? '' : 'none';
+  document.getElementById('searchBtn').title = hasText ? 'Clear search' : 'Search';
+}
+
+function handleSearchBtn() {
+  const input = document.getElementById('searchInput');
+  if(input.value) {
+    input.value = '';
+    updateSearchBtn();
+    renderRecipes();
+    // Close search bar after clearing
+    const title = document.getElementById('topbarTitle');
+    input.classList.remove('visible');
+    title.classList.remove('hidden');
+  } else {
+    openSearch();
+  }
+}
+
 // ── Render ───────────────────────────────────────────────────────
+// Track collapsed accordion sections by category key
+const collapsedSections = new Set();
+const openedSections = new Set(); // tracks sections the user has explicitly opened
+
 function renderRecipes() {
   const q = document.getElementById('searchInput').value.trim().toLowerCase();
 
   let list = recipes.filter(r => {
     if(currentCategory === 'starred' && !r.starred) return false;
-    if(currentCategory !== 'all' && currentCategory !== 'starred' && r.category !== currentCategory) return false;
     if(starFilter && !r.starred) return false;
     if(q) {
-      const hay = [r.name, r.category, ...(r.tags||[])].join(' ').toLowerCase();
+      const hay = [r.name, ...(r.tags||[]), r.ingredients||''].join(' ').toLowerCase();
       if(!hay.includes(q)) return false;
     }
     return true;
@@ -770,64 +977,83 @@ function renderRecipes() {
     return;
   }
 
-  if(viewMode === 'grid') {
-    container.innerHTML = '<div class="recipe-grid">' + list.map(r => cardHTML(r)).join('') + '</div>';
-  } else {
-    container.innerHTML = '<div class="recipe-list">' + list.map(r => rowHTML(r)).join('') + '</div>';
+  if(!isGrouped) {
+    container.innerHTML = `<div class="recipe-list">${list.map(r => rowHTML(r)).join('')}</div>`;
+    return;
   }
+
+  // Group by category, treat empty as 'Uncategorised'
+  const groups = {};
+  for(const r of list) {
+    const key = r.category || 'Uncategorised';
+    if(!groups[key]) groups[key] = [];
+    groups[key].push(r);
+  }
+
+  // Sort group names alphabetically; put 'Uncategorised' last
+  const keys = Object.keys(groups).sort((a,b) => {
+    if(a === 'Uncategorised') return 1;
+    if(b === 'Uncategorised') return -1;
+    return a.localeCompare(b);
+  });
+
+  // Collapse any section not yet explicitly toggled open
+  keys.forEach(key => { if(!openedSections.has(key)) collapsedSections.add(key); });
+
+  const chevronSVG = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>`;
+
+  const sectionsHTML = keys.map(key => {
+    const emoji = key !== 'Uncategorised' ? (CAT_EMOJI[key] || '🍴') : '🍴';
+    const collapsed = collapsedSections.has(key);
+    return `<div class="accordion-section${collapsed?' collapsed':''}" data-cat="${esc(key)}">
+      <div class="accordion-header" onclick="toggleAccordion('${esc(key)}')">
+        <span class="accordion-title">${emoji} ${esc(key)}</span>
+        <span class="accordion-count">${groups[key].length}</span>
+        <span class="accordion-chevron">${chevronSVG}</span>
+      </div>
+      <div class="accordion-body">
+        ${groups[key].map(r => rowHTML(r)).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  container.innerHTML = `<div class="accordion">${sectionsHTML}</div>`;
 }
 
-function cardHTML(r) {
-  const time = (r.prep||0) + (r.cook||0);
-  const emoji = emojiFor(r.category);
-  return `<div class="recipe-card" onclick="viewRecipe(${r.id})">
-    <div class="card-thumb">${emoji}</div>
-    <div class="card-actions">
-      <button class="card-action-btn star-btn ${r.starred?'starred':''}" onclick="event.stopPropagation();toggleStarRecipe(${r.id})" title="${r.starred?'Unstar':'Star'}">
-        <svg width="14" height="14" fill="${r.starred?'currentColor':'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-        </svg>
-      </button>
-      <button class="card-action-btn" onclick="event.stopPropagation();openEditModal(${r.id})" title="Edit">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-        </svg>
-      </button>
-    </div>
-    <div class="card-body">
-      <div class="card-title">${esc(r.name)}</div>
-      <div class="card-meta">
-        ${r.category ? `<span class="card-tag">${r.category}</span>` : ''}
-        ${time ? `<span>⏱ ${time}m</span>` : ''}
-        ${r.servings ? `<span>🍴 ${r.servings}</span>` : ''}
-      </div>
-    </div>
-  </div>`;
+function toggleAccordion(key) {
+  if(collapsedSections.has(key)) {
+    collapsedSections.delete(key);
+    openedSections.add(key);
+  } else {
+    collapsedSections.add(key);
+    openedSections.delete(key);
+  }
+  const sec = document.querySelector(`.accordion-section[data-cat="${key}"]`);
+  if(sec) sec.classList.toggle('collapsed', collapsedSections.has(key));
 }
 
 function rowHTML(r) {
   const time = (r.prep||0) + (r.cook||0);
-  const emoji = emojiFor(r.category);
+  const bmIdx = bookmarks.indexOf(r.id);
+  const bmColor = bmIdx >= 0 ? BOOKMARK_COLORS[bmIdx] : 'none';
+  const bmStroke = bmIdx >= 0 ? BOOKMARK_COLORS[bmIdx] : 'var(--text-muted)';
   return `<div class="recipe-row" onclick="viewRecipe(${r.id})">
-    <div class="row-emoji">${emoji}</div>
-    <div class="row-info">
-      <div class="row-title">${esc(r.name)}</div>
-      <div class="row-meta">${[r.category, time?`${time} min`:null, r.servings?`${r.servings} servings`:null].filter(Boolean).join(' · ')}</div>
-    </div>
     <div class="row-actions">
-      <button class="row-action-btn star-btn ${r.starred?'starred':''}" onclick="event.stopPropagation();toggleStarRecipe(${r.id})" title="${r.starred?'Unstar':'Star'}">
+      <button class="row-action-btn star-btn ${r.starred?'starred':''}" title="${r.starred?'Unstar':'Star'}" onclick="event.stopPropagation();toggleStarRecipe(${r.id})">
         <svg width="16" height="16" fill="${r.starred?'#f5c842':'none'}" stroke="${r.starred?'#f5c842':'currentColor'}" stroke-width="2" viewBox="0 0 24 24">
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
         </svg>
       </button>
-      <button class="row-action-btn" onclick="event.stopPropagation();openEditModal(${r.id})" title="Edit">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-        </svg>
-      </button>
     </div>
+    <div class="row-info">
+      <div class="row-title">${esc(r.name)}</div>
+      <div class="row-meta">${[r.category, time?`${time} min`:null, r.servings?`${r.servings} servings`:null].filter(Boolean).join(' · ')}</div>
+    </div>
+    <button class="row-bookmark-btn" onclick="event.stopPropagation();toggleBookmark(${r.id})" title="${bmIdx>=0?'Remove bookmark':'Bookmark'}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="${bmColor}" stroke="${bmStroke}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+      </svg>
+    </button>
   </div>`;
 }
 
@@ -867,27 +1093,32 @@ function viewRecipe(id) {
   if(!r) return;
   const time = (r.prep||0) + (r.cook||0);
   const ings = (r.ingredients||'').split('\n').map(s=>s.trim()).filter(Boolean);
-  const emoji = emojiFor(r.category);
   const supportsWakeLock = 'wakeLock' in navigator;
   document.getElementById('viewModalContent').innerHTML = `
-    <div class="modal-header" style="margin-bottom:14px">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
       <div style="display:flex;gap:6px;align-items:center">
+        <button class="vm-bookmark-btn ${r.starred?'bookmarked':''}" onclick="toggleStarRecipe(${r.id}); closeModal('viewOverlay'); viewRecipe(${r.id})" title="${r.starred?'Unstar':'Star'}" style="${r.starred?'color:#f5c842':''}">
+          <svg width="16" height="16" fill="${r.starred?'#f5c842':'none'}" stroke="${r.starred?'#f5c842':'currentColor'}" stroke-width="2" viewBox="0 0 24 24">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        </button>
+        <button class="vm-bookmark-btn" onclick="closeModal('viewOverlay');openEditModal(${r.id})" title="Edit recipe">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
         ${supportsWakeLock ? `
         <button id="wakeLockBtn" class="wake-btn" onclick="toggleWakeLock()" title="Keep screen awake">
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
           <span>Keep Awake</span>
         </button>` : ''}
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <button class="card-action-btn star-btn ${r.starred?'starred':''}" onclick="toggleStarRecipe(${r.id}); closeModal('viewOverlay'); viewRecipe(${r.id})" title="${r.starred?'Unstar':'Star'}" style="background:var(--surface2);padding:7px;border-radius:8px">
-          <svg width="16" height="16" fill="${r.starred?'#f5c842':'none'}" stroke="${r.starred?'#f5c842':'currentColor'}" stroke-width="2" viewBox="0 0 24 24">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-          </svg>
-        </button>
-        <button class="topbar-icon-btn" onclick="closeModal('viewOverlay');openEditModal(${r.id})" style="background:var(--surface2)">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        <button class="vm-bookmark-btn ${isBookmarked(r.id)?'bookmarked':''}" id="vmBookmarkBtn" onclick="toggleBookmark(${r.id})" title="${isBookmarked(r.id)?'Remove bookmark':'Bookmark this recipe'}">
+          <svg width="16" height="16" fill="${(()=>{const i=bookmarks.indexOf(r.id);return i>=0?BOOKMARK_COLORS[i]:'none';})()}" stroke="${(()=>{const i=bookmarks.indexOf(r.id);return i>=0?BOOKMARK_COLORS[i]:'currentColor';})()}" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
           </svg>
         </button>
         <button class="modal-close" onclick="releaseWakeLock();closeModal('viewOverlay')">
@@ -897,8 +1128,20 @@ function viewRecipe(id) {
         </button>
       </div>
     </div>
+    <div class="modal-body">
+    ${bookmarks.length ? `<div class="vm-bookmark-bar" id="bookmarkBar">
+      ${bookmarks.map((bid, i) => {
+        const br = recipes.find(x => x.id === bid);
+        if (!br) return '';
+        const color = BOOKMARK_COLORS[i];
+        const isActive = bid === r.id;
+        return `<button class="vm-bookmark-slot${isActive?' vm-bookmark-active':''}" onclick="${isActive?'':''+'closeModal(\'viewOverlay\');viewRecipe('+bid+')'}" style="--bm-color:${color}" title="${esc(br.name)}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="${color}" stroke="${color}" stroke-width="1.5"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          <span class="vm-bookmark-label">${esc(br.name)}</span>
+        </button>`;
+      }).join('')}
+    </div>` : ''}
     <div class="vm-hero">
-      <div class="vm-emoji">${emoji}</div>
       <div>
         <div class="vm-title">${esc(r.name)}</div>
         <div class="vm-tags">
@@ -915,17 +1158,26 @@ function viewRecipe(id) {
     </div>` : ''}
     ${ings.length ? `<div class="vm-section">
       <div class="vm-section-title">Ingredients</div>
-      <ul class="ingredient-list">${ings.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>
+      <ul class="ingredient-list">${ings.map((ing,idx)=>`<li onclick="this.classList.toggle('checked')">
+        <span class="ing-checkbox">
+          <svg class="ing-check-icon" width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="2 6 5 9 10 3"/>
+          </svg>
+        </span>
+        <span class="ing-text">${esc(ing)}</span>
+      </li>`).join('')}</ul>
     </div>` : ''}
     ${r.instructions ? `<div class="vm-section">
       <div class="vm-section-title">Instructions</div>
-      <div class="instructions-text">${esc(r.instructions)}</div>
+      <ul class="instruction-list">${r.instructions.split('\n').map(s=>s.trim()).filter(Boolean).map(s=>`<li><span class="instruction-bullet"></span><span>${esc(s)}</span></li>`).join('')}</ul>
     </div>` : ''}
     ${r.notes ? `<div class="vm-section">
       <div class="vm-section-title">Notes</div>
       <div class="vm-note">${esc(r.notes)}</div>
     </div>` : ''}
+    </div>
   `;
+  document.getElementById('viewOverlay').dataset.recipeId = r.id;
   openModal('viewOverlay');
 }
 
@@ -1096,6 +1348,7 @@ function openAddModal(prefill) {
   document.getElementById('f-tag-input').value    = '';
   renderTagChips();
   openModal('editOverlay');
+  setTimeout(autoResizeAll, 0);
 }
 
 function openEditModal(id) {
@@ -1115,6 +1368,7 @@ function openEditModal(id) {
   document.getElementById('f-tag-input').value = '';
   renderTagChips();
   openModal('editOverlay');
+  setTimeout(autoResizeAll, 0);
 }
 
 function handleTagInput(e) {
@@ -1159,7 +1413,9 @@ async function saveRecipe() {
   updateCounts();
   renderRecipes();
   closeModal('editOverlay');
+  markDirty();
   toast(currentId ? 'Recipe updated' : 'Recipe saved');
+  viewRecipe(recipe.id);
 }
 
 async function deleteCurrentRecipe() {
@@ -1169,6 +1425,7 @@ async function deleteCurrentRecipe() {
   recipes = recipes.filter(r=>r.id!==currentId);
   updateCounts();
   renderRecipes();
+  markDirty();
   closeModal('editOverlay');
   toast('Recipe deleted');
 }
@@ -1187,28 +1444,9 @@ function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 function closeIfBackdrop(e, id) { if(e.target.id===id) closeModal(id); }
 
-function setView(v) {
-  viewMode = v;
-  document.getElementById('gridBtn').classList.toggle('active', v==='grid');
-  document.getElementById('listBtn').classList.toggle('active', v==='list');
-  renderRecipes();
-}
-
 function setCategory(cat) {
   currentCategory = cat;
-  // Sync dropdown
-  const sel = document.getElementById('catSelect');
-  if(sel) sel.value = cat;
-  // Sync menu drawer items
-  document.querySelectorAll('.menu-item[id^="mcat-"]').forEach(el => el.classList.remove('active'));
-  const el = document.getElementById('mcat-' + cat);
-  if(el) el.classList.add('active');
   renderRecipes();
-}
-
-function onCatSelect() {
-  const val = document.getElementById('catSelect').value;
-  setCategory(val);
 }
 
 function openMenuDrawer() {
@@ -1218,11 +1456,36 @@ function closeMenuDrawer() {
   document.getElementById('menuOverlay').classList.remove('open');
 }
 
+function toggleGrouping() {
+  isGrouped = !isGrouped;
+  localStorage.setItem('recipebox-grouped', isGrouped);
+  syncGroupBtn();
+  renderRecipes();
+}
+
+function syncGroupBtn() {
+  document.getElementById('groupedIcon').style.display = isGrouped ? '' : 'none';
+  document.getElementById('flatIcon').style.display  = isGrouped ? 'none' : '';
+  document.getElementById('groupToggleBtn').title = isGrouped ? 'Show flat list' : 'Group by category';
+}
+
+// ── Auto-resize textareas ─────────────────────────────────────────
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
+function autoResizeAll() {
+  document.querySelectorAll('.form-textarea').forEach(autoResize);
+}
+
 function toggleStar() {
   starFilter = !starFilter;
   const icon = document.getElementById('starFilterIcon');
   icon.setAttribute('fill', starFilter ? '#f5c842' : 'none');
   icon.setAttribute('stroke', starFilter ? '#f5c842' : 'currentColor');
+  const drawerBtn = document.getElementById('drawerStarredBtn');
+  if(drawerBtn) drawerBtn.classList.toggle('active', starFilter);
   renderRecipes();
 }
 
@@ -1243,42 +1506,83 @@ function exportData() {
   const date = new Date().toISOString().slice(0,10);
   a.href     = url;
   a.download = `recipe-box-backup-${date}.json`;
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
   URL.revokeObjectURL(url);
+  markClean();
   toast(`Exported ${recipes.length} recipe${recipes.length !== 1 ? 's' : ''}`);
+  updateStorageIndicator();
 }
+
+function clearAllRecipes() {
+  return new Promise(res => {
+    const req = tx('readwrite').clear();
+    req.onsuccess = () => res();
+  });
+}
+
+let pendingImport = null;
 
 async function importData(event) {
   const file = event.target.files[0];
   if(!file) return;
-  event.target.value = ''; // reset so same file can be re-selected
+  event.target.value = '';
   try {
     const text = await file.text();
     const data = JSON.parse(text);
     const incoming = Array.isArray(data) ? data : (data.recipes || []);
     if(!incoming.length) { toast('No recipes found in file'); return; }
-
-    const confirmed = confirm(
-      `Import ${incoming.length} recipe${incoming.length !== 1 ? 's' : ''}?\n\nThis will ADD them alongside your existing recipes (no data will be deleted).`
-    );
-    if(!confirmed) return;
-
-    let added = 0;
-    for(const r of incoming) {
-      const clean = { ...r };
-      delete clean.id; // let IndexedDB assign a fresh id
-      clean.updated = clean.updated || Date.now();
-      const newId = await putRecipe(clean);
-      clean.id = newId;
-      recipes.push(clean);
-      added++;
+    pendingImport = incoming;
+    const n = incoming.length;
+    const hasExisting = recipes.length > 0;
+    document.getElementById('importConfirmMsg').textContent =
+      `${n} recipe${n !== 1 ? 's' : ''} found in file.` +
+      (hasExisting ? ` You currently have ${recipes.length} recipe${recipes.length !== 1 ? 's' : ''}.` : '');
+    const clearRow = document.getElementById('importClearRow');
+    const clearCheck = document.getElementById('importClearCheck');
+    clearCheck.checked = false;
+    if(hasExisting) {
+      clearRow.style.display = 'flex';
+      document.getElementById('importClearLabel').textContent =
+        `Remove my ${recipes.length} existing recipe${recipes.length !== 1 ? 's' : ''} before importing`;
+    } else {
+      clearRow.style.display = 'none';
     }
-    updateCounts();
-    renderRecipes();
-    toast(`Imported ${added} recipe${added !== 1 ? 's' : ''}`);
+    openModal('importConfirmOverlay');
   } catch(e) {
     toast('Could not read file — is it a valid Recipe Box backup?');
   }
+}
+
+async function confirmImport() {
+  if(!pendingImport) return;
+  closeModal('importConfirmOverlay');
+  const replace = document.getElementById('importClearCheck').checked;
+  const incoming = pendingImport;
+  pendingImport = null;
+  if(replace) {
+    await clearAllRecipes();
+    recipes = [];
+  }
+  let added = 0;
+  for(const r of incoming) {
+    const clean = { ...r };
+    delete clean.id;
+    clean.updated = clean.updated || Date.now();
+    const newId = await putRecipe(clean);
+    clean.id = newId;
+    recipes.push(clean);
+    added++;
+  }
+  updateCounts();
+  renderRecipes();
+  if(replace) markClean(); else markDirty();
+  toast(replace
+    ? `Replaced with ${added} recipe${added !== 1 ? 's' : ''}`
+    : `Imported ${added} recipe${added !== 1 ? 's' : ''}`
+  );
+  updateStorageIndicator();
 }
 
 function esc(s) {
@@ -1286,11 +1590,21 @@ function esc(s) {
 }
 
 let toastTimer;
+
 function toast(msg) {
   const el = document.getElementById('toast');
-  el.textContent = msg; el.classList.add('show');
+
+  el.textContent = msg;
+  el.classList.add('show');
+
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+
+  toastTimer = setTimeout(() => {
+    el.classList.remove('show');
+    setTimeout(() => {
+      el.textContent = '';
+    }, 300);
+  }, 2500);
 }
 
 // Keyboard shortcuts
@@ -1301,7 +1615,7 @@ document.addEventListener('keydown', e => {
     }
     const si = document.getElementById('searchInput');
     if(si.classList.contains('visible')) {
-      si.value = ''; closeSearch(); renderRecipes(); return;
+      si.value = ''; updateSearchBtn(); closeSearch(); renderRecipes(); return;
     }
     releaseWakeLock();
     closeModal('viewOverlay'); closeModal('editOverlay');
@@ -1311,8 +1625,124 @@ document.addEventListener('keydown', e => {
   }
 });
 
+// ── Bookmarks ────────────────────────────────────────────────────
+// Each slot has a distinct color
+const BOOKMARK_COLORS = ['#e05c5c', '#5b9cf6', '#56c271', '#e09a3c', '#a76cd9'];
+let bookmarks = []; // array of recipe ids, max 3
+
+function isBookmarked(id) {
+  return bookmarks.includes(id);
+}
+
+function toggleBookmark(id) {
+  if (isBookmarked(id)) {
+    bookmarks = bookmarks.filter(b => b !== id);
+    toast('Bookmark removed');
+  } else {
+    if (bookmarks.length >= 5) {
+      toast('Max 5 bookmarks — remove one first');
+      return;
+    }
+    bookmarks.push(id);
+    toast('Recipe bookmarked');
+  }
+  renderBookmarkBar();
+  renderRecipes();
+  // Refresh the view modal button state if open
+  const btn = document.getElementById('vmBookmarkBtn');
+  if (btn) {
+    const idx = bookmarks.indexOf(id);
+    const bookmarked = idx >= 0;
+    const color = bookmarked ? BOOKMARK_COLORS[idx] : 'currentColor';
+    btn.classList.toggle('bookmarked', bookmarked);
+    btn.title = bookmarked ? 'Remove bookmark' : 'Bookmark this recipe';
+    btn.querySelector('svg').setAttribute('fill', bookmarked ? color : 'none');
+    btn.querySelector('svg').setAttribute('stroke', color);
+  }
+}
+
+function renderBookmarkBar() {
+  // The bookmark bar now lives inside the view modal — re-render it if open
+  const overlay = document.getElementById('viewOverlay');
+  if (overlay && overlay.classList.contains('open')) {
+    const currentViewId = parseInt(overlay.dataset.recipeId);
+    if (currentViewId) viewRecipe(currentViewId);
+  }
+}
+
+// ── Storage ──────────────────────────────────────────────────────
+async function requestPersistentStorage() {
+  if (!navigator.storage) return;
+  try {
+    const persisted = await navigator.storage.persisted();
+    if (!persisted) await navigator.storage.persist();
+  } catch(e) {}
+}
+
+async function updateStorageIndicator() {
+  if (!navigator.storage || !navigator.storage.estimate) {
+    document.getElementById('storageLabel').textContent = 'Storage info unavailable';
+    return;
+  }
+  try {
+    const { usage, quota } = await navigator.storage.estimate();
+    const pct = quota ? (usage / quota) * 100 : 0;
+    const fill = document.getElementById('storageBarFill');
+    const label = document.getElementById('storageLabel');
+    fill.style.width = Math.min(pct, 100) + '%';
+    fill.classList.toggle('warn', pct >= 60 && pct < 80);
+    fill.classList.toggle('critical', pct >= 80);
+
+    const fmt = b => b >= 1e9 ? (b/1e9).toFixed(1)+' GB'
+                   : b >= 1e6 ? (b/1e6).toFixed(1)+' MB'
+                   : b >= 1e3 ? (b/1e3).toFixed(0)+' KB'
+                   : b+' B';
+    label.textContent = `${fmt(usage)} used of ${fmt(quota)} (${pct.toFixed(1)}%)`;
+
+    if (pct >= 80) {
+      toast('⚠️ Storage over 80% full — consider exporting a backup');
+    }
+  } catch(e) {}
+}
+
+// ── Backup Alert ─────────────────────────────────────────────────
+function markDirty() {
+  localStorage.setItem('recipebox-dirty', '1');
+  document.getElementById('backupAlert').style.display = 'flex';
+}
+
+function markClean() {
+  localStorage.removeItem('recipebox-dirty');
+  document.getElementById('backupAlert').style.display = 'none';
+}
+
+function syncBackupAlert() {
+  const dirty = localStorage.getItem('recipebox-dirty') === '1';
+  document.getElementById('backupAlert').style.display = dirty ? 'flex' : 'none';
+}
+
+// ── Font Size ────────────────────────────────────────────────────
+const FONT_SIZES = [14, 16, 18, 20];
+
+function setFontSize(size) {
+  document.documentElement.style.fontSize = size + 'px';
+  localStorage.setItem('recipebox-fontsize', size);
+  document.querySelectorAll('.font-size-btn').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.dataset.size) === size);
+  });
+}
+
+function initFontSize() {
+  const saved = parseInt(localStorage.getItem('recipebox-fontsize')) || 16;
+  setFontSize(saved);
+}
+
 // ── Boot ─────────────────────────────────────────────────────────
-openDB().then(loadAll);
+initFontSize();
+syncGroupBtn();
+syncBackupAlert();
+requestPersistentStorage();
+openDB().then(() => { loadAll(); updateStorageIndicator(); });
 </script>
 </body>
 </html>

@@ -126,6 +126,8 @@
     position:absolute; inset:0;
     width:100%; height:100%;
     touch-action:none;
+    transform: scale(1);
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   }
   #bgImageLayer{
     position:absolute; inset:0;
@@ -134,6 +136,8 @@
     z-index:5;
     pointer-events:none;
     display:none;
+    transform: scale(1);
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .empty-hint{
     position:absolute; top:50%; left:50%;
@@ -468,6 +472,53 @@
     font-size:17px; font-weight:700; color: var(--paper); margin:0;
   }
 
+  .bg-image-actions{
+    display:flex; gap:10px;
+    margin: 14px 0 16px;
+  }
+  .bg-action-btn{
+    flex:1;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    padding: 12px 0;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: var(--chrome);
+    color: var(--paper);
+    font-family:'Inter', sans-serif;
+    font-size:14px; font-weight:600;
+    cursor:pointer;
+  }
+  .bg-action-btn svg{ width:16px; height:16px; }
+  .bg-action-btn:active{ transform: scale(0.97); }
+  .bg-action-btn.remove{
+    color: var(--coral);
+    border-color: var(--coral);
+    background: rgba(255,99,85,0.1);
+  }
+  .bg-action-btn.mode-hidden{ display:none; }
+
+  .shade-tabs{
+    display:flex; align-items:center; gap:6px;
+    margin-bottom: 14px;
+  }
+  .shade-tab{
+    flex:1;
+    background: var(--chrome);
+    border: 1px solid var(--line);
+    border-radius:9px;
+    padding: 9px 0;
+    color: var(--muted);
+    font-family:'Inter', sans-serif;
+    font-weight:600; font-size:11.5px;
+    cursor:pointer;
+  }
+  .shade-tab:active{ transform: scale(0.96); }
+  .shade-tab.active{
+    background: rgba(255,99,85,0.18);
+    border-color: var(--coral);
+    color: var(--coral);
+  }
+
   .color-grid{
     display:grid;
     grid-template-columns: repeat(6, 1fr);
@@ -476,6 +527,7 @@
     overflow-y:auto;
     padding-bottom:4px;
   }
+  .color-grid.mode-hidden{ display:none; }
   .swatch{
     aspect-ratio: 1;
     border-radius: 50%;
@@ -569,7 +621,7 @@
         <div class="menu-dropdown" id="menuDropdown">
           <button class="menu-item" id="menuBgColor">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="0.5" fill="currentColor"/><circle cx="17.5" cy="10.5" r="0.5" fill="currentColor"/><circle cx="8.5" cy="7.5" r="0.5" fill="currentColor"/><circle cx="6.5" cy="12.5" r="0.5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.5-.7 1.5-1.5 0-.4-.16-.76-.41-1.03-.26-.28-.42-.65-.42-1.05 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.97-4.48-9-10-9z"/></svg>
-            <span>Background Color</span>
+            <span>Background</span>
           </button>
           <button class="menu-item" id="clearBtn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
@@ -710,10 +762,6 @@
         <svg class="opt-icon active" data-fit="cover" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V5a1 1 0 0 1 1-1h3"/><path d="M16 4h3a1 1 0 0 1 1 1v3"/><path d="M20 16v3a1 1 0 0 1-1 1h-3"/><path d="M8 20H5a1 1 0 0 1-1-1v-3"/><rect x="5" y="5" width="14" height="14" rx="1"/></svg>
         <svg class="opt-icon" data-fit="contain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V5a1 1 0 0 1 1-1h3"/><path d="M16 4h3a1 1 0 0 1 1 1v3"/><path d="M20 16v3a1 1 0 0 1-1 1h-3"/><path d="M8 20H5a1 1 0 0 1-1-1v-3"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>
       </button>
-      <button class="fmt-btn" id="bgImageBtn" aria-label="Set background image">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-      </button>
-      <input type="file" id="bgImageInput" accept="image/*" style="display:none" />
     </div>
   </div>
 
@@ -749,7 +797,18 @@
       </select>
     </div>
 
+    <div class="shade-tabs" id="shadeTabs">
+      <button class="shade-tab" id="shadeTabLightest" data-shade="lightest">Lightest</button>
+      <button class="shade-tab" id="shadeTabLight" data-shade="light">Light</button>
+      <button class="shade-tab active" id="shadeTabMid" data-shade="mid">Original</button>
+      <button class="shade-tab" id="shadeTabDark" data-shade="dark">Dark</button>
+      <button class="shade-tab" id="shadeTabDarkest" data-shade="darkest">Darkest</button>
+    </div>
+    <div class="color-grid" id="colorGridLightest" style="display:none"></div>
+    <div class="color-grid" id="colorGridLight" style="display:none"></div>
     <div class="color-grid" id="colorGrid"></div>
+    <div class="color-grid" id="colorGridDark" style="display:none"></div>
+    <div class="color-grid" id="colorGridDarkest" style="display:none"></div>
     <button class="eraser-row" id="dialogEraser">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20H9l-6-6 10-10a2 2 0 0 1 2.83 0l5.17 5.17a2 2 0 0 1 0 2.83L11 22"/></svg>
       <span>Eraser</span>
@@ -761,12 +820,34 @@
   <div class="dialog-sheet" id="bgSheet">
     <div class="dialog-handle"></div>
     <div class="dialog-head">
-      <h2>Background Color</h2>
+      <h2>Background</h2>
       <button class="icon-btn" id="bgDialogClose" aria-label="Close">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
+    <div class="bg-image-actions">
+      <button class="bg-action-btn" id="bgImageBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        <span>Upload Photo</span>
+      </button>
+      <button class="bg-action-btn remove mode-hidden" id="bgImageRemoveBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+        <span>Remove Photo</span>
+      </button>
+      <input type="file" id="bgImageInput" accept="image/*" style="display:none" />
+    </div>
+    <div class="shade-tabs" id="bgShadeTabs">
+      <button class="shade-tab" id="bgShadeTabLightest" data-shade="lightest">Lightest</button>
+      <button class="shade-tab" id="bgShadeTabLight" data-shade="light">Light</button>
+      <button class="shade-tab active" id="bgShadeTabMid" data-shade="mid">Original</button>
+      <button class="shade-tab" id="bgShadeTabDark" data-shade="dark">Dark</button>
+      <button class="shade-tab" id="bgShadeTabDarkest" data-shade="darkest">Darkest</button>
+    </div>
+    <div class="color-grid" id="bgGridLightest" style="display:none"></div>
+    <div class="color-grid" id="bgGridLight" style="display:none"></div>
     <div class="color-grid" id="bgGrid"></div>
+    <div class="color-grid" id="bgGridDark" style="display:none"></div>
+    <div class="color-grid" id="bgGridDarkest" style="display:none"></div>
   </div>
 </div>
 
@@ -902,7 +983,7 @@
   async function saveSettings(){
     if(!hasStorage) return;
     try{
-      const settings = { mode, baseSize, brushStyle, currentFontSize, textFontFamily, canvasBgColor, textColor, color, recentColors, bgFitMode };
+      const settings = { mode, baseSize, brushStyle, currentFontSize, textFontFamily, canvasBgColor, textColor, color, recentColors, bgFitMode, currentShadeTab, currentBgShadeTab };
       await storageBackend.set(STORAGE_KEYS.settings, JSON.stringify(settings));
     }catch(e){ noteStorageFailure('save settings failed', e); }
   }
@@ -978,8 +1059,12 @@
   }
 
   function pointerPos(e){
+    // getBoundingClientRect() already reflects the current zoom transform
+    // (it grows/shifts with scale()), so dividing by zoomScale converts
+    // back into the canvas's own unscaled coordinate space — the space
+    // ctx drawing calls expect — keeping drawing accurate at any zoom level.
     const rect = canvas.getBoundingClientRect();
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    return { x: (e.clientX - rect.left) / zoomScale, y: (e.clientY - rect.top) / zoomScale };
   }
 
   function widthFromSpeed(dist, dt){
@@ -1214,6 +1299,89 @@
   canvas.addEventListener('pointercancel', end);
   canvas.addEventListener('pointerleave', (e)=>{ if(drawing) end(); });
 
+  // ---------- Double-tap to zoom ----------
+  // Two quick, close-together taps zoom the drawing (canvas + background
+  // image) in around the tap point; a second double-tap zooms back out.
+  // The text layer is intentionally left alone — it's a sibling, not a
+  // descendant, of the elements being transformed, so it never scales.
+  // Detection runs alongside the normal draw handlers above rather than
+  // replacing them, so a single tap still feels instant. If the two taps
+  // happened to leave a stray dot or two behind (since a stationary tap
+  // also draws a dot), those are quietly undone the moment a double-tap
+  // is recognized. Drawing keeps working while zoomed in: pointerPos()
+  // divides by zoomScale to map screen coordinates back into the canvas's
+  // real (unscaled) coordinate space.
+  const ZOOM_SCALE = 2.25;
+  const TAP_MAX_MOVE = 12;      // px of finger drift still counted as a "tap"
+  const TAP_MAX_DURATION = 250; // ms a press can last and still count as a tap
+  const DOUBLE_TAP_WINDOW = 350;   // ms allowed between the two taps
+  const DOUBLE_TAP_MAX_DIST = 40;  // px the two taps may differ by
+
+  let tapDownX = 0, tapDownY = 0, tapDownTime = 0;
+  let lastTap = null; // { time, x, y }
+  let zoomed = false;
+  let zoomScale = 1;
+
+  function setZoom(on, originClientX, originClientY){
+    zoomed = on;
+    zoomScale = on ? ZOOM_SCALE : 1;
+    // Built lazily (rather than cached at setup time) because bgImageLayer
+    // isn't declared until later in the script; by the time a user can
+    // actually trigger a double-tap, it exists.
+    const targets = [canvas, document.getElementById('bgImageLayer')];
+    if(on){
+      // wrap itself is never transformed, so its rect stays a stable,
+      // unscaled reference for computing the zoom's transform-origin —
+      // even if we're already zoomed in and about to re-zoom.
+      const rect = wrap.getBoundingClientRect();
+      const originX = originClientX - rect.left;
+      const originY = originClientY - rect.top;
+      targets.forEach(el=>{
+        el.style.transformOrigin = originX + 'px ' + originY + 'px';
+        el.style.transform = 'scale(' + ZOOM_SCALE + ')';
+      });
+    } else {
+      targets.forEach(el=>{ el.style.transform = 'scale(1)'; });
+    }
+  }
+
+  canvas.addEventListener('pointerdown', (e)=>{
+    tapDownX = e.clientX; tapDownY = e.clientY; tapDownTime = performance.now();
+  });
+
+  canvas.addEventListener('pointerup', (e)=>{
+    const now = performance.now();
+    const moved = Math.hypot(e.clientX - tapDownX, e.clientY - tapDownY);
+    const duration = now - tapDownTime;
+    const isTap = moved < TAP_MAX_MOVE && duration < TAP_MAX_DURATION;
+
+    if(!isTap){ lastTap = null; return; }
+
+    const isDoubleTap = lastTap &&
+      (now - lastTap.time) < DOUBLE_TAP_WINDOW &&
+      Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < DOUBLE_TAP_MAX_DIST;
+
+    if(isDoubleTap){
+      lastTap = null;
+
+      // Each of the two taps pushed an undo snapshot and drew a dot.
+      // Restore the state from just before the first tap so nothing is
+      // left behind on the canvas.
+      let restored = null;
+      if(undoStack.length >= 2){ undoStack.pop(); restored = undoStack.pop(); }
+      else if(undoStack.length === 1){ restored = undoStack.pop(); }
+      if(restored){
+        ctx.putImageData(restored, 0, 0);
+        syncUndoRedoButtons();
+        debouncedSaveCanvas();
+      }
+
+      setZoom(!zoomed, e.clientX, e.clientY);
+    } else {
+      lastTap = { time: now, x: e.clientX, y: e.clientY };
+    }
+  });
+
   // ---------- Color helpers ----------
   const probe = document.createElement('div');
   probe.style.display = 'none';
@@ -1316,10 +1484,42 @@
 
   const colorOverlay = document.getElementById('colorOverlay');
   const colorGrid = document.getElementById('colorGrid');
+  const colorGridLightest = document.getElementById('colorGridLightest');
+  const colorGridLight = document.getElementById('colorGridLight');
+  const colorGridDark = document.getElementById('colorGridDark');
+  const colorGridDarkest = document.getElementById('colorGridDarkest');
 
-  function buildColorGrid(){
+  // Shift a CSS color toward white (percent > 0) or black (percent < 0).
+  function shadeColor(cssColor, percent){
+    probe.style.color = cssColor;
+    const computed = getComputedStyle(probe).color;
+    const m = computed.match(/\d+/g);
+    if(!m) return cssColor;
+    let [r,g,b] = m.map(Number);
+    if(percent > 0){
+      r = r + (255 - r) * percent;
+      g = g + (255 - g) * percent;
+      b = b + (255 - b) * percent;
+    } else {
+      r = r * (1 + percent);
+      g = g * (1 + percent);
+      b = b * (1 + percent);
+    }
+    return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
+  }
+
+  const LIGHTEST_SHADE_AMOUNT = 0.45;
+  const LIGHT_SHADE_AMOUNT = 0.225;
+  const DARK_SHADE_AMOUNT = -0.25;
+  const DARKEST_SHADE_AMOUNT = -0.5;
+  const lightestColors = colors.map(c => shadeColor(c, LIGHTEST_SHADE_AMOUNT));
+  const lightColors = colors.map(c => shadeColor(c, LIGHT_SHADE_AMOUNT));
+  const darkColors = colors.map(c => shadeColor(c, DARK_SHADE_AMOUNT));
+  const darkestColors = colors.map(c => shadeColor(c, DARKEST_SHADE_AMOUNT));
+
+  function populateGrid(container, colorList){
     const frag = document.createDocumentFragment();
-    swatchEls = colors.map(c=>{
+    const btns = colorList.map(c=>{
       const btn = document.createElement('button');
       btn.className = 'swatch' + (isLight(c) ? ' light-swatch' : '');
       btn.style.background = c;
@@ -1332,10 +1532,47 @@
       frag.appendChild(btn);
       return btn;
     });
-    colorGrid.appendChild(frag);
+    container.appendChild(frag);
+    return btns;
+  }
+
+  function buildColorGrid(){
+    const lightestBtns = populateGrid(colorGridLightest, lightestColors);
+    const lightBtns = populateGrid(colorGridLight, lightColors);
+    const midBtns = populateGrid(colorGrid, colors);
+    const darkBtns = populateGrid(colorGridDark, darkColors);
+    const darkestBtns = populateGrid(colorGridDarkest, darkestColors);
+    swatchEls = lightestBtns.concat(lightBtns, midBtns, darkBtns, darkestBtns);
     updateActiveStates();
   }
   buildColorGrid();
+
+  // ---------- Shade tabs (lightest / light / original / dark / darkest) ----------
+  const shadeTabs = {
+    lightest: { btn: document.getElementById('shadeTabLightest'), grid: colorGridLightest },
+    light: { btn: document.getElementById('shadeTabLight'), grid: colorGridLight },
+    mid: { btn: document.getElementById('shadeTabMid'), grid: colorGrid },
+    dark: { btn: document.getElementById('shadeTabDark'), grid: colorGridDark },
+    darkest: { btn: document.getElementById('shadeTabDarkest'), grid: colorGridDarkest }
+  };
+
+  let currentShadeTab = 'mid';
+
+  function setShadeTab(shade){
+    currentShadeTab = shade;
+    Object.keys(shadeTabs).forEach(key=>{
+      const isActive = key === shade;
+      shadeTabs[key].btn.classList.toggle('active', isActive);
+      shadeTabs[key].grid.style.display = isActive ? '' : 'none';
+    });
+  }
+
+  Object.keys(shadeTabs).forEach(key=>{
+    shadeTabs[key].btn.addEventListener('click', ()=>{
+      setShadeTab(key);
+      debouncedSaveSettings();
+    });
+  });
 
   document.getElementById('dialogEraser').addEventListener('click', ()=>{
     setEraser();
@@ -1344,6 +1581,7 @@
 
   function openColorDialog(){
     updateActiveStates();
+    setShadeTab(currentShadeTab);
     document.getElementById('dialogEraser').classList.toggle('mode-hidden', mode === 'text');
     document.getElementById('textDialogControls').classList.toggle('mode-hidden', mode === 'draw');
     document.getElementById('colorDialogTitle').textContent = mode === 'text' ? 'Text color' : 'Choose a color';
@@ -1555,6 +1793,10 @@
   // ---------- Clear (with confirm) ----------
   const bgOverlay = document.getElementById('bgOverlay');
   const bgGrid = document.getElementById('bgGrid');
+  const bgGridLightest = document.getElementById('bgGridLightest');
+  const bgGridLight = document.getElementById('bgGridLight');
+  const bgGridDark = document.getElementById('bgGridDark');
+  const bgGridDarkest = document.getElementById('bgGridDarkest');
   let canvasBgColor = 'white';
 
   function setBgColor(c){
@@ -1566,9 +1808,9 @@
     debouncedSaveSettings();
   }
 
-  function buildBgGrid(){
+  function populateBgGrid(container, colorList){
     const frag = document.createDocumentFragment();
-    colors.forEach(c=>{
+    colorList.forEach(c=>{
       const btn = document.createElement('button');
       btn.className = 'swatch bg-swatch' + (isLight(c) ? ' light-swatch' : '') + (c.toLowerCase() === canvasBgColor.toLowerCase() ? ' active' : '');
       btn.style.background = c;
@@ -1577,12 +1819,48 @@
       btn.addEventListener('click', ()=> setBgColor(c));
       frag.appendChild(btn);
     });
-    bgGrid.appendChild(frag);
+    container.appendChild(frag);
+  }
+
+  function buildBgGrid(){
+    populateBgGrid(bgGridLightest, lightestColors);
+    populateBgGrid(bgGridLight, lightColors);
+    populateBgGrid(bgGrid, colors);
+    populateBgGrid(bgGridDark, darkColors);
+    populateBgGrid(bgGridDarkest, darkestColors);
   }
   buildBgGrid();
   wrap.style.backgroundColor = canvasBgColor;
 
+  // ---------- Bg dialog shade tabs (lightest / light / original / dark / darkest) ----------
+  const bgShadeTabs = {
+    lightest: { btn: document.getElementById('bgShadeTabLightest'), grid: bgGridLightest },
+    light: { btn: document.getElementById('bgShadeTabLight'), grid: bgGridLight },
+    mid: { btn: document.getElementById('bgShadeTabMid'), grid: bgGrid },
+    dark: { btn: document.getElementById('bgShadeTabDark'), grid: bgGridDark },
+    darkest: { btn: document.getElementById('bgShadeTabDarkest'), grid: bgGridDarkest }
+  };
+
+  let currentBgShadeTab = 'mid';
+
+  function setBgShadeTab(shade){
+    currentBgShadeTab = shade;
+    Object.keys(bgShadeTabs).forEach(key=>{
+      const isActive = key === shade;
+      bgShadeTabs[key].btn.classList.toggle('active', isActive);
+      bgShadeTabs[key].grid.style.display = isActive ? '' : 'none';
+    });
+  }
+
+  Object.keys(bgShadeTabs).forEach(key=>{
+    bgShadeTabs[key].btn.addEventListener('click', ()=>{
+      setBgShadeTab(key);
+      debouncedSaveSettings();
+    });
+  });
+
   function openBgDialog(){
+    setBgShadeTab(currentBgShadeTab);
     bgOverlay.classList.add('open');
   }
   function closeBgDialog(){ bgOverlay.classList.remove('open'); }
@@ -1602,11 +1880,16 @@
   // exported PNG.
   const bgImageBtn = document.getElementById('bgImageBtn');
   const bgImageInput = document.getElementById('bgImageInput');
+  const bgImageRemoveBtn = document.getElementById('bgImageRemoveBtn');
   const bgImageLayer = document.getElementById('bgImageLayer');
   const bgFitBtn = document.getElementById('bgFitBtn');
   let bgImageData = null;
   let bgImageEl = null;
   let bgFitMode = 'cover'; // 'cover' | 'contain'
+
+  function updateBgImageButtons(){
+    bgImageRemoveBtn.classList.toggle('mode-hidden', !bgImageData);
+  }
 
   function applyBgFitMode(newMode){
     bgFitMode = newMode;
@@ -1665,6 +1948,7 @@
   function setBgImage(dataUrl){
     bgImageData = dataUrl;
     applyBgImageStyle(dataUrl);
+    updateBgImageButtons();
     saveBgImage();
   }
 
@@ -1715,6 +1999,7 @@
   }
 
   bgImageBtn.addEventListener('click', ()=> bgImageInput.click());
+  bgImageRemoveBtn.addEventListener('click', ()=> setBgImage(null));
   bgImageInput.addEventListener('change', (e)=>{
     const file = e.target.files && e.target.files[0];
     if(!file) return;
@@ -2090,6 +2375,8 @@
         if(Array.isArray(s.recentColors) && s.recentColors.length) recentColors = s.recentColors.slice(0, 6);
         renderRecentColors();
         if(s.mode === 'text' || s.mode === 'draw') setMode(s.mode, { silent: true });
+        if(shadeTabs[s.currentShadeTab]) currentShadeTab = s.currentShadeTab;
+        if(bgShadeTabs[s.currentBgShadeTab]) currentBgShadeTab = s.currentBgShadeTab;
       }
     }catch(e){ /* nothing saved yet */ }
 
@@ -2103,6 +2390,7 @@
       if(value){
         bgImageData = value;
         applyBgImageStyle(value);
+        updateBgImageButtons();
       }
     }catch(e){ /* nothing saved yet */ }
 
