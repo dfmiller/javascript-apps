@@ -1,6 +1,6 @@
 {
-  "name": "My Apps",
-  "short_name": "My Apps",
+  "name": "JavaScript Apps",
+  "short_name": "JavaScript Apps",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

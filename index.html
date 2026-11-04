@@ -6,7 +6,7 @@
   <link rel="icon" type="image/png" href="/favicon-32.png">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
-  <meta name="apple-mobile-web-app-title" content="My Apps">
+  <meta name="apple-mobile-web-app-title" content="JavaScript Apps">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>JavaScript Apps</title>
   <style>
@@ -456,6 +456,14 @@
       {
         type: APP_TYPES.UTILITY,
         section: APP_SECTIONS.VIBE_CODED,
+        title: 'Pocket Player',
+        description: 'Media player for mobile devices',
+        href: './PocketPlayer/index.html',
+        image: './PocketPlayer/screenshot.png',
+      },
+      {
+        type: APP_TYPES.UTILITY,
+        section: APP_SECTIONS.VIBE_CODED,
         title: 'Recipe Box',
         description: 'Recipe storage',
         href: './RecipeBox/recipe-box.html',
@@ -530,7 +538,8 @@
             data-type="${card.type}"
             style="--card-image: url('${card.image}');"
             href="${card.href}"
-            onclick="event.preventDefault(); openPageDialog('${card.href}', '${card.title}')"
+            target="_blank"
+            onclick="${card.section !== APP_SECTIONS.VIBE_CODED ? `openPageDialog(event, '${card.href}', '${card.title}')` : ''}"
           >
             <span class="card-number">${card.type.toUpperCase()}</span>
             <div class="card-content">
@@ -576,7 +585,8 @@
       'All types'
     );
 
-    function openPageDialog(url, title) {
+    function openPageDialog(event, url, title) {
+      event.preventDefault();
       const dialog = document.createElement('dialog');
       dialog.className = 'app-dialog';
 
