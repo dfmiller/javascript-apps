@@ -222,14 +222,17 @@ dialog p{color:var(--mute);margin:0 0 14px}
   try{PL=JSON.parse(localStorage.getItem("pp-pl")||"[]")}catch(e){}
   if(!Array.isArray(PL))PL=[];
   function savePL(){try{localStorage.setItem("pp-pl",JSON.stringify(PL))}catch(e){}}
-  var audio=$("audio"), tracks=[], idx=-1, shuffle=false, repeat=false, hpOn=false, curArt=null;
+  var audio=$("audio"), tracks=[], idx=-1, shuffle=false, repeat=false, hpOn=false, curArt=null, pre=null, curSrc=null, fails=0;
   var AUDIO_RE=/\.(mp3|m4a|aac|ogg|oga|opus|wav|flac)$/i, M3U_RE=/\.m3u8?$/i;
+  // One shared collator is far faster than calling localeCompare with options on every comparison.
+  var COLF=new Intl.Collator(), COLN=new Intl.Collator(undefined,{numeric:true}), COLG=new Intl.Collator(undefined,{numeric:true,sensitivity:"base"});
+  var MAXQ=1000, CH=150, io=null, fillMem={sig:"",n:0};
 
   function fmt(s){if(!isFinite(s))return"0:00";var m=Math.floor(s/60),x=Math.floor(s%60);return m+":"+(x<10?"0":"")+x}
   function say(t){$("statusT").textContent=t;$("status").hidden=!t}
   $("statusX").onclick=function(){$("status").hidden=true};
 
-  var scanning=false, stopFlag=false, onGo=null, openSet=new Set(), known=new Set(), seen=new Set(), tagging=false, libRoot=null, Q=null, fpath=[], pageQueue=[], pageNode=null, queue=null;
+  var scanning=false, stopFlag=false, onGo=null, openSet=new Set(), known=new Set(), seen=new Set(), tagging=false, libRoot=null, libFull=false, Q=null, fpath=[], pageQueue=[], pageNode=null, queue=null;
 
   function askScan(name,detail,go){
     onGo=go; say("");
@@ -242,29 +245,61 @@ dialog p{color:var(--mute);margin:0 0 14px}
 
   async function runScan(name,producer,persist){
     if(scanning)return;
-    scanning=true; stopFlag=false; tracks=[]; idx=-1; known=new Set(); seen=new Set(); libRoot=persist?name:null; queue=null; fpath=[]; render();
+    scanning=true; stopFlag=false;
+    // Keep tags from the previous scan of this folder, so a rescan only reads tags for new files.
+    var prev=null;
+    if(persist){
+      try{
+        if(libRoot===name&&tracks.length){prev=new Map();tracks.forEach(function(t){prev.set(t.path,t)})}
+        else if((await kvGet("root"))===name){prev=new Map();(await idbAll()).forEach(function(r){var t=fromRec(r);prev.set(t.path,t)})}
+      }catch(e){prev=null}
+    }
+    tracks=[]; idx=-1; pre=null; known=new Set(); seen=new Set(); libRoot=persist?name:null; libFull=false; queue=null; fpath=[]; render();
     $("scan").classList.add("running"); $("scanNo").classList.add("stop"); $("scanNo").setAttribute("aria-label","Stop scanning");
     $("scanNo").innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
     $("scanGo").hidden=true; $("bar").hidden=false; $("scan").hidden=false;
-    var last=0;
+    var last=0, lastP=0, tq=[], tdone=0, tTotal=0, walking=true, tw=[];
     function progress(){
-      $("scanq").textContent="Scanning… "+tracks.length+" tracks";
+      $("scanq").textContent="Scanning\u2026 "+tracks.length+" tracks"+(tTotal?" \u00b7 tags "+tdone+"/"+tTotal:"");
     }
     progress();
     var m3us=[];
+    // f is a File (fallback pickers, m3u files) or a FileSystemFileHandle (folder walk).
+    // Handles are cheap, so the File is only fetched when tags or playback need it.
     function add(f,p){
+      var isH=f.kind==="file";
       if(M3U_RE.test(f.name)){m3us.push({file:f,path:p});return}
-      if(!(AUDIO_RE.test(f.name)||/^audio\//.test(f.type)))return;
+      if(!(AUDIO_RE.test(f.name)||/^audio\//.test(f.type||"")))return;
       var parts=p.split("/"); parts.pop(); var folder=parts.join("/")||"Selected files";
       seen.add(folder);
-      tracks.push({file:f,path:p,name:f.name.replace(/\.[^.]+$/,""),folder:folder});
-      var n=Date.now(); if(n-last>700){last=n;render();progress()}
+      var t={file:isH?null:f,h:isH?f:null,path:p,name:f.name.replace(/\.[^.]+$/,""),folder:folder}, c=prev&&prev.get(p);
+      if(c){t.artist=c.artist;t.album=c.album;t.genre=c.genre;t.no=c.no;t.tagged=c.tagged;t.size=c.size;t.mtime=c.mtime}
+      else{t.dirty=true;tq.push(t);tTotal++}
+      tracks.push(t);
+      var n=Date.now();
+      if(n-lastP>250){lastP=n;progress()}
+      // Rebuilding the whole list gets slower as it grows, so space the rebuilds out.
+      if(n-last>Math.max(1000,tracks.length/4)){last=n;render()}
     }
+    // Tags are read while the folder is still being walked, so the two jobs overlap instead of running back to back.
+    function tagWorker(){
+      return (async function(){
+        while(!stopFlag){
+          var t=tq.shift();
+          if(!t){if(!walking)return;await new Promise(function(r){setTimeout(r,60)});continue}
+          await tagOne(t); tdone++;
+          var n=Date.now(); if(n-lastP>250){lastP=n;progress()}
+          if(tdone%20===0)await new Promise(function(r){setTimeout(r,0)});
+        }
+      })();
+    }
+    for(var wi=0;wi<4;wi++)tw.push(tagWorker());
     try{await producer(add,function(){return stopFlag})}catch(e){}
+    walking=false; await Promise.all(tw);
     var cur=idx>=0?tracks[idx]:null;
-    tracks.sort(function(a,b){return a.folder.localeCompare(b.folder)||a.name.localeCompare(b.name,undefined,{numeric:true})});
+    tracks.sort(function(a,b){return COLF.compare(a.folder,b.folder)||COLN.compare(a.name,b.name)});
     idx=cur?tracks.indexOf(cur):-1; queue=null;
-    if(persist&&!stopFlag&&tracks.length){libRoot=name;saveIndex(name)}
+    if(persist&&!stopFlag&&tracks.length){libRoot=name;libFull=true;saveIndex(name,true)}
     var plMsg="";
     if(m3us.length&&tracks.length){
       try{
@@ -273,7 +308,7 @@ dialog p{color:var(--mute);margin:0 0 14px}
       }catch(e){}
     }
     scanning=false; render(); $("scan").hidden=true;
-    say(tracks.length?tracks.length+" tracks found."+plMsg+(stopFlag?" Scan stopped early.":""):"No audio files found in that selection.");
+    say(tracks.length?tracks.length+" tracks found."+plMsg+(tTotal&&!stopFlag?" Tags read for "+tTotal+" new "+(tTotal===1?"track":"tracks")+".":"")+(stopFlag?" Scan stopped early.":""):"No audio files found in that selection.");
   }
   function listProducer(l,pathOf){
     return async function(add,stopped){
@@ -290,6 +325,7 @@ dialog p{color:var(--mute);margin:0 0 14px}
   },true);
 
   function render(){
+    stopFill();
     var box=$("library");
     if(!tracks.length){box.innerHTML='<div class="empty">No tracks yet.</div>';return}
     if(S.view==="playlists"){renderPlaylists(box);return}
@@ -297,13 +333,14 @@ dialog p{color:var(--mute);margin:0 0 14px}
     if(S.view==="list"){
       box.innerHTML="";
       var ids=[];tracks.forEach(function(t,i){if(match(t))ids.push(i)});
-      if(ids.length){var lw=el("div","fp");if(!Q)lw.appendChild(rootHead());ids.forEach(function(i){var t=tracks[i];lw.appendChild(trackRow(i,t.artist||t.folder.split("/").pop()))});box.appendChild(lw)}
+      if(ids.length){var lw=el("div","fp");if(!Q)lw.appendChild(rootHead());box.appendChild(lw);fillRows(lw,ids,function(i){var t=tracks[i];return trackRow(i,t.artist||t.folder.split("/").pop())},"list:"+(Q?Q.join(" "):""))}
       else box.innerHTML='<div class="empty">No matches.</div>';
       mark();return;
     }
-    var root={name:"",kids:new Map(),direct:[],n:0};
+    var root={name:"",kids:new Map(),direct:[],n:0}, shown=0, capped=false;
     tracks.forEach(function(t,i){
       if(!match(t))return;
+      if(Q){if(shown>=MAXQ){capped=true;return}shown++}
       var node=root;
       t.folder.split("/").forEach(function(seg){
         if(!node.kids.has(seg))node.kids.set(seg,{name:seg,kids:new Map(),direct:[],n:0});
@@ -327,7 +364,7 @@ dialog p{color:var(--mute);margin:0 0 14px}
       return ol;
     }
     function build(node,key,el){
-      Array.from(node.kids.values()).sort(function(a,b){return a.name.localeCompare(b.name,undefined,{numeric:true})}).forEach(function(k){
+      Array.from(node.kids.values()).sort(function(a,b){return COLN.compare(a.name,b.name)}).forEach(function(k){
         var kk=key+"/"+k.name, d=document.createElement("details");
         d.dataset.f=kk; d.open=!!Q||openSet.has(kk);
         var s=document.createElement("summary"), w=document.createElement("div"), a=document.createElement("div"), n=document.createElement("div");
@@ -343,6 +380,7 @@ dialog p{color:var(--mute);margin:0 0 14px}
     box.innerHTML="";
     build(top,topKey,box);
     if(top.direct.length)box.appendChild(list(top.direct));
+    if(capped)box.appendChild(el("div","empty","Showing the first "+MAXQ+" matches. Type more to narrow it down."));
     mark();
   }
   $("library").addEventListener("click",function(e){
@@ -368,6 +406,34 @@ dialog p{color:var(--mute);margin:0 0 14px}
     if(b.dataset.i!=null){queue=(!Q&&(S.view==="folders"||tagView()||S.view==="playlists"))?pageQueue:null;load(+b.dataset.i,true)}
   });
 
+  // Draws long lists a chunk at a time as the user scrolls, so thousands of rows never hit the DOM at once.
+  function stopFill(){if(io){io.disconnect();io=null}}
+  function fillRows(wrap,items,make,sig){
+    stopFill();
+    var pos=0, sent=null, keep=fillMem.sig===sig?fillMem.n:0;
+    if(fillMem.sig!==sig){fillMem.sig=sig;fillMem.n=0}
+    function more(upTo){
+      var end=Math.min(items.length,upTo), fr=document.createDocumentFragment();
+      for(;pos<end;pos++)fr.appendChild(make(items[pos]));
+      if(sent){sent.remove();sent=null}
+      wrap.appendChild(fr);
+      if(pos>fillMem.n)fillMem.n=pos;
+      if(pos<items.length){
+        sent=document.createElement("div"); sent.style.height="1px"; wrap.appendChild(sent);
+        if(io)io.observe(sent);
+      }
+      mark();
+    }
+    if(!("IntersectionObserver" in window)){more(items.length);return}
+    io=new IntersectionObserver(function(es){
+      if(es.some(function(e){return e.isIntersecting})){
+        if(io&&sent)io.unobserve(sent);
+        more(pos+CH);
+      }
+    },{rootMargin:"1500px 0px"});
+    // A re-render of the same page (for example while tags load) keeps the rows already scrolled into view, so the scroll position holds.
+    more(Math.max(CH,keep));
+  }
   function mark(){
     Array.prototype.forEach.call(document.querySelectorAll("li button"),function(b){
       if(+b.dataset.i===idx)b.setAttribute("aria-current","true");else b.removeAttribute("aria-current");
@@ -377,24 +443,31 @@ dialog p{color:var(--mute);margin:0 0 14px}
     });
   }
 
-  function load(i,play){
+  function load(i,play,auto){
     if(i<0||i>=tracks.length)return;
     if(!tracks[i].file){
       var tk=tracks[i];
       ensureFile(tk).then(function(ok){
-        if(ok)load(tracks.indexOf(tk),play);
+        var ti=tracks.indexOf(tk);
+        if(ok)load(ti,play,auto);
+        // During automatic playback, skip a file that can't be opened instead of stopping.
+        else if(auto&&fails<5&&ti>=0){fails++;idx=ti;next(true)}
         else say("Couldn’t open that file. Allow folder access.");
       });
       return;
     }
-    idx=i; var t=tracks[i];
+    var pi=idx; idx=i; var t=tracks[i];
     if(curArt){URL.revokeObjectURL(curArt);curArt=null}
-    audio.src=URL.createObjectURL(t.file);
+    var old=curSrc; curSrc=URL.createObjectURL(t.file); audio.src=curSrc;
+    if(old)URL.revokeObjectURL(old);
+    // Let go of the previous track's file; it can be fetched again from its handle if needed.
+    if(pi>=0&&pi!==i&&tracks[pi]&&tracks[pi].rf)tracks[pi].file=null;
     $("title").textContent=t.name; $("artist").textContent=t.folder.split("/").pop(); $("album").textContent="";
     $("art").style.backgroundImage="";
     mark(); setSession(t.name,t.folder.split("/").pop(),null);
     readTags(t.file,i);
-    if(play)audio.play().catch(function(){say("Tap play to start. The browser blocked autoplay.")});
+    if(play)audio.play().catch(function(e){if(e&&e.name==="NotAllowedError")say("Tap play to start. The browser blocked autoplay.")});
+    planNext();
   }
 
   function readTags(file,i){
@@ -432,9 +505,18 @@ dialog p{color:var(--mute);margin:0 0 14px}
     }
     return ord?ord[n]:n;
   }
-  function next(){
+  // Decide the next track early and fetch its file now. When a track ends (often with the app in the
+  // background) the next one can then start straight away, with no file lookup in between.
+  function planNext(){
+    pre=step(1);
+    if(pre>=0&&tracks[pre]&&!tracks[pre].file)ensureFile(tracks[pre]);
+  }
+  function replan(){pre=null;if(idx>=0)planNext()}
+  function next(auto){
     if(!tracks.length)return;
-    var n=step(1); if(n>=0)load(n,true);
+    var n=(pre!=null&&pre>=0&&tracks[pre])?pre:step(1);
+    pre=null;
+    if(n>=0)load(n,true,auto===true);
   }
   function prev(){
     if(!tracks.length)return;
@@ -471,14 +553,22 @@ dialog p{color:var(--mute);margin:0 0 14px}
     audio.paused?audio.play():audio.pause();
   };
   $("next").onclick=next; $("prev").onclick=prev;
-  $("shuf").onclick=function(){shuffle=!shuffle;this.setAttribute("aria-pressed",shuffle)};
-  $("rep").onclick=function(){repeat=!repeat;this.setAttribute("aria-pressed",repeat)};
+  $("shuf").onclick=function(){shuffle=!shuffle;this.setAttribute("aria-pressed",shuffle);replan()};
+  $("rep").onclick=function(){repeat=!repeat;this.setAttribute("aria-pressed",repeat);replan()};
 
   var IC_PLAY='<svg viewBox="0 0 24 24" width="38" height="38" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
   var IC_PAUSE='<svg viewBox="0 0 24 24" width="38" height="38" fill="currentColor" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>';
-  audio.addEventListener("play",function(){$("play").innerHTML=IC_PAUSE;$("play").setAttribute("aria-label","Pause")});
-  audio.addEventListener("pause",function(){$("play").innerHTML=IC_PLAY;$("play").setAttribute("aria-label","Play")});
-  audio.addEventListener("ended",next);
+  function mstate(s){if("mediaSession" in navigator){try{navigator.mediaSession.playbackState=s}catch(e){}}}
+  audio.addEventListener("play",function(){$("play").innerHTML=IC_PAUSE;$("play").setAttribute("aria-label","Pause");mstate("playing")});
+  audio.addEventListener("pause",function(){$("play").innerHTML=IC_PLAY;$("play").setAttribute("aria-label","Play");mstate("paused")});
+  audio.addEventListener("ended",function(){next(true)});
+  audio.addEventListener("playing",function(){fails=0});
+  // A file the browser can't decode should not end the whole queue.
+  audio.addEventListener("error",function(){
+    if(idx<0||!curSrc)return;
+    if(fails<5){fails++;say("Couldn\u2019t play that file. Skipping it.");next(true)}
+    else say("Couldn\u2019t play that file.");
+  });
   audio.addEventListener("loadedmetadata",function(){$("seek").max=Math.floor(audio.duration)||0;$("dur").textContent=fmt(audio.duration)});
   audio.addEventListener("timeupdate",function(){
     if(!seeking)$("seek").value=Math.floor(audio.currentTime);
@@ -498,12 +588,15 @@ dialog p{color:var(--mute);margin:0 0 14px}
       askScan(root.name,"",function(){runScan(root.name,function(add,stopped){return walk(root,root.name,add,stopped)},true)});
     }else $("dirInput").click();
   };
+  var walkN=0;
   async function walk(dir,path,add,stopped){
     for await(var entry of dir.values()){
       if(stopped())return;
       var p=path+"/"+entry.name;
       if(entry.kind==="directory")await walk(entry,p,add,stopped);
-      else if(AUDIO_RE.test(entry.name)||M3U_RE.test(entry.name))add(await entry.getFile(),p);
+      else if(AUDIO_RE.test(entry.name))add(entry,p);
+      else if(M3U_RE.test(entry.name))add(await entry.getFile(),p);
+      if(++walkN%200===0)await new Promise(function(r){setTimeout(r,0)});
     }
   }
   $("dirInput").onchange=function(){
@@ -562,18 +655,37 @@ dialog p{color:var(--mute);margin:0 0 14px}
     $("searchBtn").innerHTML=on?IC_X:IC_S;
     $("searchBtn").setAttribute("aria-label",on?"Close search":"Search");
     if(on)$("q").focus();
-    else{$("q").value="";Q=null;render()}
+    else{clearTimeout(qT);$("q").value="";Q=null;render()}
   }
   $("searchBtn").onclick=function(){setSearch($("q").hidden)};
+  var qT=0;
   $("q").addEventListener("input",function(){
-    var w=this.value.toLowerCase().split(/\s+/).filter(Boolean);
-    Q=w.length?w:null; render();
+    var v=this.value;
+    clearTimeout(qT);
+    qT=setTimeout(function(){
+      var w=v.toLowerCase().split(/\s+/).filter(Boolean);
+      Q=w.length?w:null; render();
+    },160);
   });
   $("q").addEventListener("keydown",function(e){if(e.key==="Escape")setSearch(false)});
 
   // Remember the chosen folder (File System Access API only)
   var saved=null;
-  function idb(){return new Promise(function(res,rej){var r=indexedDB.open("pocket-player",1);r.onupgradeneeded=function(){r.result.createObjectStore("kv")};r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)}})}
+  var dbp=null;
+  function idb(){
+    return dbp||(dbp=new Promise(function(res,rej){
+      var r=indexedDB.open("pocket-player",2);
+      r.onupgradeneeded=function(){
+        var d=r.result;
+        if(!d.objectStoreNames.contains("kv"))d.createObjectStore("kv");
+        if(!d.objectStoreNames.contains("tracks"))d.createObjectStore("tracks",{keyPath:"p"});
+      };
+      r.onsuccess=function(){var d=r.result;d.onversionchange=function(){d.close();dbp=null};res(d)};
+      r.onerror=function(){dbp=null;rej(r.error)};
+      // An older copy of the page open in another tab can block the upgrade; don't hang forever.
+      r.onblocked=function(){setTimeout(function(){dbp=null;rej(new Error("blocked"))},2000)};
+    }));
+  }
   function kvGet(k){return idb().then(function(db){return new Promise(function(res,rej){var q=db.transaction("kv").objectStore("kv").get(k);q.onsuccess=function(){res(q.result)};q.onerror=function(){rej(q.error)}})})}
   function kvSet(k,v){return idb().then(function(db){return new Promise(function(res,rej){var q=db.transaction("kv","readwrite").objectStore("kv").put(v,k);q.onsuccess=function(){res()};q.onerror=function(){rej(q.error)}})})}
   function match(t){
@@ -663,6 +775,17 @@ dialog p{color:var(--mute);margin:0 0 14px}
     }
     return readTagSlow(file);
   }
+  async function tagOne(t){
+    var had=!!t.file, g={}, ok=false;
+    try{
+      if(await ensureFile(t)){ok=true;g=await Promise.race([readTag(t.file),new Promise(function(r){setTimeout(function(){r({})},10000)})])}
+    }catch(e){}
+    if(ok&&t.file){t.size=t.file.size;t.mtime=t.file.lastModified}
+    if(!had)t.file=null;
+    t.artist=cl(g.artist); t.album=cl(g.album); t.genre=cl(g.genre); t.no=parseInt(g.track,10)||0;
+    if(/^\(?\d+\)?$/.test(t.genre))t.genre="";
+    t.tagged=true; t.dirty=true;
+  }
   async function indexTags(){
     if(tagging||scanning)return;
     var lib=tracks, q=lib.filter(function(t){return !t.tagged});
@@ -671,18 +794,11 @@ dialog p{color:var(--mute);margin:0 0 14px}
     if(!(await ensureFile(q[0]))){tagging=false;say("Couldn\u2019t read tags. Allow folder access.");return}
     var total=q.length, done=0, last=0, saveAt=0;
     async function proc(t){
-      var had=!!t.file, g={};
-      try{
-        if(await ensureFile(t))g=await Promise.race([readTag(t.file),new Promise(function(r){setTimeout(function(){r({})},10000)})]);
-      }catch(e){}
-      if(!had)t.file=null;
-      t.artist=cl(g.artist); t.album=cl(g.album); t.genre=cl(g.genre); t.no=parseInt(g.track,10)||0;
-      if(/^\(?\d+\)?$/.test(t.genre))t.genre="";
-      t.tagged=true; done++;
+      await tagOne(t); done++;
       var n=Date.now();
-      if(n-last>2500){last=n;say("Reading tags "+done+"/"+total+"\u2026");if(lib===tracks&&tagView())render()}
+      if(n-last>Math.max(2500,lib.length/3)){last=n;say("Reading tags "+done+"/"+total+"\u2026");if(lib===tracks&&tagView())render()}
       else if(done%50===0)say("Reading tags "+done+"/"+total+"\u2026");
-      if(done-saveAt>=400){saveAt=done;if(libRoot&&lib===tracks)saveIndex(libRoot)}
+      if(done-saveAt>=400){saveAt=done;if(libRoot&&libFull&&lib===tracks)saveIndex(libRoot)}
     }
     async function worker(){
       while(q.length&&lib===tracks){
@@ -695,7 +811,7 @@ dialog p{color:var(--mute);margin:0 0 14px}
     if(lib!==tracks)return;
     say("Tags read for "+total+" tracks.");
     if(tagView())render();
-    if(libRoot)saveIndex(libRoot);
+    if(libRoot&&libFull)saveIndex(libRoot);
   }
   function el(tag,cls,html){var e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e}
   function ic(p,sz,fill){
@@ -708,7 +824,7 @@ dialog p{color:var(--mute);margin:0 0 14px}
     music:'<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
     play:'<path d="M8 5v14l11-7z"/>'
   };
-  function byName(a,b){return a.name.localeCompare(b.name,undefined,{numeric:true})}
+  function byName(a,b){return COLN.compare(a.name,b.name)}
   function allIn(nd){
     var out=[];
     (function walk(n){
@@ -735,14 +851,13 @@ dialog p{color:var(--mute);margin:0 0 14px}
       h.appendChild(bk); h.appendChild(ti); h.appendChild(pa); wrap.appendChild(h);
     }else wrap.appendChild(rootHead());
     var kids=Array.from(node.kids.values()).sort(byName);
-    kids.forEach(function(k){
-      var cnt=k.n+(k.n===1?" track":" tracks")+(k.kids.size?" \u00b7 "+k.kids.size+(k.kids.size===1?" folder":" folders"):"");
-      wrap.appendChild(groupRow(k.name,cnt,k.name,!deep,deep?P.folder:null,allIn(k)));
-    });
-    node.direct.forEach(function(i){wrap.appendChild(trackRow(i,""))});
     if(!kids.length&&!node.direct.length)wrap.appendChild(el("div","empty","This folder is empty."));
     box.appendChild(wrap);
-    mark();
+    fillRows(wrap,kids.concat(node.direct),function(it){
+      if(typeof it==="number")return trackRow(it,"");
+      var cnt=it.n+(it.n===1?" track":" tracks")+(it.kids.size?" \u00b7 "+it.kids.size+(it.kids.size===1?" folder":" folders"):"");
+      return groupRow(it.name,cnt,it.name,!deep,deep?P.folder:null,allIn(it));
+    },"f:"+fpath.join("/"));
   }
   var UNK={artists:"Unknown artist",albums:"Unknown album",genres:"Unknown genre"};
   var TK={artists:"artist",albums:"album",genres:"genre"}, gpath={artists:[],albums:[],genres:[],playlists:[]}, pageAll=[];
@@ -897,7 +1012,7 @@ dialog p{color:var(--mute);margin:0 0 14px}
   }
   $("plFile").onchange=function(){var f=this.files[0];this.value="";if(f)importPl(f)};
   function renderPlaylists(box){
-    var path=gpath.playlists, pl=null, wrap=el("div","fp");
+    var path=gpath.playlists, pl=null, wrap=el("div","fp"), fillIds=null;
     if(path.length){pl=curPl(); if(!pl)path.length=0}
     box.innerHTML="";
     if(!pl){
@@ -928,10 +1043,11 @@ dialog p{color:var(--mute);margin:0 0 14px}
       var xb=el("button","rplay",ic(P.down,22)); xb._exp=pl.id; xb.setAttribute("aria-label","Save playlist to a file");
       hh.insertBefore(xb,hh.lastChild); hh.insertBefore(del,hh.lastChild);
       wrap.appendChild(hh);
-      ids.forEach(function(k){wrap.appendChild(trackRow(k,tracks[k].artist||"","rm"))});
+      fillIds=ids;
       if(!ids.length)wrap.appendChild(el("div","empty",pl.paths.length?"These tracks aren\u2019t in the loaded library.":"This playlist is empty. Tap + next to a track to add it."));
     }
     box.appendChild(wrap);
+    if(fillIds)fillRows(wrap,fillIds,function(k){return trackRow(k,tracks[k].artist||"","rm")},"p:"+(path[0]||""));
     mark();
   }
   var rootTop=null, TABNAME={folders:"Folders",list:"Tracks",artists:"Artists",albums:"Albums",genres:"Genres",playlists:"Playlists"};
@@ -990,7 +1106,7 @@ dialog p{color:var(--mute);margin:0 0 14px}
       g.idx.push(i);
     });
     return Array.from(m.values()).sort(function(a,b){
-      return ((a.name===u)-(b.name===u))||a.name.localeCompare(b.name,undefined,{numeric:true,sensitivity:"base"})||a.sub.localeCompare(b.sub);
+      return ((a.name===u)-(b.name===u))||COLG.compare(a.name,b.name)||COLF.compare(a.sub,b.sub);
     });
   }
   function renderTagPage(box){
@@ -1041,25 +1157,26 @@ dialog p{color:var(--mute);margin:0 0 14px}
       rb.onclick=function(){indexTags()};
       wrap.appendChild(rb);
     }
-    groups.forEach(function(g){
-      var n=g.idx.length, sub=(g.sub?g.sub+" \u00b7 ":"")+n+(n===1?" track":" tracks");
-      wrap.appendChild(groupRow(g.name,sub,g.key,big,big?null:icon,g.idx.slice().sort(byNo)));
-    });
-    list.forEach(function(x){wrap.appendChild(trackRow(x,subFn?subFn(tracks[x]):""))});
     if(!groups.length&&!list.length)wrap.appendChild(el("div","empty","Nothing here yet."));
     box.appendChild(wrap);
-    mark();
+    fillRows(wrap,groups.concat(list),function(g){
+      if(typeof g==="number")return trackRow(g,subFn?subFn(tracks[g]):"");
+      var n=g.idx.length, sub=(g.sub?g.sub+" \u00b7 ":"")+n+(n===1?" track":" tracks");
+      return groupRow(g.name,sub,g.key,big,big?null:icon,g.idx.slice().sort(byNo));
+    },v+":"+path.join("\u0001"));
   }
   function renderGroups(box){
-    var key={artists:"artist",albums:"album",genres:"genre"}[S.view], u=UNK[S.view], map=new Map();
+    var key={artists:"artist",albums:"album",genres:"genre"}[S.view], u=UNK[S.view], map=new Map(), shown=0, capped=false;
     tracks.forEach(function(t,i){
       if(!match(t))return;
+      if(shown>=MAXQ){capped=true;return}
+      shown++;
       var g=t[key]||u;
       if(!map.has(g))map.set(g,[]);
       map.get(g).push(i);
     });
     var names=Array.from(map.keys()).sort(function(a,b){
-      return ((a===u)-(b===u))||a.localeCompare(b,undefined,{numeric:true,sensitivity:"base"});
+      return ((a===u)-(b===u))||COLG.compare(a,b);
     });
     box.innerHTML="";
     if(!names.length){box.innerHTML='<div class="empty">No matches.</div>';return}
@@ -1092,27 +1209,86 @@ dialog p{color:var(--mute);margin:0 0 14px}
       });
       body.appendChild(ol); d.appendChild(body); box.appendChild(d);
     });
+    if(capped)box.appendChild(el("div","empty","Showing the first "+MAXQ+" matches. Type more to narrow it down."));
     mark();
   }
-  function saveIndex(root){
-    try{localStorage.setItem("pp-index",JSON.stringify({root:root,t:tracks.map(function(x){return[x.path,x.artist||"",x.album||"",x.genre||"",x.tagged?1:0,x.no||0]})}))}catch(e){}
+  // The track index lives in IndexedDB: one small record per track, so a save only writes what changed.
+  function idbAll(){
+    return idb().then(function(db){return new Promise(function(res,rej){
+      var q=db.transaction("tracks").objectStore("tracks").getAll();
+      q.onsuccess=function(){res(q.result||[])}; q.onerror=function(){rej(q.error)};
+    })});
   }
-  function loadIndex(){
-    var j=null;
-    try{j=JSON.parse(localStorage.getItem("pp-index")||"null")}catch(e){}
-    if(!j||!saved||j.root!==saved.name||!j.t||!j.t.length)return false;
-    tracks=j.t.map(function(e){
-      var a=typeof e==="string"?[e]:e, p=a[0], parts=p.split("/"), fn=parts.pop();
-      return{file:null,path:p,name:fn.replace(/\.[^.]+$/,""),folder:parts.join("/"),artist:a[1]||"",album:a[2]||"",genre:a[3]||"",tagged:!!a[4],no:a[5]||0};
-    });
-    libRoot=j.root;
-    idx=-1; known=new Set(); render();
+  function rec(t){return{p:t.path,a:t.artist||"",al:t.album||"",g:t.genre||"",n:t.no||0,t:t.tagged?1:0,z:t.size==null?null:t.size,m:t.mtime==null?null:t.mtime}}
+  function fromRec(r){
+    var p=r.p, parts=p.split("/"), fn=parts.pop();
+    return{file:null,h:null,path:p,name:fn.replace(/\.[^.]+$/,""),folder:parts.join("/"),artist:r.a||"",album:r.al||"",genre:r.g||"",tagged:!!r.t,no:r.n||0,size:r.z==null?null:r.z,mtime:r.m==null?null:r.m};
+  }
+  async function writeIndex(root,lib,full){
+    var db=await idb(), dirty=lib.filter(function(t){return t.dirty});
+    dirty.forEach(function(t){t.dirty=false});
+    try{
+      await new Promise(function(res,rej){
+        var tx=db.transaction(["tracks","kv"],"readwrite"), st=tx.objectStore("tracks");
+        tx.objectStore("kv").put(root,"root");
+        dirty.forEach(function(t){st.put(rec(t))});
+        if(full){
+          // After a finished scan, drop records for files that no longer exist.
+          var keep=new Set(lib.map(function(t){return t.path}));
+          st.getAllKeys().onsuccess=function(e){e.target.result.forEach(function(k){if(!keep.has(k))st.delete(k)})};
+        }
+        tx.oncomplete=function(){res()};
+        tx.onerror=tx.onabort=function(){rej(tx.error||new Error("write failed"))};
+      });
+    }catch(e){dirty.forEach(function(t){t.dirty=true});throw e}
+  }
+  // Fallback for browsers where IndexedDB is unavailable.
+  function saveIndexLS(root,lib){
+    try{localStorage.setItem("pp-index",JSON.stringify({root:root,t:lib.map(function(x){return[x.path,x.artist||"",x.album||"",x.genre||"",x.tagged?1:0,x.no||0]})}))}catch(e){}
+  }
+  var saving=Promise.resolve();
+  function saveIndex(root,full){
+    var lib=tracks;
+    saving=saving.then(function(){return writeIndex(root,lib,full)}).then(function(){return true},function(){saveIndexLS(root,lib);return false});
+    return saving;
+  }
+  async function loadIndex(){
+    if(!saved)return false;
+    var rows=[], legacy=false;
+    try{if((await kvGet("root"))===saved.name)rows=await idbAll()}catch(e){}
+    if(!rows.length){
+      // Older versions kept the index in localStorage; move it over once.
+      var j=null;
+      try{j=JSON.parse(localStorage.getItem("pp-index")||"null")}catch(e){}
+      if(j&&j.root===saved.name&&j.t&&j.t.length){
+        legacy=true;
+        rows=j.t.map(function(e){var a=typeof e==="string"?[e]:e;return{p:a[0],a:a[1],al:a[2],g:a[3],t:a[4],n:a[5]}});
+      }
+    }
+    if(!rows.length)return false;
+    tracks=rows.map(fromRec);
+    libRoot=saved.name; libFull=true;
+    idx=-1; pre=null; known=new Set(); render();
     say(tracks.length+" tracks from your last scan.");
+    if(legacy){
+      tracks.forEach(function(t){t.dirty=true});
+      saveIndex(libRoot,true).then(function(ok){if(ok)try{localStorage.removeItem("pp-index")}catch(e){}});
+    }
     return true;
   }
   var dirCache=new Map(), permOk=false;
+  // If a tagged track changed on disk since its tags were read, queue it for re-reading.
+  function fresh(t){
+    var f=t.file;
+    if(t.tagged&&t.size!=null&&f&&(f.size!==t.size||f.lastModified!==t.mtime)){t.tagged=false;t.size=null;t.mtime=null;t.dirty=true}
+    return true;
+  }
   async function ensureFile(t){
     if(t.file)return true;
+    if(t.h){
+      try{t.file=await t.h.getFile();t.rf=true;return fresh(t)}
+      catch(e){t.h=null}
+    }
     var r=saved; if(!r)return false;
     try{
       if(!permOk){
@@ -1129,7 +1305,8 @@ dialog p{color:var(--mute);margin:0 0 14px}
         dir=c;
       }
       t.file=await(await dir.getFileHandle(parts[parts.length-1])).getFile();
-      return true;
+      t.rf=true;
+      return fresh(t);
     }catch(e){
       if(e&&(e.name==="NotAllowedError"||e.name==="SecurityError"))permOk=false;
       return false;
@@ -1149,7 +1326,7 @@ dialog p{color:var(--mute);margin:0 0 14px}
   async function boot(){
     try{saved=await kvGet("dir")}catch(e){}
     $("mRescan").hidden=!(saved&&saved.kind==="directory");
-    if(saved&&saved.kind==="directory"&&loadIndex())return;
+    if(saved&&saved.kind==="directory"&&await loadIndex())return;
     if(saved&&saved.kind==="directory"){
       $("startT").textContent="Welcome back";
       $("startP").textContent="Your music folder is “"+saved.name+"”.";
