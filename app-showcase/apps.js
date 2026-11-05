@@ -45,15 +45,15 @@ const APPS = [
     background: "#17382c",
     accent: "#e8d26a"
   },
-  /* {
-    name: "Mixdown",
-    tagline: "From rough take to finished song",
-    description: "Record, layer and share demos straight from your phone.",
-    cta: "Open Mixdown",
-    url: "https://example.com/mixdown",
-    image: "images/mixdown.svg",
-    imageAlt: "",
-    background: "#4a1c24",
-    accent: "#ffb347"
-  } */
+  {
+    name: "Word Search",
+    tagline: "Find hidden words in a grid of letters",
+    description: "Challenge your brain with this fun and educational word search game.",
+    cta: "Play Word Search",
+    url: "games/WordSearch.html",
+    image: "images/wordsearch.png",
+    imageAlt: "A grid of letters with some words highlighted",
+    background: "#2c3e50",
+    accent: "#f39c12"
+  }
 ];
