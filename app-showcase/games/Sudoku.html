@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sudoku</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#e9efee;--panel:#fbfdfc;--ink:#12302d;--mute:#5d7a76;--line:#b9cbc7;--bold:#12302d;--sel:#ffd978;--peer:#dcebe8;--same:#bfe0d9;--given:#12302d;--mine:#1b6e8a;--err:#d64545;--btn:#12302d;--btnink:#f2faf8;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1716;--panel:#16231f;--ink:#e3f1ee;--mute:#8aa6a1;--line:#2c4540;--bold:#9bbcb6;--sel:#8a6a12;--peer:#1d2f2b;--same:#2a4a44;--given:#e3f1ee;--mine:#6cc3e0;--err:#ff7b7b;--btn:#e3f1ee;--btnink:#0e1716}}
+:root[data-theme="dark"]{--bg:#0e1716;--panel:#16231f;--ink:#e3f1ee;--mute:#8aa6a1;--line:#2c4540;--bold:#9bbcb6;--sel:#8a6a12;--peer:#1d2f2b;--same:#2a4a44;--given:#e3f1ee;--mine:#6cc3e0;--err:#ff7b7b;--btn:#e3f1ee;--btnink:#0e1716}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;justify-content:center}
+main{width:100%;max-width:480px;padding:14px 12px 24px}
+header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.02em}
+.stats{display:flex;gap:14px;color:var(--mute);font-size:15px;font-variant-numeric:tabular-nums}
+.stats b{color:var(--ink);font-weight:600}
+.seg{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:3px;margin-bottom:12px}
+.seg button{flex:1;border:0;background:none;color:var(--mute);font:inherit;font-size:15px;padding:8px 0;border-radius:7px;cursor:pointer}
+.seg button.on{background:var(--btn);color:var(--btnink);font-weight:600}
+#board{display:grid;grid-template-columns:repeat(9,1fr);aspect-ratio:1;width:100%;background:var(--panel);border:2.5px solid var(--bold);border-radius:6px;overflow:hidden;touch-action:manipulation}
+.c{position:relative;border:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--panel);color:var(--mine);font:inherit;font-size:clamp(20px,6.4vw,30px);font-weight:600;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;min-width:0}
+.c.rb{border-right:2.5px solid var(--bold)}.c.bb{border-bottom:2.5px solid var(--bold)}
+.c.re{border-right:0}.c.be{border-bottom:0}
+.c.g{color:var(--given);font-weight:800}
+.c.p{background:var(--peer)}.c.s2{background:var(--same)}.c.sel{background:var(--sel);color:var(--ink)}
+.c.bad span{color:var(--err)}
+#tm,#ms{display:inline-block}
+#ms{transform-origin:right center}
+#tm.pop,#ms.pop{animation:pop2 .9s}
+@keyframes pop2{0%,100%{transform:scale(1)}30%{transform:scale(2.5)}}
+.n{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);font-size:clamp(9px,2.8vw,12px);font-weight:600;color:var(--ink);opacity:.7;pointer-events:none}
+.n i{font-style:normal;display:flex;align-items:center;justify-content:center}
+.pad{display:grid;grid-template-columns:repeat(9,1fr);gap:5px;margin-top:14px}
+.pad button{position:relative;aspect-ratio:3/4;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:9px;font:inherit;font-size:clamp(20px,6vw,26px);font-weight:600;cursor:pointer;padding:0}
+.pad button small{position:absolute;bottom:3px;left:0;right:0;font-size:10px;font-weight:400;color:var(--mute)}
+.pad button:disabled{opacity:.28;cursor:default}
+.tools{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.tools button{border:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;font-size:15px;padding:12px 0;border-radius:10px;cursor:pointer}
+.tools button.on{background:var(--btn);color:var(--btnink);border-color:var(--btn)}
+button:focus-visible{outline:3px solid var(--mine);outline-offset:2px}
+.tools.one{grid-template-columns:1fr;margin-top:8px}
+#st{min-height:20px;margin:10px 2px 0;color:var(--mute);font-size:14px;text-align:center;line-height:1.35}
+#ov{position:fixed;inset:0;background:rgba(8,16,15,.62);display:none;align-items:center;justify-content:center;padding:24px;z-index:20}
+#ov.show{display:flex}
+#ov div{background:var(--panel);border-radius:16px;padding:26px 24px;text-align:center;max-width:320px;width:100%}
+#ov h2{margin:0 0 6px;font-size:26px;font-weight:800}
+#ov p{margin:0 0 18px;color:var(--mute);font-size:16px;line-height:1.4}
+#ov button{border:0;background:var(--btn);color:var(--btnink);font:inherit;font-size:16px;font-weight:600;padding:12px 22px;border-radius:10px;cursor:pointer}
+.tools button:disabled{opacity:.35;cursor:default}
+#ov .row{display:flex;gap:10px;justify-content:center}
+#ov button.alt{background:none;color:var(--ink);border:1px solid var(--line)}
+#oc{display:none}
+#ov.ask #oc{display:inline-block}
+@media (prefers-reduced-motion:reduce){#tm.pop,#ms.pop{animation:none}}
+</style>
+</head>
+<body>
+<main>
+<header><h1>Sudoku</h1><div class="stats"><span>Time <b id="tm">0:00</b></span><span>Mistakes <b id="ms">0/3</b></span></div></header>
+<div class="seg" id="seg"><button data-d="easy">Easy</button><button data-d="medium">Medium</button><button data-d="hard">Hard</button></div>
+<div id="board"></div>
+<div class="pad" id="pad"></div>
+<div class="tools">
+<button id="bn">Notes</button><button id="be">Clear</button><button id="bh">Hint</button><button id="bw">New game</button>
+</div>
+<div class="tools one"><button id="bm"></button></div>
+<p id="st"></p>
+</main>
+<div id="ov"><div><h2 id="ot"></h2><p id="op"></p><span class="row"><button id="oc" class="alt">Keep playing</button><button id="ob">New game</button></span></div></div>
+<script>
+const $=s=>document.querySelector(s);
+const CLUES={easy:42,medium:34,hard:28};
+let diff='easy',puz,sol,cur,notes,sel=-1,mist=0,secs=0,noteMode=false,over=false,timer,strict=true,flash='',ft,wrong=null,wt;
+const rnd=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+function mask(g,i){const r=i/9|0,c=i%9,br=r-r%3,bc=c-c%3;let m=0;for(let k=0;k<9;k++){m|=1<<g[r*9+k];m|=1<<g[k*9+c];m|=1<<g[(br+(k/3|0))*9+bc+k%3]}return ~m&0x3fe}
+const bits=m=>{let n=0;while(m){n+=m&1;m>>=1}return n};
+function best(g){let bi=-1,bm=0,bn=10;for(let i=0;i<81;i++)if(!g[i]){const m=mask(g,i),n=bits(m);if(n<bn){bn=n;bi=i;bm=m;if(n<2)break}}return[bi,bm]}
+function count(g,lim){const[i,m]=best(g);if(i<0)return 1;let n=0;for(let d=1;d<=9&&n<lim;d++)if(m&(1<<d)){g[i]=d;n+=count(g,lim-n);g[i]=0}return n}
+function fill(g){const[i,m]=best(g);if(i<0)return true;for(const d of rnd([1,2,3,4,5,6,7,8,9]))if(m&(1<<d)){g[i]=d;if(fill(g))return true;g[i]=0}return false}
+function generate(d){const s=Array(81).fill(0);fill(s);const p=s.slice();let left=81;for(const i of rnd([...Array(81).keys()])){if(left<=CLUES[d])break;const v=p[i];p[i]=0;if(count(p.slice(),2)!==1)p[i]=v;else left--}return[p,s]}
+
+const board=$('#board');
+for(let i=0;i<81;i++){const b=document.createElement('button'),r=i/9|0,c=i%9;b.className='c'+(c%3==2&&c<8?' rb':'')+(r%3==2&&r<8?' bb':'')+(c==8?' re':'')+(r==8?' be':'');b.innerHTML='<span></span><div class="n">'+'<i></i>'.repeat(9)+'</div>';b.setAttribute('aria-label','Row '+(r+1)+' column '+(c+1));b.onclick=()=>{sel=i;draw();save()};board.append(b)}
+const cells=[...board.children];
+const pad=$('#pad');
+for(let d=1;d<=9;d++){const b=document.createElement('button');b.innerHTML=d+'<small></small>';b.onclick=()=>input(d);pad.append(b)}
+const pbs=[...pad.children];
+
+function draw(){
+  const sv=sel>=0?cur[sel]:0,sr=sel/9|0,sc=sel%9;
+  const cnt=Array(10).fill(0);
+  for(let i=0;i<81;i++){
+    const el=cells[i],r=i/9|0,c=i%9,v=cur[i];
+    if(v)cnt[v]++;
+    const w=wrong&&wrong[0]===i&&!v;
+    el.firstChild.textContent=v||(w?wrong[1]:'');
+    el.classList.toggle('bad',!!w);
+    const peer=sel>=0&&i!==sel&&(r===sr||c===sc||((r/3|0)===(sr/3|0)&&(c/3|0)===(sc/3|0)));
+    el.classList.toggle('g',!!puz[i]);
+    el.classList.toggle('sel',i===sel);
+    el.classList.toggle('s2',i!==sel&&sv&&v===sv);
+    el.classList.toggle('p',peer&&!(sv&&v===sv));
+    const n=el.lastChild.children;
+    for(let k=0;k<9;k++)n[k].textContent=!v&&!w&&(notes[i]&(1<<(k+1)))?k+1:'';
+  }
+  for(let d=1;d<=9;d++){pbs[d-1].disabled=cnt[d]>=9||over;pbs[d-1].lastChild.textContent=9-cnt[d]}
+  $('#ms').textContent=strict?mist+'/3':'off';
+  $('#bn').classList.toggle('on',noteMode);
+  $('#bn').textContent='Notes: '+(noteMode?'on':'off');
+  $('#be').disabled=!(noteMode||!strict)||over;
+  $('#bm').textContent='Allow wrong answers: '+(strict?'off':'on');
+  $('#st').textContent=flash||(noteMode?'Notes on. Select a cell, then tap numbers to pencil in possible values.':'');
+  document.querySelectorAll('#seg button').forEach(b=>b.classList.toggle('on',b.dataset.d===diff));
+}
+const fmt=s=>(s/60|0)+':'+String(s%60).padStart(2,'0');
+function tick(){if(!over&&!document.hidden){secs++;$('#tm').textContent=fmt(secs);if(secs%5==0)save()}}
+function place(i,d){
+  cur[i]=d;notes[i]=0;
+  const r=i/9|0,c=i%9;
+  for(let k=0;k<81;k++){const kr=k/9|0,kc=k%9;if(kr===r||kc===c||((kr/3|0)===(r/3|0)&&(kc/3|0)===(c/3|0)))notes[k]&=~(1<<d)}
+}
+function input(d){
+  if(over||sel<0||puz[sel]||(strict&&cur[sel]===sol[sel]))return;
+  if(noteMode){if(!cur[sel]){notes[sel]^=1<<d}}
+  else if(!strict||d===sol[sel]){place(sel,d)}
+  else{
+    mist++;const m=$('#ms');m.classList.remove('pop');void m.offsetWidth;m.classList.add('pop');
+    cells[sel].classList.remove('bad');
+    wrong=[sel,d];clearTimeout(wt);wt=setTimeout(()=>{wrong=null;draw()},800);
+    if(mist>=3){over=true;setTimeout(()=>end(false),800)}
+  }
+  draw();save();checkWin();
+}
+function erase(){if(over||sel<0||puz[sel]||(!noteMode&&strict))return;if(!strict)cur[sel]=0;notes[sel]=0;draw();save()}
+function setStrict(v){strict=v;try{localStorage.setItem('sudoku-strict',v?'1':'0')}catch(e){}}
+function toast(m){flash=m;draw();clearTimeout(ft);ft=setTimeout(()=>{flash='';draw()},3500)}
+function hint(){
+  if(over)return;
+  let i=sel;
+  if(i<0||puz[i]||cur[i]===sol[i]){const e=[];for(let k=0;k<81;k++)if(cur[k]!==sol[k])e.push(k);if(!e.length)return;i=e[Math.random()*e.length|0]}
+  sel=i;place(i,sol[i]);secs+=30;$('#tm').textContent=fmt(secs);
+  const t=$('#tm');t.classList.remove('pop');void t.offsetWidth;t.classList.add('pop');
+  draw();save();checkWin();
+}
+function checkWin(){if(over)return;if(cur.every((v,i)=>v===sol[i]))end(true);else if(!strict&&cur.every(v=>v))toast('Every cell is filled, but at least one number is wrong.')}
+function end(win){
+  over=true;
+  if(win){
+    let rec='';try{const k='sudoku-best-'+diff,b=+localStorage.getItem(k)||0;if(!b||secs<b){localStorage.setItem(k,secs);rec=b?' New best for this level.':' First finish at this level.'}else rec=' Best: '+fmt(b)+'.'}catch(e){}
+    $('#ot').textContent='Solved';$('#op').textContent='Finished '+diff+' in '+fmt(secs)+' with '+mist+' mistake'+(mist==1?'':'s')+'.'+rec;
+  }else{
+    $('#ot').textContent='Out of mistakes';$('#op').textContent='Three wrong entries ends the round. Try a fresh puzzle.';
+  }
+  clearSave();$('#ov').classList.add('show');draw();
+}
+function newGame(d){
+  if(d)diff=d;
+  [puz,sol]=generate(diff);cur=puz.slice();notes=Array(81).fill(0);
+  sel=-1;mist=0;secs=0;over=false;noteMode=false;
+  $('#ov').classList.remove('show','ask');$('#tm').textContent='0:00';
+  draw();save();
+}
+function save(){try{localStorage.setItem('sudoku-game',JSON.stringify({diff,puz,sol,cur,notes,mist,secs}))}catch(e){}}
+function clearSave(){try{localStorage.removeItem('sudoku-game')}catch(e){}}
+function load(){
+  try{const s=JSON.parse(localStorage.getItem('sudoku-game'));
+    if(s&&s.puz&&s.puz.length===81){({diff,puz,sol,cur,notes,mist,secs}=s);sel=-1;over=false;$('#tm').textContent=fmt(secs);draw();return true}
+  }catch(e){}
+  return false;
+}
+let pend;
+function requestNew(d){
+  const started=!over&&(cur.some((v,i)=>v!==puz[i])||notes.some(n=>n));
+  if(!started){newGame(d);return}
+  pend=d;$('#ot').textContent='Start a new game?';$('#op').textContent='Your progress on this puzzle will be lost.';
+  $('#ov').classList.add('show','ask');
+}
+$('#seg').onclick=e=>{const d=e.target.dataset&&e.target.dataset.d;if(d&&d!==diff)requestNew(d)};
+$('#bn').onclick=()=>{noteMode=!noteMode;draw()};
+$('#be').onclick=erase;$('#bh').onclick=hint;$('#bm').onclick=()=>{setStrict(!strict);draw()};
+$('#bw').onclick=()=>requestNew();$('#ob').onclick=()=>{const d=pend;pend=undefined;newGame(d)};$('#oc').onclick=()=>{pend=undefined;$('#ov').classList.remove('show','ask')};
+document.addEventListener('keydown',e=>{
+  if(e.key>='1'&&e.key<='9')input(+e.key);
+  else if(e.key==='Backspace'||e.key==='Delete'||e.key==='0')erase();
+  else if(e.key==='n'||e.key==='N'){noteMode=!noteMode;draw()}
+  else if(sel>=0){const r=sel/9|0,c=sel%9;
+    if(e.key==='ArrowUp'&&r>0)sel-=9;else if(e.key==='ArrowDown'&&r<8)sel+=9;
+    else if(e.key==='ArrowLeft'&&c>0)sel--;else if(e.key==='ArrowRight'&&c<8)sel++;else return;
+    e.preventDefault();draw()}
+});
+try{strict=localStorage.getItem('sudoku-strict')!=='0'}catch(e){}
+timer=setInterval(tick,1000);
+if(!load())newGame('easy');
+</script>
+</body>
+</html>
