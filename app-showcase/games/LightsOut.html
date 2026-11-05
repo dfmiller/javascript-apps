@@ -14,15 +14,12 @@ html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;justify-content:center}
 main{width:100%;max-width:480px;padding:14px 12px 24px}
-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
-h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.02em}
+header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.02em}
 .stats{display:flex;gap:14px;color:var(--mute);font-size:15px;font-variant-numeric:tabular-nums}
 .stats b{color:var(--ink);font-weight:600}
 #tm,#ms{display:inline-block}#ms{transform-origin:right center}
 .pop{animation:pop2 .9s}@keyframes pop2{0%,100%{transform:scale(1)}30%{transform:scale(2.5)}}
-.seg{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:3px;margin-bottom:12px}
-.seg button{flex:1;border:0;background:none;color:var(--mute);font:inherit;font-size:15px;padding:8px 0;border-radius:7px;cursor:pointer}
-.seg button.on{background:var(--btn);color:var(--btnink);font-weight:600}
 #board{display:grid;aspect-ratio:var(--ar,1);width:100%;background:var(--panel);border:2.5px solid var(--bold);border-radius:6px;overflow:hidden;touch-action:manipulation}
 .c{position:relative;border:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--panel);color:var(--mine);font:inherit;font-size:clamp(20px,6.4vw,30px);font-weight:600;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;min-width:0}
 .c.rb{border-right:2.5px solid var(--bold)}.c.bb{border-bottom:2.5px solid var(--bold)}.c.re{border-right:0}.c.be{border-bottom:0}
@@ -46,7 +43,9 @@ button:focus-visible{outline:3px solid var(--mine);outline-offset:2px}
 #ov div{background:var(--panel);border-radius:16px;padding:26px 24px;text-align:center;max-width:320px;width:100%}
 #ov h2{margin:0 0 6px;font-size:26px;font-weight:800}
 #ov p{margin:0 0 18px;color:var(--mute);font-size:16px;line-height:1.4}
-#ov .row{display:flex;gap:10px;justify-content:center}
+#ov .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+#ov.ask .row+.row{margin-top:10px}
+#ov #lvls button{flex:1;padding:12px 8px}
 #ov button{border:0;background:var(--btn);color:var(--btnink);font:inherit;font-size:16px;font-weight:600;padding:12px 22px;border-radius:10px;cursor:pointer}
 #ov button.alt{background:none;color:var(--ink);border:1px solid var(--line)}
 #oc{display:none}#ov.ask #oc{display:inline-block}
@@ -56,13 +55,12 @@ button:focus-visible{outline:3px solid var(--mine);outline-offset:2px}
 <body>
 <main>
 <header><h1 id="ti"></h1><div class="stats"><span>Time <b id="tm">0:00</b></span><span><span id="sl"></span> <b id="ms">0</b></span></div></header>
-<div class="seg" id="seg"></div>
 <div id="board"></div>
 <div class="pad" id="pad"></div>
 <div class="tools" id="tools"></div>
 <p id="st"></p>
 </main>
-<div id="ov"><div><h2 id="ot"></h2><p id="op"></p><span class="row"><button id="oc" class="alt">Keep playing</button><button id="ob">New game</button></span></div></div>
+<div id="ov"><div><h2 id="ot"></h2><p id="op"></p><span class="row" id="lvls"></span><span class="row"><button id="oc" class="alt">Cancel</button></span></div></div>
 <script>
 /* =====================================================================
    GAME DEFINITION: the only part you edit for a new game.
@@ -98,13 +96,13 @@ const G={
 /* ===================== ENGINE: leave as is ===================== */
 const $=s=>document.querySelector(s);
 const fmt=s=>(s/60|0)+':'+String(s%60).padStart(2,'0');
-let S,lv=0,secs=0,over=false,pend,flash='',ft,sel=-1;
+let S,lv=0,secs=0,over=false,flash='',ft,sel=-1;
 const base=[],cells=[],pbs=[],tbs=[],prev=[],until=[];
 function pulse(id){const e=$(id);e.classList.remove('pop');void e.offsetWidth;e.classList.add('pop')}
 function toast(m){flash=m;draw();clearTimeout(ft);ft=setTimeout(()=>{flash='';draw()},3500)}
 function addTime(n){secs+=n;$('#tm').textContent=fmt(secs);pulse('#tm')}
 
-$('#ti').textContent=G.title;document.title=G.title;$('#sl').textContent=G.statLabel;
+document.title=G.title;$('#sl').textContent=G.statLabel;
 const board=$('#board');
 board.style.gridTemplateColumns='repeat('+G.cols+',1fr)';board.style.setProperty('--ar',G.cols/G.rows);
 for(let i=0;i<G.rows*G.cols;i++){
@@ -118,8 +116,8 @@ if(G.pad){const p=$('#pad');p.style.gridTemplateColumns='repeat('+G.pad.length+'
   G.pad.forEach(d=>{const b=document.createElement('button');b.innerHTML=d+'<small></small>';b.onclick=()=>{if(!over){G.padTap(S,d);after()}};p.append(b);pbs.push(b)})}
 const tl=$('#tools');tl.style.gridTemplateColumns='repeat('+(G.tools.length+1)+',1fr)';
 G.tools.forEach(t=>{const b=document.createElement('button');b.onclick=()=>{if(!over){G.tool(S,t.id);after()}};tl.append(b);tbs.push(b)});
-const nb=document.createElement('button');nb.textContent='New game';nb.onclick=()=>requestNew();tl.append(nb);
-G.levels.forEach((n,i)=>{const b=document.createElement('button');b.textContent=n;b.onclick=()=>{if(i!==lv)requestNew(i)};$('#seg').append(b)});
+const nb=document.createElement('button');nb.textContent='New game';nb.onclick=openNew;tl.append(nb);
+G.levels.forEach((n,i)=>{const b=document.createElement('button');b.textContent=n;b.onclick=()=>newGame(i);$('#lvls').append(b)});
 
 function draw(){
   const now=Date.now();
@@ -133,15 +131,15 @@ function draw(){
   pbs.forEach((b,k)=>{const d=G.pad[k];b.disabled=over||(G.padOff?G.padOff(S,d):false);b.lastChild.textContent=G.padNote?G.padNote(S,d):''});
   G.tools.forEach((t,k)=>{tbs[k].textContent=t.label(S);tbs[k].disabled=over||(t.disabled?t.disabled(S):false);tbs[k].classList.toggle('on',!!(t.on&&t.on(S)))});
   $('#ms').textContent=G.statText(S);$('#st').textContent=flash||G.hint(S)||'';
-  [...$('#seg').children].forEach((b,i)=>b.classList.toggle('on',i===lv));
+  $('#ti').textContent=G.levels[lv];
 }
 function after(){draw();save();if(over)return;if(G.won(S))end(true);else if(G.lost(S))end(false)}
 function end(win){
   over=true;
   if(win){let rec='';
     try{const k=G.id+'-best-'+lv,b=+localStorage.getItem(k)||0;if(!b||secs<b){localStorage.setItem(k,secs);rec=b?' New best for this level.':''}else rec=' Best: '+fmt(b)+'.'}catch(e){}
-    $('#ot').textContent='Solved';$('#op').textContent='Finished '+G.levels[lv].toLowerCase()+' in '+fmt(secs)+'.'+rec;
-  }else{$('#ot').textContent='Round over';$('#op').textContent=G.loseText||'Try a fresh game.'}
+    $('#ot').textContent='Solved';$('#op').textContent='Finished '+G.levels[lv].toLowerCase()+' in '+fmt(secs)+'.'+rec+' Pick a difficulty to play again.';
+  }else{$('#ot').textContent='Round over';$('#op').textContent=((G.loseText||'')+' Pick a difficulty to try again.').trim()}
   try{localStorage.removeItem(G.id+'-game')}catch(e){}
   $('#ov').classList.remove('ask');$('#ov').classList.add('show');draw();
 }
@@ -149,14 +147,13 @@ function newGame(l){
   if(l!==undefined)lv=l;prev.length=0;until.length=0;S=G.newState(lv);secs=0;over=false;sel=-1;flash='';
   $('#ov').classList.remove('show','ask');$('#tm').textContent='0:00';draw();save();
 }
-function requestNew(l){
+function openNew(){
   const started=!over&&(G.started?G.started(S):secs>3);
-  if(!started){newGame(l);return}
-  pend=l;$('#ot').textContent='Start a new game?';$('#op').textContent='Your progress on this game will be lost.';
+  $('#ot').textContent='New game';
+  $('#op').textContent=started?'Your progress on this game will be lost. Pick a difficulty to start over.':'Pick a difficulty.';
   $('#ov').classList.add('show','ask');
 }
-$('#ob').onclick=()=>{const l=pend;pend=undefined;newGame(l)};
-$('#oc').onclick=()=>{pend=undefined;$('#ov').classList.remove('show','ask')};
+$('#oc').onclick=()=>$('#ov').classList.remove('show','ask');
 function save(){try{localStorage.setItem(G.id+'-game',JSON.stringify({lv,S,secs}))}catch(e){}}
 function load(){try{const s=JSON.parse(localStorage.getItem(G.id+'-game'));if(s&&s.S){lv=s.lv;S=s.S;secs=s.secs;$('#tm').textContent=fmt(secs);draw();return true}}catch(e){}return false}
 document.addEventListener('keydown',e=>{if(G.key&&!over){G.key(S,e);after()}});

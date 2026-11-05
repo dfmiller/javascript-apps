@@ -14,13 +14,10 @@ html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;justify-content:center}
 main{width:100%;max-width:480px;padding:14px 12px 24px}
-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
-h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.02em}
+header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.02em}
 .stats{display:flex;gap:14px;color:var(--mute);font-size:15px;font-variant-numeric:tabular-nums}
 .stats b{color:var(--ink);font-weight:600}
-.seg{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:3px;margin-bottom:12px}
-.seg button{flex:1;border:0;background:none;color:var(--mute);font:inherit;font-size:15px;padding:8px 0;border-radius:7px;cursor:pointer}
-.seg button.on{background:var(--btn);color:var(--btnink);font-weight:600}
 #board{display:grid;grid-template-columns:repeat(9,1fr);aspect-ratio:1;width:100%;background:var(--panel);border:2.5px solid var(--bold);border-radius:6px;overflow:hidden;touch-action:manipulation}
 .c{position:relative;border:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--panel);color:var(--mine);font:inherit;font-size:clamp(20px,6.4vw,30px);font-weight:600;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;min-width:0}
 .c.rb{border-right:2.5px solid var(--bold)}.c.bb{border-bottom:2.5px solid var(--bold)}
@@ -51,7 +48,9 @@ button:focus-visible{outline:3px solid var(--mine);outline-offset:2px}
 #ov p{margin:0 0 18px;color:var(--mute);font-size:16px;line-height:1.4}
 #ov button{border:0;background:var(--btn);color:var(--btnink);font:inherit;font-size:16px;font-weight:600;padding:12px 22px;border-radius:10px;cursor:pointer}
 .tools button:disabled{opacity:.35;cursor:default}
-#ov .row{display:flex;gap:10px;justify-content:center}
+#ov .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+#ov.ask .row+.row{margin-top:10px}
+#ov #lvls button{flex:1;padding:12px 8px}
 #ov button.alt{background:none;color:var(--ink);border:1px solid var(--line)}
 #oc{display:none}
 #ov.ask #oc{display:inline-block}
@@ -60,8 +59,7 @@ button:focus-visible{outline:3px solid var(--mine);outline-offset:2px}
 </head>
 <body>
 <main>
-<header><h1>Sudoku</h1><div class="stats"><span>Time <b id="tm">0:00</b></span><span>Mistakes <b id="ms">0/3</b></span></div></header>
-<div class="seg" id="seg"><button data-d="easy">Easy</button><button data-d="medium">Medium</button><button data-d="hard">Hard</button></div>
+<header><h1 id="ti">Easy</h1><div class="stats"><span>Time <b id="tm">0:00</b></span><span>Mistakes <b id="ms">0/3</b></span></div></header>
 <div id="board"></div>
 <div class="pad" id="pad"></div>
 <div class="tools">
@@ -70,7 +68,7 @@ button:focus-visible{outline:3px solid var(--mine);outline-offset:2px}
 <div class="tools one"><button id="bm"></button></div>
 <p id="st"></p>
 </main>
-<div id="ov"><div><h2 id="ot"></h2><p id="op"></p><span class="row"><button id="oc" class="alt">Keep playing</button><button id="ob">New game</button></span></div></div>
+<div id="ov"><div><h2 id="ot"></h2><p id="op"></p><span class="row" id="lvls"></span><span class="row"><button id="oc" class="alt">Cancel</button></span></div></div>
 <script>
 const $=s=>document.querySelector(s);
 const CLUES={easy:42,medium:34,hard:28};
@@ -114,7 +112,7 @@ function draw(){
   $('#be').disabled=!(noteMode||!strict)||over;
   $('#bm').textContent='Allow wrong answers: '+(strict?'off':'on');
   $('#st').textContent=flash||(noteMode?'Notes on. Select a cell, then tap numbers to pencil in possible values.':'');
-  document.querySelectorAll('#seg button').forEach(b=>b.classList.toggle('on',b.dataset.d===diff));
+  $('#ti').textContent=diff[0].toUpperCase()+diff.slice(1);
 }
 const fmt=s=>(s/60|0)+':'+String(s%60).padStart(2,'0');
 function tick(){if(!over&&!document.hidden){secs++;$('#tm').textContent=fmt(secs);if(secs%5==0)save()}}
@@ -151,9 +149,9 @@ function end(win){
   over=true;
   if(win){
     let rec='';try{const k='sudoku-best-'+diff,b=+localStorage.getItem(k)||0;if(!b||secs<b){localStorage.setItem(k,secs);rec=b?' New best for this level.':' First finish at this level.'}else rec=' Best: '+fmt(b)+'.'}catch(e){}
-    $('#ot').textContent='Solved';$('#op').textContent='Finished '+diff+' in '+fmt(secs)+' with '+mist+' mistake'+(mist==1?'':'s')+'.'+rec;
+    $('#ot').textContent='Solved';$('#op').textContent='Finished '+diff+' in '+fmt(secs)+' with '+mist+' mistake'+(mist==1?'':'s')+'.'+rec+' Pick a difficulty to play again.';
   }else{
-    $('#ot').textContent='Out of mistakes';$('#op').textContent='Three wrong entries ends the round. Try a fresh puzzle.';
+    $('#ot').textContent='Out of mistakes';$('#op').textContent='Three wrong entries ends the round. Pick a difficulty to try again.';
   }
   clearSave();$('#ov').classList.add('show');draw();
 }
@@ -172,17 +170,16 @@ function load(){
   }catch(e){}
   return false;
 }
-let pend;
-function requestNew(d){
+function openNew(){
   const started=!over&&(cur.some((v,i)=>v!==puz[i])||notes.some(n=>n));
-  if(!started){newGame(d);return}
-  pend=d;$('#ot').textContent='Start a new game?';$('#op').textContent='Your progress on this puzzle will be lost.';
+  $('#ot').textContent='New game';
+  $('#op').textContent=started?'Your progress on this puzzle will be lost. Pick a difficulty to start over.':'Pick a difficulty.';
   $('#ov').classList.add('show','ask');
 }
-$('#seg').onclick=e=>{const d=e.target.dataset&&e.target.dataset.d;if(d&&d!==diff)requestNew(d)};
+['easy','medium','hard'].forEach(d=>{const b=document.createElement('button');b.textContent=d[0].toUpperCase()+d.slice(1);b.onclick=()=>newGame(d);$('#lvls').append(b)});
 $('#bn').onclick=()=>{noteMode=!noteMode;draw()};
 $('#be').onclick=erase;$('#bh').onclick=hint;$('#bm').onclick=()=>{setStrict(!strict);draw()};
-$('#bw').onclick=()=>requestNew();$('#ob').onclick=()=>{const d=pend;pend=undefined;newGame(d)};$('#oc').onclick=()=>{pend=undefined;$('#ov').classList.remove('show','ask')};
+$('#bw').onclick=openNew;$('#oc').onclick=()=>$('#ov').classList.remove('show','ask');
 document.addEventListener('keydown',e=>{
   if(e.key>='1'&&e.key<='9')input(+e.key);
   else if(e.key==='Backspace'||e.key==='Delete'||e.key==='0')erase();

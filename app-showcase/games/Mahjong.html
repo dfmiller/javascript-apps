@@ -31,7 +31,7 @@ h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.02em}
 .c.lit{background:var(--sel)}.c.bad{color:var(--err)}
 .c.e{background:var(--bg);cursor:default}
 .c.t{background:var(--panel);box-shadow:inset 0 -4px 0 var(--line)}
-.c.t.bk{background:var(--peer);opacity:.6}
+.c.t.bk{background:var(--peer);opacity:1}
 .c.t img{width:86%;height:86%;object-fit:contain;pointer-events:none}
 .c.t .g{display:flex;flex-direction:column;align-items:center;line-height:1;font-size:clamp(20px,6vw,28px)}
 .c.t .g i{font-style:normal;font-size:.55em;margin-top:2px}
@@ -63,25 +63,35 @@ button:focus-visible{outline:3px solid var(--mine);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){.pop,.c.flash::after{animation:none}}
 
 /* tile look: your images carry their own shadow */
-#board{aspect-ratio:auto!important;background:#14501f;padding:26px 12px 12px 26px;overflow:hidden}
+#board{aspect-ratio:auto!important;background:#14501f;padding:26px 12px 10px 26px;overflow:hidden}
 #board .c{border:0;background:transparent;box-shadow:none;aspect-ratio:147/151;align-self:start;overflow:visible;cursor:pointer}
 #board .c.e{cursor:default}
 #board .c img{position:absolute;width:100%;height:100%;pointer-events:none;max-width:none;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.6)) drop-shadow(1px 1px 1px rgba(0,0,0,.5))}
-#board .c.bk img:last-of-type{filter:brightness(.72) drop-shadow(3px 5px 4px rgba(0,0,0,.6)) drop-shadow(1px 1px 1px rgba(0,0,0,.5))}
-#board .c.sel img:last-of-type,#board .c.lit img:last-of-type{filter:sepia(.9) saturate(3.2) brightness(1.08) drop-shadow(3px 5px 4px rgba(0,0,0,.6))}
+#board .c.bk img{filter:brightness(.6) drop-shadow(3px 5px 4px rgba(0,0,0,.6)) drop-shadow(1px 1px 1px rgba(0,0,0,.5))}
+
 #board .c.flash::after{display:none}
+#board .c .ring{position:absolute;width:100%;height:100%;border-radius:14%;border:3px solid #2f7bff;box-shadow:0 0 0 2px rgba(47,123,255,.35),0 0 14px 3px #2f7bff;animation:rp 1s ease-in-out infinite;pointer-events:none;z-index:2}
+@keyframes rp{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.06)}}
+.fly{position:fixed;z-index:15;pointer-events:none;max-width:none;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.6))}
+.conf{position:fixed;z-index:16;left:0;top:0;width:8px;height:12px;border-radius:2px;pointer-events:none}
+@media (prefers-reduced-motion:reduce){#board .c .ring{animation:none}}
+#pad{display:none}.tools{margin-top:12px}
+h1{font-size:20px}
+#ob{display:none!important}
+#ov #lvb{margin-bottom:12px}#ov #lvb button{padding:12px 16px}
+#ov #lvb button:not(.on){background:none;color:var(--ink);border:1px solid var(--line)}
 </style>
 </head>
 <body>
 <main>
 <header><h1 id="ti"></h1><div class="stats"><span>Time <b id="tm">0:00</b></span><span><span id="sl"></span> <b id="ms">0</b></span></div></header>
-<div class="seg" id="seg"></div>
+
 <div id="board"></div>
 <div class="pad" id="pad"></div>
 <div class="tools" id="tools"></div>
 <p id="st"></p>
 </main>
-<div id="ov"><div><h2 id="ot"></h2><p id="op"></p><span class="row"><button id="oc" class="alt">Keep playing</button><button id="ob">New game</button></span></div></div>
+<div id="ov"><div><h2 id="ot"></h2><p id="op"></p><span class="row" id="lvb"></span><span class="row"><button id="oc" class="alt">Keep playing</button><button id="ob">New game</button></span></div></div>
 <script>
 /* =====================================================================
    GAME DEFINITION: the only part you edit for a new game.
@@ -113,6 +123,21 @@ function gen(lv){
 const pairs=S=>{const m={};for(let i=0;i<R*C;i++)if(isFree(S.st,i)){const f=S.st[i][S.st[i].length-1];(m[f]=m[f]||[]).push(i)}
   for(const f in m)if(m[f].length>1)return[m[f][0],m[f][1]];return null};
 const topF=(S,i)=>S.st[i][S.st[i].length-1];
+function burst(cx,cy){
+  const col=['#e63946','#f4a261','#ffd23f','#2a9d8f','#3a86ff','#b5179e','#ffffff'];
+  for(let n=0;n<30;n++){const p=document.createElement('i');p.className='conf';p.style.background=col[n%col.length];p.style.left=cx+'px';p.style.top=cy+'px';document.body.append(p);
+    const a=Math.random()*6.283,r=50+Math.random()*110,x=Math.cos(a)*r,y=Math.sin(a)*r;
+    p.animate([{transform:'translate(0,0) rotate(0)',opacity:1},{transform:'translate('+x+'px,'+(y-30)+'px) rotate('+(Math.random()*720-360)+'deg)',opacity:1,offset:.45},{transform:'translate('+x*1.15+'px,'+(y+90)+'px) rotate('+(Math.random()*900-450)+'deg)',opacity:0}],{duration:900+Math.random()*400,easing:'cubic-bezier(.2,.7,.4,1)'}).onfinish=()=>p.remove()}
+}
+function fly(i,j){
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  const bb=board.getBoundingClientRect(),cx=bb.left+bb.width/2,cy=bb.top+bb.height/2;let done=0;
+  [i,j].forEach((k,p)=>{const r=cells[k].getBoundingClientRect(),n=S.st[k].length,l=r.left-(n-1)*.1*r.width,t=r.top-(n-1)*.11*r.height;
+    const d=document.createElement('img');d.src=IMG[S.st[k][n-1]];d.className='fly';
+    d.style.cssText='left:'+l+'px;top:'+t+'px;width:'+r.width+'px;height:'+r.height+'px';document.body.append(d);
+    const tx=cx-r.width*(p?.45:.55)-l,ty=cy-r.height/2-t;
+    d.animate([{transform:'none'},{transform:'translate('+tx+'px,'+ty+'px) scale(1.12)'}],{duration:420,easing:'cubic-bezier(.45,0,.75,.45)',fill:'forwards'}).onfinish=()=>{d.remove();if(++done==2)burst(cx,cy)}})
+}
 const G={
   id:'mahjong',
   title:'Mahjong',
@@ -128,12 +153,13 @@ const G={
     const fr=isFree(S.st,i);
     const c='t'+(fr?'':' bk')+(S.sel===i?' sel':'')+(S.hl.includes(i)?' lit':'');
     let h='';for(let j=0;j<n;j++){const x=-j*10,y=-j*11;h+='<img alt="" draggable="false" src="'+IMG[S.st[i][j]]+'" style="left:'+x+'%;top:'+y+'%">'}
+    if(S.sel===i||S.hl.includes(i))h+='<span class="ring" style="left:'+(-(n-1)*10)+'%;top:'+(-(n-1)*11)+'%"></span>';
     return{c,h};
   },
   tap(S,i){
     S.hl=[];if(!S.st[i].length||!isFree(S.st,i))return;
     if(S.sel<0||S.sel===i){S.sel=S.sel===i?-1:i;return}
-    if(topF(S,i)===topF(S,S.sel)){const j=S.sel,f=topF(S,i);S.st[i].pop();S.st[j].pop();S.hist.push([i,j,f]);S.sel=-1;pulse('#ms')}
+    if(topF(S,i)===topF(S,S.sel)){const j=S.sel,f=topF(S,i);fly(i,j);S.st[i].pop();S.st[j].pop();S.hist.push([i,j,f]);S.sel=-1;pulse('#ms')}
     else S.sel=i;
   },
   padTap(S,d){},
@@ -173,7 +199,7 @@ if(G.pad){const p=$('#pad');p.style.gridTemplateColumns='repeat('+G.pad.length+'
 const tl=$('#tools');tl.style.gridTemplateColumns='repeat('+(G.tools.length+1)+',1fr)';
 G.tools.forEach(t=>{const b=document.createElement('button');b.onclick=()=>{if(!over){G.tool(S,t.id);after()}};tl.append(b);tbs.push(b)});
 const nb=document.createElement('button');nb.textContent='New game';nb.onclick=()=>requestNew();tl.append(nb);
-G.levels.forEach((n,i)=>{const b=document.createElement('button');b.textContent=n;b.onclick=()=>{if(i!==lv)requestNew(i)};$('#seg').append(b)});
+G.levels.forEach((n,i)=>{const b=document.createElement('button');b.textContent=n;b.onclick=()=>newGame(i);$('#lvb').append(b)});
 
 function draw(){
   const now=Date.now();
@@ -187,7 +213,7 @@ function draw(){
   pbs.forEach((b,k)=>{const d=G.pad[k];b.disabled=over||(G.padOff?G.padOff(S,d):false);b.lastChild.textContent=G.padNote?G.padNote(S,d):''});
   G.tools.forEach((t,k)=>{tbs[k].textContent=t.label(S);tbs[k].disabled=over||(t.disabled?t.disabled(S):false);tbs[k].classList.toggle('on',!!(t.on&&t.on(S)))});
   $('#ms').textContent=G.statText(S);$('#st').textContent=flash||G.hint(S)||'';
-  [...$('#seg').children].forEach((b,i)=>b.classList.toggle('on',i===lv));
+  $('#ti').textContent=G.levels[lv];[...$('#lvb').children].forEach((b,i)=>b.classList.toggle('on',i===lv));
 }
 function after(){draw();save();if(over)return;if(G.won(S))end(true);else if(G.lost(S))end(false)}
 function end(win){
@@ -205,8 +231,8 @@ function newGame(l){
 }
 function requestNew(l){
   const started=!over&&(G.started?G.started(S):secs>3);
-  if(!started){newGame(l);return}
-  pend=l;$('#ot').textContent='Start a new game?';$('#op').textContent='Your progress on this game will be lost.';
+  
+  $('#ot').textContent='New game';$('#op').textContent=started?'Your progress on this game will be lost. Choose a difficulty.':'Choose a difficulty.';
   $('#ov').classList.add('show','ask');
 }
 $('#ob').onclick=()=>{const l=pend;pend=undefined;newGame(l)};
