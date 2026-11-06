@@ -25,7 +25,8 @@ h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.02em}
 .c.rb{border-right:2.5px solid var(--bold)}.c.bb{border-bottom:2.5px solid var(--bold)}.c.re{border-right:0}.c.be{border-bottom:0}
 /* Cell state classes returned by G.cell(): add your own below */
 .c.sel{background:var(--sel);color:var(--ink)}.c.p{background:var(--peer)}.c.s2{background:var(--same)}
-.c.lit{background:var(--sel)}.c.bad{color:var(--err)}
+.c.lit{background:var(--sel);outline: 4px outset var(--sel);outline-offset: -4px;}.c.bad{color:var(--err)}
+.c.lit:before{content: '';position: absolute;top: 50%;left: 50%;background: radial-gradient(white, transparent);z-index:100; width: 100%;height: 100%;margin: -50%;}
 .c.flash::after{content:"";position:absolute;inset:0;background:var(--mine);opacity:0;pointer-events:none;animation:fl .6s ease-out}
 @keyframes fl{0%{opacity:.6}100%{opacity:0}}
 .pad{display:grid;gap:5px;margin-top:14px}
