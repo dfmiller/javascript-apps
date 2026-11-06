@@ -1,7 +1,7 @@
 :root {
   --interval: 6000ms;
   --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
-  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --sans: "Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 
 *,
@@ -132,7 +132,7 @@ body {
 
 .slide__name {
   margin: 0 0 .75rem;
-  font: 700 clamp(2.75rem, 11vw, 6.25rem)/.95 var(--serif);
+  font: 700 clamp(2.75rem, 11vw, 6.25rem)/.95 var(--sans);
   letter-spacing: -.02em;
   text-wrap: balance;
 }
@@ -326,7 +326,7 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font: 700 1.25rem/1.5 var(--serif);
+  font: 700 1.25rem/1.5 var(--sans);
 }
 
 .viewer__body {
