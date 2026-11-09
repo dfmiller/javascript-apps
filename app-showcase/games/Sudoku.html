@@ -50,10 +50,12 @@ button:focus-visible{outline:3px solid var(--mine);outline-offset:2px}
 .tools button:disabled{opacity:.35;cursor:default}
 #ov .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 #ov.ask .row+.row{margin-top:10px}
-#ov #lvls button{flex:1;padding:12px 8px}
+#ov #lvls button{padding:12px 20px;background:none;color:var(--ink);border:1px solid var(--line)}
 #ov button.alt{background:none;color:var(--ink);border:1px solid var(--line)}
 #oc{display:none}
 #ov.ask #oc{display:inline-block}
+#ov #lvls button.cur{background:var(--btn);color:var(--btnink);border-color:var(--btn)}
+#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:30}
 @media (prefers-reduced-motion:reduce){#tm.pop,#ms.pop{animation:none}}
 </style>
 </head>
@@ -68,7 +70,7 @@ button:focus-visible{outline:3px solid var(--mine);outline-offset:2px}
 <div class="tools one"><button id="bm"></button></div>
 <p id="st"></p>
 </main>
-<div id="ov"><div><h2 id="ot"></h2><p id="op"></p><span class="row" id="lvls"></span><span class="row"><button id="oc" class="alt">Cancel</button></span></div></div>
+<div id="ov"><div><h2 id="ot"></h2><p id="op"></p><span class="row" id="lvls"></span><span class="row"><button id="oc" class="alt">Keep playing</button></span></div></div>
 <script>
 const $=s=>document.querySelector(s);
 const CLUES={easy:42,medium:34,hard:28};
@@ -113,6 +115,7 @@ function draw(){
   $('#bm').textContent='Allow wrong answers: '+(strict?'off':'on');
   $('#st').textContent=flash||(noteMode?'Notes on. Select a cell, then tap numbers to pencil in possible values.':'');
   $('#ti').textContent=diff[0].toUpperCase()+diff.slice(1);
+  [...$('#lvls').children].forEach(b=>b.classList.toggle('cur',b.textContent.toLowerCase()===diff));
 }
 const fmt=s=>(s/60|0)+':'+String(s%60).padStart(2,'0');
 function tick(){if(!over&&!document.hidden){secs++;$('#tm').textContent=fmt(secs);if(secs%5==0)save()}}
@@ -149,18 +152,38 @@ function end(win){
   over=true;
   if(win){
     let rec='';try{const k='sudoku-best-'+diff,b=+localStorage.getItem(k)||0;if(!b||secs<b){localStorage.setItem(k,secs);rec=b?' New best for this level.':' First finish at this level.'}else rec=' Best: '+fmt(b)+'.'}catch(e){}
-    $('#ot').textContent='Solved';$('#op').textContent='Finished '+diff+' in '+fmt(secs)+' with '+mist+' mistake'+(mist==1?'':'s')+'.'+rec+' Pick a difficulty to play again.';
+    $('#ot').textContent='Solved';$('#op').textContent='Finished '+diff+' in '+fmt(secs)+' with '+mist+' mistake'+(mist==1?'':'s')+'.'+rec+' Choose a difficulty to play again.';
   }else{
-    $('#ot').textContent='Out of mistakes';$('#op').textContent='Three wrong entries ends the round. Pick a difficulty to try again.';
+    $('#ot').textContent='Out of mistakes';$('#op').textContent='Three wrong entries ends the round. Choose a difficulty to try again.';
   }
-  clearSave();$('#ov').classList.add('show');draw();
+  clearSave();$('#ov').classList.add('show');draw();if(win)fireworks();
 }
 function newGame(d){
   if(d)diff=d;
   [puz,sol]=generate(diff);cur=puz.slice();notes=Array(81).fill(0);
   sel=-1;mist=0;secs=0;over=false;noteMode=false;
-  $('#ov').classList.remove('show','ask');$('#tm').textContent='0:00';
+  stopFw();$('#ov').classList.remove('show','ask');$('#tm').textContent='0:00';
   draw();save();
+}
+const fw=document.createElement('canvas');fw.id='fw';document.body.append(fw);let fwTok=0;
+function stopFw(){fwTok++;fw.getContext('2d').clearRect(0,0,fw.width,fw.height)}
+function fireworks(){
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  const tok=++fwTok,x=fw.getContext('2d'),dpr=devicePixelRatio||1;
+  fw.width=innerWidth*dpr;fw.height=innerHeight*dpr;x.scale(dpr,dpr);
+  const cols=['#ffd978','#6cc3e0','#ff7b7b','#9be3b0','#ffffff','#c9a7ff'];
+  let ps=[],t0=performance.now(),last=t0,next=0;
+  function burst(){const cx=innerWidth*(.15+Math.random()*.7),cy=innerHeight*(.12+Math.random()*.4),c=cols[Math.random()*cols.length|0];
+    for(let i=0;i<70;i++){const a=Math.random()*6.283,v=1.5+Math.random()*4;ps.push({x:cx,y:cy,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:1,c})}}
+  (function f(now){
+    if(tok!==fwTok)return;
+    const dt=Math.min(2,(now-last)/16.7),el=now-t0;last=now;
+    x.clearRect(0,0,innerWidth,innerHeight);
+    if(el<3200&&el>=next){burst();next=el+350+Math.random()*350}
+    ps=ps.filter(p=>p.l>0);
+    for(const p of ps){p.vy+=.05*dt;p.vx*=.985;p.vy*=.985;p.x+=p.vx*dt;p.y+=p.vy*dt;p.l-=.011*dt;x.globalAlpha=Math.max(p.l,0);x.fillStyle=p.c;x.fillRect(p.x-1.5,p.y-1.5,3,3)}
+    if(el<3200||ps.length)requestAnimationFrame(f);else x.clearRect(0,0,innerWidth,innerHeight);
+  })(t0);
 }
 function save(){try{localStorage.setItem('sudoku-game',JSON.stringify({diff,puz,sol,cur,notes,mist,secs}))}catch(e){}}
 function clearSave(){try{localStorage.removeItem('sudoku-game')}catch(e){}}
@@ -173,7 +196,7 @@ function load(){
 function openNew(){
   const started=!over&&(cur.some((v,i)=>v!==puz[i])||notes.some(n=>n));
   $('#ot').textContent='New game';
-  $('#op').textContent=started?'Your progress on this puzzle will be lost. Pick a difficulty to start over.':'Pick a difficulty.';
+  $('#op').textContent=started?'Your progress on this game will be lost. Choose a difficulty.':'Choose a difficulty.';
   $('#ov').classList.add('show','ask');
 }
 ['easy','medium','hard'].forEach(d=>{const b=document.createElement('button');b.textContent=d[0].toUpperCase()+d.slice(1);b.onclick=()=>newGame(d);$('#lvls').append(b)});

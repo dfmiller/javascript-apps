@@ -25,8 +25,7 @@ h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.02em}
 .c.rb{border-right:2.5px solid var(--bold)}.c.bb{border-bottom:2.5px solid var(--bold)}.c.re{border-right:0}.c.be{border-bottom:0}
 /* Cell state classes returned by G.cell(): add your own below */
 .c.sel{background:var(--sel);color:var(--ink)}.c.p{background:var(--peer)}.c.s2{background:var(--same)}
-.c.lit{background:var(--sel);outline: 4px outset var(--sel);outline-offset: -4px;}.c.bad{color:var(--err)}
-.c.lit:before{content: '';position: absolute;top: 50%;left: 50%;background: radial-gradient(white, transparent);z-index:100; width: 100%;height: 100%;margin: -50%;}
+.c.lit{background:var(--sel)}.c.bad{color:var(--err)}
 .c.flash::after{content:"";position:absolute;inset:0;background:var(--mine);opacity:0;pointer-events:none;animation:fl .6s ease-out}
 @keyframes fl{0%{opacity:.6}100%{opacity:0}}
 .pad{display:grid;gap:5px;margin-top:14px}
@@ -46,10 +45,12 @@ button:focus-visible{outline:3px solid var(--mine);outline-offset:2px}
 #ov p{margin:0 0 18px;color:var(--mute);font-size:16px;line-height:1.4}
 #ov .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 #ov.ask .row+.row{margin-top:10px}
-#ov #lvls button{flex:1;padding:12px 8px}
+#ov #lvls button{padding:12px 20px;background:none;color:var(--ink);border:1px solid var(--line)}
 #ov button{border:0;background:var(--btn);color:var(--btnink);font:inherit;font-size:16px;font-weight:600;padding:12px 22px;border-radius:10px;cursor:pointer}
 #ov button.alt{background:none;color:var(--ink);border:1px solid var(--line)}
 #oc{display:none}#ov.ask #oc{display:inline-block}
+#ov #lvls button.cur{background:var(--btn);color:var(--btnink);border-color:var(--btn)}
+#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:30}
 @media (prefers-reduced-motion:reduce){.pop,.c.flash::after{animation:none}}
 </style>
 </head>
@@ -61,7 +62,7 @@ button:focus-visible{outline:3px solid var(--mine);outline-offset:2px}
 <div class="tools" id="tools"></div>
 <p id="st"></p>
 </main>
-<div id="ov"><div><h2 id="ot"></h2><p id="op"></p><span class="row" id="lvls"></span><span class="row"><button id="oc" class="alt">Cancel</button></span></div></div>
+<div id="ov"><div><h2 id="ot"></h2><p id="op"></p><span class="row" id="lvls"></span><span class="row"><button id="oc" class="alt">Keep playing</button></span></div></div>
 <script>
 /* =====================================================================
    GAME DEFINITION: the only part you edit for a new game.
@@ -133,28 +134,49 @@ function draw(){
   G.tools.forEach((t,k)=>{tbs[k].textContent=t.label(S);tbs[k].disabled=over||(t.disabled?t.disabled(S):false);tbs[k].classList.toggle('on',!!(t.on&&t.on(S)))});
   $('#ms').textContent=G.statText(S);$('#st').textContent=flash||G.hint(S)||'';
   $('#ti').textContent=G.levels[lv];
+  [...$('#lvls').children].forEach((b,i)=>b.classList.toggle('cur',i===lv));
 }
 function after(){draw();save();if(over)return;if(G.won(S))end(true);else if(G.lost(S))end(false)}
 function end(win){
   over=true;
   if(win){let rec='';
     try{const k=G.id+'-best-'+lv,b=+localStorage.getItem(k)||0;if(!b||secs<b){localStorage.setItem(k,secs);rec=b?' New best for this level.':''}else rec=' Best: '+fmt(b)+'.'}catch(e){}
-    $('#ot').textContent='Solved';$('#op').textContent='Finished '+G.levels[lv].toLowerCase()+' in '+fmt(secs)+'.'+rec+' Pick a difficulty to play again.';
-  }else{$('#ot').textContent='Round over';$('#op').textContent=((G.loseText||'')+' Pick a difficulty to try again.').trim()}
+    $('#ot').textContent='Solved';$('#op').textContent='Finished '+G.levels[lv].toLowerCase()+' in '+fmt(secs)+'.'+rec+' Choose a difficulty to play again.';
+  }else{$('#ot').textContent='Round over';$('#op').textContent=((G.loseText||'')+' Choose a difficulty to try again.').trim()}
   try{localStorage.removeItem(G.id+'-game')}catch(e){}
-  $('#ov').classList.remove('ask');$('#ov').classList.add('show');draw();
+  $('#ov').classList.remove('ask');$('#ov').classList.add('show');draw();if(win)fireworks();
 }
 function newGame(l){
   if(l!==undefined)lv=l;prev.length=0;until.length=0;S=G.newState(lv);secs=0;over=false;sel=-1;flash='';
-  $('#ov').classList.remove('show','ask');$('#tm').textContent='0:00';draw();save();
+  stopFw();$('#ov').classList.remove('show','ask');$('#tm').textContent='0:00';draw();save();
 }
 function openNew(){
   const started=!over&&(G.started?G.started(S):secs>3);
   $('#ot').textContent='New game';
-  $('#op').textContent=started?'Your progress on this game will be lost. Pick a difficulty to start over.':'Pick a difficulty.';
+  $('#op').textContent=started?'Your progress on this game will be lost. Choose a difficulty.':'Choose a difficulty.';
   $('#ov').classList.add('show','ask');
 }
 $('#oc').onclick=()=>$('#ov').classList.remove('show','ask');
+const fw=document.createElement('canvas');fw.id='fw';document.body.append(fw);let fwTok=0;
+function stopFw(){fwTok++;fw.getContext('2d').clearRect(0,0,fw.width,fw.height)}
+function fireworks(){
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  const tok=++fwTok,x=fw.getContext('2d'),dpr=devicePixelRatio||1;
+  fw.width=innerWidth*dpr;fw.height=innerHeight*dpr;x.scale(dpr,dpr);
+  const cols=['#ffd978','#6cc3e0','#ff7b7b','#9be3b0','#ffffff','#c9a7ff'];
+  let ps=[],t0=performance.now(),last=t0,next=0;
+  function burst(){const cx=innerWidth*(.15+Math.random()*.7),cy=innerHeight*(.12+Math.random()*.4),c=cols[Math.random()*cols.length|0];
+    for(let i=0;i<70;i++){const a=Math.random()*6.283,v=1.5+Math.random()*4;ps.push({x:cx,y:cy,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:1,c})}}
+  (function f(now){
+    if(tok!==fwTok)return;
+    const dt=Math.min(2,(now-last)/16.7),el=now-t0;last=now;
+    x.clearRect(0,0,innerWidth,innerHeight);
+    if(el<3200&&el>=next){burst();next=el+350+Math.random()*350}
+    ps=ps.filter(p=>p.l>0);
+    for(const p of ps){p.vy+=.05*dt;p.vx*=.985;p.vy*=.985;p.x+=p.vx*dt;p.y+=p.vy*dt;p.l-=.011*dt;x.globalAlpha=Math.max(p.l,0);x.fillStyle=p.c;x.fillRect(p.x-1.5,p.y-1.5,3,3)}
+    if(el<3200||ps.length)requestAnimationFrame(f);else x.clearRect(0,0,innerWidth,innerHeight);
+  })(t0);
+}
 function save(){try{localStorage.setItem(G.id+'-game',JSON.stringify({lv,S,secs}))}catch(e){}}
 function load(){try{const s=JSON.parse(localStorage.getItem(G.id+'-game'));if(s&&s.S){lv=s.lv;S=s.S;secs=s.secs;$('#tm').textContent=fmt(secs);draw();return true}}catch(e){}return false}
 document.addEventListener('keydown',e=>{if(G.key&&!over){G.key(S,e);after()}});
