@@ -1,19 +1,17 @@
 
 * {
 	user-select: none;
- box-sizing: border-box;
+	box-sizing: border-box;
 }
 
-
 html, body {
-	xfont-size: 16px;
 	font-family: Arial, sans-serif;
 	font-weight: bold;
 	width: 100%;
 	height: 100%;
 	display: flex;
 	flex-direction: column;
-    justify-content: center;
+	justify-content: center;
 	margin: 0;
 	background: black;
 	overflow: auto;
@@ -27,15 +25,15 @@ html, body {
 	flex-direction: column;
 	background: white;
 	max-width: 768px;
-    max-height: 1024px;
+	max-height: 1024px;
 	position: relative;
-    margin: 0 auto;
+	margin: 0 auto;
 }
 
 .pastels {
-    z-index: 0;
-    background-image: url(./backgrounds/beach.jpg);
-    background-size: cover;
+	z-index: 0;
+	background-image: url(./backgrounds/beach.jpg);
+	background-size: cover;
 }
 
 .pastels:before,
@@ -81,14 +79,8 @@ html, body {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: center;
-	xfont-size: 3.25rem;
 	overflow: hidden;
 	font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
-    xfont-family: 'Liu Jian Mao Cao', cursive;
-    xfont-family: 'Trochut', cursive;
-    xmax-height: 100%;
-    xheight: 100%;
-    xalign-items: flex-start;
 }
 
 .game-board:empty {
@@ -106,12 +98,6 @@ html, body {
 	display: flex;
 	margin: .2em;
 	min-height: 1em;
-    xflex: 0 0;
-}
-
-.filler {
-    xheight: 100%;
-    xflex: 1 1 50%;
 }
 
 
@@ -121,23 +107,19 @@ html, body {
 	min-width: .5em;
 	height: 1em;
 	text-align: center;
-	xfont-size: 2.25rem;
 	text-transform: uppercase;
 	vertical-align: middle;
 	margin: 0 2px;
 	color: transparent;
 	margin: 0 .08em;
-	xbackground: orange;
 }
 
 .hinted {
 	color: #aaa;
 }
 
-
 .draggable {
 	display: inline-block;
-	xbackground: blue;
 	min-width: 1em;
 	position: absolute;
 	text-align: center;
@@ -145,20 +127,8 @@ html, body {
 	text-shadow: 1px 1px 2px black;
 }
 
-.drop {
-	background: red
-}
-
 .correct {
 	color: black;
-	oxutline: 2px solid blue
-}
-
-#draggable {
-	width:50px;
-	height:50px;
-	background-color:#f00;
-	position:absolute;
 }
 
 
@@ -229,7 +199,6 @@ select, button {
 
 .selectLevel li.active {
 	outline: 2px solid blue;
-	bxackground: #bbb;
 }
 
 .instructions {
@@ -268,18 +237,6 @@ p {
 	font-style: italic;
 	justify-content: flex-end;
 }
-
-
-.soundButton {
-	color: black;
-}
-
-
-
-
-
-
-
 
 
 
