@@ -18,8 +18,7 @@ const lettersOnly = (text) => text.replace(/[^a-z]/g, '')
 // Disable the right-click menu so it can't interrupt dragging.
 window.oncontextmenu = () => false
 
-// `var` keeps Game on `window` for any other script or inline handler that uses it.
-var Game = {
+const Game = {
 
 	// Colors for the draggable letters.
 	colors: ['pink', 'red', 'Orange', 'gold', 'DarkKhaki', 'lime', 'cyan', 'DodgerBlue', 'Magenta'],

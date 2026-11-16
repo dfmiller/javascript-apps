@@ -1,11 +1,10 @@
-
-//"use strict"
+window.oncontextmenu = function() { return false }
 
 var englishWords = allWords.concat(ukWords);
 
 var Game = {
-	wordLength: 3//8
-	,columnCount: 7//9
+	wordLength: 3
+	,columnCount: 7
 	,rowCount: 8
 	,columns: []
 	,colors: ['aqua', 'black', 'blue', 'fuchsia', 'gray', 'green', 'lime', 'maroon', 'navy', 'olive', 'purple', 'red', 'silver', 'teal', 'white', 'yellow', 'orange', 'brown']
@@ -135,6 +134,26 @@ Game.calcFontSize = function() {
 	} catch(e) {}
 }
 
+var Trunk = {
+	load: function(varname, defaultValue) {
+		try {
+			if (typeof window.localStorage.getItem(varname) == 'undefined') {
+				return defaultValue;
+			}
+			return JSON.parse(window.localStorage.getItem(varname)) || defaultValue
+		} catch(e) {
+			return window.localStorage.getItem(varname);
+		}
+	},
+	save: function(varname, value) {
+		try {
+			if (typeof value == 'object') {
+				value = JSON.stringify(value);
+			}
+			Trunk[varname] = window.localStorage.setItem(varname, value);
+		} catch(e) {}
+	}
+}
 
 Game.init = function() {
 

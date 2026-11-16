@@ -509,12 +509,12 @@
     const appSections = [
       {
         name: APP_SECTIONS.PLAY_STORE,
-        description: 'Google Play Store apps, coded by hand. (Voluntarily removed due to their public disclosure of personal information.)'
+        description: 'Google Play Store apps, coded by hand. (Voluntarily removed due to Google\'s public disclosure of my personal information.)'
       },
-      {
+      /*{
         name: APP_SECTIONS.VIBE_CODED,
         description: 'Apps created with the assistance of Artifical Inteligence.'
-      }
+      } */
     ];
     const activeType = { value: ALL_FILTER };
     const appSectionsContainer = document.querySelector('#appSections');
@@ -582,11 +582,11 @@
       });
     }
 
-    createFilterChips(
+    /* createFilterChips(
       document.querySelector('#typeFilters'),
       Object.values(APP_TYPES),
       'All types'
-    );
+    ); */
 
     function openPageDialog(event, url, title) {
       event.preventDefault();

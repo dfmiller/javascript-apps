@@ -34,7 +34,6 @@
 		text-align: left;
 		color: black;
 		box-shadow: none;
-		xbackground: rgba(212, 201, 183, .5);
 
 		background-color: rgba(0,0,0,.5);
 		background-image: linear-gradient(45deg, black 25%, transparent 25%, transparent 75%, black 75%, black), linear-gradient(-45deg, black 25%, transparent 25%, transparent 75%, black 75%, black);
@@ -61,7 +60,6 @@
 		padding: 1em;
 		font-size: 1.25em;
 		background: rgba(250,250,250,.9);
-		xborder-radius: 5px 5px 0 0;
 		font-weight: bold;
 	}
 
@@ -98,7 +96,6 @@
 		text-align: right;
 		padding: 1em;
 		background: rgba(250,250,250,.9);
-		xborder-radius: 0 0 5px 5px;
 		text-align: center;
 	}
 

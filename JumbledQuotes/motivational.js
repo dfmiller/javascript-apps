@@ -116,11 +116,6 @@ var phrases = [
 	"The secret to doing anything is believing that you can do it. Anything that you believe you can do strong enough, you can do. Anything. As long as you believe|Bob Ross"
 ]
 
-
 phrases.sort(function(a, b) {
 	return ((a.split('|')[0].length) - (b.split('|')[0].length)) || a.localeCompare(b)
 })
-
-
-
-//console.log(phrases)
